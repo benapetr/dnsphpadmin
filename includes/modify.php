@@ -30,6 +30,26 @@ function Check($form, $label, $name)
     return true;
 }
 
+function ProcessDelete($well)
+{
+    global $g_domains, $g_selected_domain;
+    if (strlen($g_selected_domain) == 0)
+        Error("No domain");
+
+    if (!isset($_GET["delete"]))
+        return;
+    
+    $record = $_GET["delete"];
+
+    if (psf_string_contains($record, "\n"))
+        Error("Invalid delete string");
+
+    $input = "server " . $g_domains[$g_selected_domain]["transfer_server"] . "\n";
+    $input .= "update delete " . $record . "\nsend\nquit\n";
+    nsupdate($input);
+    $form->AppendObject(new BS_Alert("Successfully deleted record " . $record));
+}
+
 function HandleEdit($form)
 {
     global $g_domains;

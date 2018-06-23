@@ -38,9 +38,14 @@ function GetRecordListTable($parent, $domain)
 {
     $table = new BS_Table($parent);
     $table->Condensed = true;
-    $table->Headers = [ "Record", "TTL", "Scope", "Type", "Value" ];
+    $table->Headers = [ "Record", "TTL", "Scope", "Type", "Value", "Options" ];
     $records = GetRecordList($domain);
     foreach ($records as $record)
+    {
+        $record[] = '<a href="index.php?action=manage&domain=' . $domain . '&delete=' .
+                    urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
+                    '"><span class="glyphicon glyphicon-trash"></span></a>';
         $table->AppendRow($record);
+    }
     return $table;
 }

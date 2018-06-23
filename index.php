@@ -47,6 +47,7 @@ if ($g_action === null)
     $well->AppendObject(GetSelectForm($well));
 } else if ($g_action == "manage")
 {
+    ProcessDelete();
     $fc->AppendObject(GetSwitcher());
     if ($g_selected_domain === null)
     {
