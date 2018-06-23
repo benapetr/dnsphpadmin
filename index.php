@@ -70,8 +70,8 @@ if ($g_action === null)
     $fc->AppendObject(GetInsertForm($fc));
 }
 
-$fc->AppendHtmlLine("<div class='footer'>Created by Petr Bena [petr@bena.rocks] (c) 2018, source code at ".
-    "<a href='http://github.com/benapetr/dnsphpadmin'>http://github.com/benapetr/dnsphpadmin</a></div>");
+$fc->AppendHtmlLine("<footer class='footer'><div class='container'>Created by Petr Bena [petr@bena.rocks] (c) 2018, source code at ".
+    "<a href='http://github.com/benapetr/dnsphpadmin'>http://github.com/benapetr/dnsphpadmin</a></div></footer>");
 
 $website->PrintHtml();
 
