@@ -11,6 +11,7 @@
 // GNU General Public License for more details.
 
 require_once("config.php");
+require_once("fatal.php");
 
 function nsupdate($input)
 {
@@ -26,7 +27,7 @@ function nsupdate($input)
     $proc = proc_open($g_nsupdate, $desc, $pipes, $cwd, $env);
     if (!is_resource($proc))
     {
-        die ("Unable to execute " . $g_nsupdate);
+        Error("Unable to execute " . $g_nsupdate);
     }
     fwrite($pipes[0], $input);
     $output = stream_get_contents($pipes[1]);
@@ -37,7 +38,7 @@ function nsupdate($input)
     $ret = proc_close($proc);
     if ($ret > 0)
     {
-        die ($g_nsupdate . " return code " . $ret . ": " . $errors);
+        Error($g_nsupdate . " return code " . $ret . ": " . $errors);
     }
     return $output;
 }

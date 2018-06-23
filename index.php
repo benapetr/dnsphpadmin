@@ -12,6 +12,7 @@
 
 require("config.php");
 require("includes/menu.php");
+require("includes/modify.php");
 require("includes/record_list.php");
 require("includes/select_form.php");
 require_once("psf/psf.php");
@@ -56,6 +57,9 @@ if ($g_action === null)
         $well = new BS_Well($fc);
         $well->AppendObject(GetRecordListTable($well, $g_selected_domain));
     }
+} else if ($g_action == "new")
+{
+    $fc->AppendObject(GetInsertForm($fc));
 }
 
 $website->PrintHtml();
