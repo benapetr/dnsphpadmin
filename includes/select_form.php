@@ -19,6 +19,17 @@ function GetSelectForm($parent)
     $table = new BS_Table($parent);
     $table->Headers = [ "Domain name", "Update server", "Transfer server" ];
     foreach ($g_domains as $domain => $properties)
-        $table->AppendRow([ '<a href="?domain=' . $domain . '">' . $domain . '</a>', $properties["update_server"], $properties["transfer_server"] ]);
+        $table->AppendRow([ '<a href="?action=manage&domain=' . $domain . '">' . $domain . '</a>', $properties["update_server"], $properties["transfer_server"] ]);
     return $table;
+}
+
+function GetSwitcher($parent)
+{
+    global $g_selected_domain, $g_domains;
+    $switcher = new DivContainer($parent);
+    $switcher->AppendHtmlLine("Zone:");
+    $c = new ComboBox("switcher", $switcher);
+    foreach ($g_domains as $domain => $properties)
+        $c->AddValue($domain, $domain);
+    return $switcher;
 }

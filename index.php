@@ -11,6 +11,7 @@
 // GNU General Public License for more details.
 
 require("config.php");
+require("includes/menu.php");
 require("includes/record_list.php");
 require("includes/select_form.php");
 require_once("psf/psf.php");
@@ -21,6 +22,7 @@ $psf_containers_auto_insert_child = true;
 
 // Global vars
 $g_selected_domain = null;
+$g_action = null;
 
 $website = new HtmlPage("DNS management");
 $website->Style->items["td"]["word-wrap"] = "break-word";
@@ -30,21 +32,30 @@ bootstrap_init($website);
 $fc = new BS_FluidContainer($website);
 $fc->AppendHeader("DNS management tool");
 
-$well = new BS_Well($fc);
-$well->AppendHeader("Select a domain to manage", 2);
-$well->AppendObject(GetSelectForm($well));
-
+if (isset($_GET['action']))
+    $g_action = $_GET['action'];
 if (isset($_GET['domain']))
     $g_selected_domain = $_GET['domain'];
 
-if ($g_selected_domain === null)
+$fc->AppendObject(GetMenu());
+
+if ($g_action === null)
 {
-    $fc->AppendObject(new BS_Alert("Please select a domain to manage"));
-} else
-{
-    $fc->AppendHeader($g_selected_domain, 2);
+    $fc->AppendHeader("Select a zone to manage", 2);
     $well = new BS_Well($fc);
-    $well->AppendObject(GetRecordListTable($well, $g_selected_domain));
+    $well->AppendObject(GetSelectForm($well));
+} else if ($g_action == "manage")
+{
+    $fc->AppendObject(GetSwitcher());
+    if ($g_selected_domain === null)
+    {
+        $fc->AppendObject(new BS_Alert("Please select a zone to manage"));
+    } else
+    {
+        $fc->AppendHeader($g_selected_domain, 2);
+        $well = new BS_Well($fc);
+        $well->AppendObject(GetRecordListTable($well, $g_selected_domain));
+    }
 }
 
 $website->PrintHtml();
