@@ -29,7 +29,15 @@ function GetSwitcher($parent)
     $switcher = new DivContainer($parent);
     $switcher->AppendHtmlLine("Zone:");
     $c = new ComboBox("switcher", $switcher);
+    $c->OnChangeCallback = "reload()";
     foreach ($g_domains as $domain => $properties)
         $c->AddValue($domain, $domain);
+    $parent->AppendHtml("<script>\n" .
+                        "function reload()\n" .
+                        "{" .
+                        'var switcher = document.getElementsByName("switcher");' .
+                        'window.open("index.php?action=manage&domain=" + switcher[0].value, "_self");' .
+                        "}\n" .
+                        "</script>\n");
     return $switcher;
 }

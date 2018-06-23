@@ -26,6 +26,7 @@ $g_selected_domain = null;
 $g_action = null;
 
 $website = new HtmlPage("DNS management");
+$website->ExternalJs[] = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js";
 $website->Style->items["td"]["word-wrap"] = "break-word";
 $website->Style->items["td"]["max-width"] = "280px";
 bootstrap_init($website);
@@ -48,7 +49,12 @@ if ($g_action === null)
 } else if ($g_action == "manage")
 {
     ProcessDelete();
-    $fc->AppendObject(GetSwitcher());
+    if ($g_selected_domain == null)
+    {
+        reset($g_domains);
+        $g_selected_domain = key($g_domains);
+    }
+    $fc->AppendObject(GetSwitcher($fc));
     if ($g_selected_domain === null)
     {
         $fc->AppendObject(new BS_Alert("Please select a zone to manage"));

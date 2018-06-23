@@ -33,11 +33,11 @@ function Check($form, $label, $name)
 function ProcessDelete($well)
 {
     global $g_domains, $g_selected_domain;
-    if (strlen($g_selected_domain) == 0)
-        Error("No domain");
-
     if (!isset($_GET["delete"]))
         return;
+
+    if (strlen($g_selected_domain) == 0)
+        Error("No domain");
     
     $record = $_GET["delete"];
 
