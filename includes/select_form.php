@@ -10,7 +10,15 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-$g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_server' => 'localhost' ] ];
-$g_dig = '/usr/bin/dig';
-$g_nsupdate = '/usr/bin/nsupdate';
+require_once("psf/psf.php");
+require_once("config.php");
 
+function GetSelectForm($parent)
+{
+    global $g_domains;
+    $table = new BS_Table($parent);
+    $table->Headers = [ "Domain name", "Update server", "Transfer server" ];
+    foreach ($g_domains as $domain => $properties)
+        $table->AppendRow([ '<a href="?domain=' . $domain . '">' . $domain . '</a>', $properties["update_server"], $properties["transfer_server"] ]);
+    return $table;
+}
