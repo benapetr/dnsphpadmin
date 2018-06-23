@@ -26,6 +26,7 @@ $g_selected_domain = null;
 $g_action = null;
 
 $website = new HtmlPage("DNS management");
+$website->ExternalCss[] = "footer.css";
 $website->ExternalJs[] = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js";
 $website->Style->items["td"]["word-wrap"] = "break-word";
 $website->Style->items["td"]["max-width"] = "280px";
@@ -68,6 +69,9 @@ if ($g_action === null)
 {
     $fc->AppendObject(GetInsertForm($fc));
 }
+
+$fc->AppendHtmlLine("<div class='footer'>Created by Petr Bena [petr@bena.rocks] (c) 2018, source code at ".
+    "<a href='http://github.com/benapetr/dnsphpadmin'>http://github.com/benapetr/dnsphpadmin</a></div>");
 
 $website->PrintHtml();
 
