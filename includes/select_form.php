@@ -31,7 +31,12 @@ function GetSwitcher($parent)
     $c = new ComboBox("switcher", $switcher);
     $c->OnChangeCallback = "reload()";
     foreach ($g_domains as $domain => $properties)
-        $c->AddValue($domain, $domain);
+    {
+        if ($g_selected_domain == $domain)
+            $c->AddDefaultValue($domain);
+        else
+            $c->AddValue($domain);
+    }
     $parent->AppendHtml("<script>\n" .
                         "function reload()\n" .
                         "{" .
