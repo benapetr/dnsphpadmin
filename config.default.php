@@ -11,7 +11,7 @@
 // GNU General Public License for more details.
 
 $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_server' => 'localhost' ] ];
-$g_editable = [ "A", "AAAA", "NS", "PTR", "SRV", "TXT", "SPF" ];
+$g_editable = [ "A", "AAAA", "NS", "PTR", "SRV", "TXT", "SPF", "MX" ];
 $g_dig = '/usr/bin/dig';
 $g_nsupdate = '/usr/bin/nsupdate';
 
