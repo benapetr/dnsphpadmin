@@ -62,6 +62,9 @@ if ($g_action === null)
 } else if ($g_action == "new")
 {
     $fc->AppendObject(GetInsertForm($fc));
+} else if ($g_action == "edit")
+{
+    $fc->AppendObject(GetEditForm($fc));
 }
 
 $website->AppendHtmlLine("<footer class='footer'><div class='container'>Created by Petr Bena [petr@bena.rocks] (c) 2018, source code at ".

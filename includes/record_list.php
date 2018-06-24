@@ -44,7 +44,11 @@ function GetRecordListTable($parent, $domain)
     {
         $record[] = '<a href="index.php?action=manage&domain=' . $domain . '&delete=' .
                     urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
-                    '"><span class="glyphicon glyphicon-trash"></span></a>';
+                    '"><span class="glyphicon glyphicon-trash"></span></a>&nbsp;&nbsp;' .
+                    '<a href="index.php?action=edit&domain=' . $domain . '&key=' .
+                    $record[0] . "&ttl=" . $record[1] . "&type=" . $record[3] . "&value=" . $record[4] .
+                    "&old=" . urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
+                    '"><span class="glyphicon glyphicon-pencil"></span></a>';
         $table->AppendRow($record);
     }
     return $table;

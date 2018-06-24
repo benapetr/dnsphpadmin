@@ -50,38 +50,64 @@ function ProcessDelete($well)
     $well->AppendObject(new BS_Alert("Successfully deleted record " . $record));
 }
 
+function ProcessInsertFromPOST($zone, $record, $value, $type, $ttl)
+{
+    $input = "";
+    
+    if (strlen($record) == 0)
+        $input .= "update add " . $zone . " " . $ttl . " " . $type . " " . $value . "\n";
+    else
+        $input .= "update add " . $record . "." . $zone . " " . $ttl . " " . $type . " " . $value . "\n";
+    return $input;
+}
+
 function HandleEdit($form)
 {
     global $g_domains;
     if (!isset($_POST["submit"]))
         return;
     
+    $zone = $_POST["zone"];
+    if (!Check($form, $zone, "Zone"))
+        return;
+    $record = $_POST["record"];
+    if ($record === NULL)
+        $record = "";
+    $ttl = $_POST["ttl"];
+    if (!Check($form, $ttl, "ttl"))
+        return;
+    $value = $_POST["value"];
+    if (!Check($form, $value, "Value"))
+        return;
+    $type = $_POST["type"];
+    if (!Check($form, $type, "Type"))
+        return;
+
+    $input = "server " . $g_domains[$zone]["transfer_server"] . "\n";
     if ($_POST["submit"] == "Create")
     {
-        $record = $_POST["record"];
-        if (!Check($form, $record, "Record"))
-            return;
-        $zone = $_POST["zone"];
-        if (!Check($form, $zone, "Zone"))
-            return;
-        $ttl = $_POST["ttl"];
-        if (!Check($form, $ttl, "ttl"))
-            return;
-        $value = $_POST["value"];
-        if (!Check($form, $value, "Value"))
-            return;
-        $type = $_POST["type"];
-        if (!Check($form, $type, "Type"))
-            return;
-
-        $input = "server " . $g_domains[$zone]["transfer_server"] . "\n";
-        $input .= "update add " . $record . "." . $zone . " " . $ttl . " " . $type . " " . $value . "\nsend\nquit\n";
+        $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
+        $input .= "send\nquit\n";
         nsupdate($input);
         $form->AppendObject(new BS_Alert("Successfully inserted record " . $record . "." . $zone));
+        return;
+    } else if ($_POST["submit"] == "Edit")
+    {
+        if (!isset($_POST["old"]))
+            Error("Missing old record necessary for update");
+        // First delete the existing record
+        $input .= "update delete " . $_POST["old"] . "\n";
+        $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
+        $input .= "send\nquit\n";
+        nsupdate($input);
+        $form->AppendObject(new BS_Alert("Successfully replaced " . $_POST["old"] . " with " . $record . "." . $zone . " " .
+                                         $ttl . " " . $type . " " . $value));
+        return;
     }
+    Error("Unknown modify mode");
 }
 
-function GetInsertForm($parent)
+function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_ttl = "3600", $default_type = "A", $default_value = "")
 {
     global $g_selected_domain, $g_domains;
     HandleEdit($parent);
@@ -91,7 +117,7 @@ function GetInsertForm($parent)
     $layout->BorderSize = 0;
     $layout->Headers = [ "Record", "Zone", "TTL", "Type", "Value" ];
     $form_items = [];
-    $form_items[] = new BS_TextBox("record", NULL, NULL, $layout);
+    $form_items[] = new BS_TextBox("record", $default_key, NULL, $layout);
     $dl = new ComboBox("zone", $layout);
     foreach ($g_domains as $key => $info)
     {
@@ -101,19 +127,39 @@ function GetInsertForm($parent)
             $dl->AddValue($key, '.' . $key);
     }
     $form_items[] = $dl;
-    $form_items[] = new BS_TextBox("ttl", "3600", NULL, $layout);
+    $form_items[] = new BS_TextBox("ttl", $default_ttl, NULL, $layout);
     $tl = new ComboBox("type", $layout);
-    $tl->AddValue("A");
-    $tl->AddValue("AAAA");
-    $tl->AddValue("NS");
-    $tl->AddValue("PTR");
-    $tl->AddValue("SRV");
-    $tl->AddValue("TXT");
-    $tl->AddValue("SPF");
+    $types = [ "A", "AAAA", "NS", "PTR", "SRV", "TXT", "SPF" ];
+    foreach ($types as $type)
+    {
+        if ($default_type == $type)
+            $tl->AddDefaultValue($type);
+        else
+            $tl->AddValue($type);
+    }
     $form_items[] = $tl;
-    $form_items[] = new BS_TextBox("value", NULL, NULL, $layout);
+    $form_items[] = new BS_TextBox("value", $default_value, NULL, $layout);
     $layout->AppendRow($form_items);
     $form->AppendObject(new BS_CheckBox("ptr", "true", false, NULL, $form, "Create PTR record for this (works only with A records)"));
-    $form->AppendObject(new BS_Button("submit", "Create"));
+    if (isset($_GET["old"]))
+    $form->AppendObject(new Hidden("old", $_GET["old"]));
+    if ($edit_mode)
+        $form->AppendObject(new BS_Button("submit", "Edit"));
+    else
+        $form->AppendObject(new BS_Button("submit", "Create"));
     return $form;
+}
+
+function GetEditForm($parent)
+{
+    global $g_selected_domain;
+    $k = $_GET["key"];
+    $suffix = $g_selected_domain;
+    if (psf_string_endsWith($k, $suffix))
+        $k = substr($k, 0, strlen($k) - strlen($suffix));
+    if (psf_string_endsWith($k, $suffix . "."))
+        $k = substr($k, 0, strlen($k) - strlen($suffix) - 1);
+    while (psf_string_endsWith($k, "."))
+        $k = substr($k, 0, strlen($k) - 1);
+    return GetInsertForm($parent, true, $k, $_GET["ttl"], $_GET["type"], $_GET["value"]);
 }

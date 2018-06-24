@@ -15,11 +15,14 @@ require_once("config.php");
 
 function GetMenu($parent)
 {
-    global $g_action;
+    global $g_action, $g_selected_domain;
+    $domain = "";
+    if ($g_selected_domain !== null)
+        $domain = "&domain=" . $g_selected_domain;
     $menu_items = [
                     "<a href='index.php'>Zone overview</a>",
-                    "<a href='index.php?action=manage'>Manage zone</a>",
-                    "<a href='index.php?action=new'>Insert / edit record</a>"
+                    "<a href='index.php?action=manage" . $domain . "'>Manage zone</a>",
+                    "<a href='index.php?action=new" . $domain. "'>Insert / edit record</a>"
                   ];
     $menu = new BS_Tabs($menu_items, $parent);
     switch ($g_action)
@@ -28,6 +31,7 @@ function GetMenu($parent)
             $menu->SelectedTab = 1;
             break;
         case "new":
+        case "edit":
             $menu->SelectedTab = 2;
             break;
     }
