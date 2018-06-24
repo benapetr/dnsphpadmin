@@ -111,7 +111,9 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
 {
     global $g_selected_domain, $g_domains, $g_editable;
     HandleEdit($parent);
-    $form = new Form("index.php?action=new", $parent);
+    if (psf_string_endsWith($g_selected_domain, ".in-addr.arpa"))
+        $default_type = "PTR";
+    $form = new Form("index.php?action=new&domain=" . $g_selected_domain, $parent);
     $form->Method = FormMethod::Post;
     $layout = new HtmlTable($form);
     $layout->BorderSize = 0;
