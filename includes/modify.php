@@ -119,12 +119,23 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
     $form_items = [];
     $form_items[] = new BS_TextBox("record", $default_key, NULL, $layout);
     $dl = new ComboBox("zone", $layout);
-    foreach ($g_domains as $key => $info)
+    if ($edit_mode)
     {
-        if ($g_selected_domain == $key)
-            $dl->AddDefaultValue($key, "." . $key);
-        else
-            $dl->AddValue($key, '.' . $key);
+        if ($g_selected_domain === NULL)
+        {
+            Error("No domain selected");
+        }
+        $dl->AddDefaultValue($g_selected_domain, "." . $g_selected_domain);
+        $dl->Enabled = false;
+    } else
+    {
+        foreach ($g_domains as $key => $info)
+        {
+            if ($g_selected_domain == $key)
+                $dl->AddDefaultValue($key, "." . $key);
+            else
+                $dl->AddValue($key, '.' . $key);
+        }
     }
     $form_items[] = $dl;
     $form_items[] = new BS_TextBox("ttl", $default_ttl, NULL, $layout);
@@ -140,7 +151,7 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
     $form_items[] = $tl;
     $form_items[] = new BS_TextBox("value", $default_value, NULL, $layout);
     $layout->AppendRow($form_items);
-    $form->AppendObject(new BS_CheckBox("ptr", "true", false, NULL, $form, "Create PTR record for this (works only with A records)"));
+    //$form->AppendObject(new BS_CheckBox("ptr", "true", false, NULL, $form, "Create PTR record for this (works only with A records)"));
     if (isset($_GET["old"]))
     $form->AppendObject(new Hidden("old", $_GET["old"]));
     if ($edit_mode)
