@@ -36,13 +36,14 @@ function GetRecordList($domain)
 
 function GetRecordListTable($parent, $domain)
 {
+    global $g_editable;
     $table = new BS_Table($parent);
     $table->Condensed = true;
     $table->Headers = [ "Record", "TTL", "Scope", "Type", "Value", "Options" ];
     $records = GetRecordList($domain);
     foreach ($records as $record)
     {
-        if ($record[3] === "SOA")
+        if (!in_array($record[3], $g_editable))
         {
             $record[] = '';
         } else

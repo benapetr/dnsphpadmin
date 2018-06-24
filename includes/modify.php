@@ -109,7 +109,7 @@ function HandleEdit($form)
 
 function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_ttl = "3600", $default_type = "A", $default_value = "")
 {
-    global $g_selected_domain, $g_domains;
+    global $g_selected_domain, $g_domains, $g_editable;
     HandleEdit($parent);
     $form = new Form("index.php?action=new", $parent);
     $form->Method = FormMethod::Post;
@@ -140,7 +140,7 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
     $form_items[] = $dl;
     $form_items[] = new BS_TextBox("ttl", $default_ttl, NULL, $layout);
     $tl = new ComboBox("type", $layout);
-    $types = [ "A", "AAAA", "NS", "PTR", "SRV", "TXT", "SPF" ];
+    $types = $g_editable;
     foreach ($types as $type)
     {
         if ($default_type == $type)
