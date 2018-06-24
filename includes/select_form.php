@@ -37,12 +37,11 @@ function GetSwitcher($parent)
         else
             $c->AddValue($domain);
     }
-    $parent->AppendHtml("<script>\n" .
-                        "function reload()\n" .
-                        "{" .
-                        'var switcher = document.getElementsByName("switcher");' .
-                        'window.open("index.php?action=manage&domain=" + switcher[0].value, "_self");' .
-                        "}\n" .
-                        "</script>\n");
+    $js = new Script("", $parent);
+    $js->Source = "function reload()\n" .
+                  "{" .
+                      'var switcher = document.getElementsByName("switcher");' .
+                      'window.open("index.php?action=manage&domain=" + switcher[0].value, "_self");' .
+                  "}\n";
     return $switcher;
 }

@@ -47,7 +47,7 @@ function ProcessDelete($well)
     $input = "server " . $g_domains[$g_selected_domain]["transfer_server"] . "\n";
     $input .= "update delete " . $record . "\nsend\nquit\n";
     nsupdate($input);
-    $form->AppendObject(new BS_Alert("Successfully deleted record " . $record));
+    $well->AppendObject(new BS_Alert("Successfully deleted record " . $record));
 }
 
 function HandleEdit($form)

@@ -40,7 +40,7 @@ if (isset($_GET['action']))
 if (isset($_GET['domain']))
     $g_selected_domain = $_GET['domain'];
 
-$fc->AppendObject(GetMenu());
+$fc->AppendObject(GetMenu($fc));
 
 if ($g_action === null)
 {
@@ -49,7 +49,7 @@ if ($g_action === null)
     $well->AppendObject(GetSelectForm($well));
 } else if ($g_action == "manage")
 {
-    ProcessDelete();
+    ProcessDelete($fc);
     if ($g_selected_domain == null)
     {
         reset($g_domains);
