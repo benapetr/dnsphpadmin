@@ -11,6 +11,7 @@
 // GNU General Public License for more details.
 
 require_once("psf/psf.php");
+require_once("audit.php");
 require_once("config.php");
 
 function GetSelectForm($parent)

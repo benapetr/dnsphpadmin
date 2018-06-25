@@ -11,6 +11,7 @@
 // GNU General Public License for more details.
 
 require_once("psf/psf.php");
+require_once("audit.php");
 require_once("nsupdate.php");
 require_once("fatal.php");
 require_once("config.php");
@@ -47,6 +48,7 @@ function ProcessDelete($well)
     $input = "server " . $g_domains[$g_selected_domain]["transfer_server"] . "\n";
     $input .= "update delete " . $record . "\nsend\nquit\n";
     nsupdate($input);
+    WriteToAuditFile("delete", $record);
     $well->AppendObject(new BS_Alert("Successfully deleted record " . $record));
 }
 
@@ -89,6 +91,7 @@ function HandleEdit($form)
         $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
         $input .= "send\nquit\n";
         nsupdate($input);
+        WriteToAuditFile("create", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
         $form->AppendObject(new BS_Alert("Successfully inserted record " . $record . "." . $zone));
         return;
     } else if ($_POST["submit"] == "Edit")
@@ -100,6 +103,8 @@ function HandleEdit($form)
         $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
         $input .= "send\nquit\n";
         nsupdate($input);
+        WriteToAuditFile("replace_delete", $_POST["old"]);
+        WriteToAuditFile("replace_add", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
         $form->AppendObject(new BS_Alert("Successfully replaced " . $_POST["old"] . " with " . $record . "." . $zone . " " .
                                          $ttl . " " . $type . " " . $value));
         return;

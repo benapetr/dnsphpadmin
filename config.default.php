@@ -14,4 +14,6 @@ $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_s
 $g_editable = [ "A", "AAAA", "NS", "PTR", "SRV", "TXT", "SPF", "MX" ];
 $g_dig = '/usr/bin/dig';
 $g_nsupdate = '/usr/bin/nsupdate';
+$g_audit = false;
+$g_audit_log = '/var/log/dns_audit.log';
 
