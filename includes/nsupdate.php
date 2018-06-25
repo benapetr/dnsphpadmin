@@ -11,11 +11,14 @@
 // GNU General Public License for more details.
 
 require_once("config.php");
+require_once("debug.php");
 require_once("fatal.php");
 
 function nsupdate($input)
 {
-    global $g_nsupdate;
+    global $g_nsupdate, $g_tsig_key, $g_tsig;
+    if ($g_tsig)
+        $input = "key " . $g_tsig_key . "\n" . $input;
     $desc = array(
         0 => array('pipe', 'r'),
         1 => array('pipe', 'w'),
@@ -29,6 +32,7 @@ function nsupdate($input)
     {
         Error("Unable to execute " . $g_nsupdate);
     }
+    Debug("Sending this to nsupdate:\n" . $input);
     fwrite($pipes[0], $input);
     $output = stream_get_contents($pipes[1]);
     $errors = stream_get_contents($pipes[2]);

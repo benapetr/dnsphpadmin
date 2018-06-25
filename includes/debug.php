@@ -13,14 +13,13 @@
 require_once("psf/psf.php");
 require_once("config.php");
 
-function Error($msg)
+function Debug($text)
 {
     global $g_debug;
-    $web = new HtmlPage("Error");
-    bootstrap_init($web);
-    $web->AppendObject(new BS_Alert("ERROR: " . $msg, "danger"));
-    $web->PrintHtml();
     if ($g_debug)
-        psf_print_debug_as_html();
-    die();
+    {
+        $lines = explode("\n", $text);
+        foreach ($lines as $line)
+            psf_debug_log($line);
+    }
 }

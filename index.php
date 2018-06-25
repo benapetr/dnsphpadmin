@@ -73,3 +73,6 @@ $website->AppendHtmlLine("<footer class='footer'><div class='container'>Created 
 
 $website->PrintHtml();
 
+if ($g_debug)
+    psf_print_debug_as_html();
+
