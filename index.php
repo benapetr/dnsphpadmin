@@ -45,8 +45,7 @@ $fc->AppendObject(GetMenu($fc));
 if ($g_action === null)
 {
     $fc->AppendHeader("Select a zone to manage", 2);
-    $well = new BS_Well($fc);
-    $well->AppendObject(GetSelectForm($well));
+    $fc->AppendObject(GetSelectForm($fc));
 } else if ($g_action == "manage")
 {
     ProcessDelete($fc);
@@ -57,8 +56,7 @@ if ($g_action === null)
     }
     $fc->AppendObject(GetSwitcher($fc));
     $fc->AppendHeader($g_selected_domain, 2);
-    $well = new BS_Well($fc);
-    $well->AppendObject(GetRecordListTable($well, $g_selected_domain));
+    $fc->AppendObject(GetRecordListTable($fc, $g_selected_domain));
 } else if ($g_action == "new")
 {
     $fc->AppendObject(GetInsertForm($fc));
@@ -66,6 +64,9 @@ if ($g_action === null)
 {
     $fc->AppendObject(GetEditForm($fc));
 }
+
+// Bug workaround - the footer seems to take up some space
+$website->AppendHtml("<br><br><br>");
 
 $website->AppendHtmlLine("<footer class='footer'><div class='container'>Created by Petr Bena [petr@bena.rocks] (c) 2018, source code at ".
                     "<a href='http://github.com/benapetr/dnsphpadmin'>http://github.com/benapetr/dnsphpadmin</a></div></footer>");
