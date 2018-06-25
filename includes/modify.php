@@ -45,7 +45,7 @@ function ProcessDelete($well)
     if (psf_string_contains($record, "\n"))
         Error("Invalid delete string");
 
-    $input = "server " . $g_domains[$g_selected_domain]["transfer_server"] . "\n";
+    $input = "server " . $g_domains[$g_selected_domain]["update_server"] . "\n";
     $input .= "update delete " . $record . "\nsend\nquit\n";
     nsupdate($input);
     WriteToAuditFile("delete", $record);
@@ -85,7 +85,7 @@ function HandleEdit($form)
     if (!Check($form, $type, "Type"))
         return;
 
-    $input = "server " . $g_domains[$zone]["transfer_server"] . "\n";
+    $input = "server " . $g_domains[$zone]["update_server"] . "\n";
     if ($_POST["submit"] == "Create")
     {
         $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
