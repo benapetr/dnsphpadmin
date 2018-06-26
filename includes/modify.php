@@ -194,7 +194,14 @@ function HandleBatch($parent)
     $input .= $record . "\n";
     $input .= "send\nquit\n";
     nsupdate($input);
-    WriteToAuditFile("batch", "zone: " . $zone . ": " . str_replace("\n", "; ", $record));
+    $batch_file = GenerateBatch($input);
+    if ($batch_file == NULL)
+    {
+        WriteToAuditFile("batch", "zone: " . $zone . ": " . str_replace("\n", "; ", $record));
+    } else
+    {
+        WriteToAuditFile("batch", "zone: " . $zone . ": " . $batch_file);
+    }
     $parent->AppendObject(new BS_Alert("Successfully executed batch operation on zone " . $zone));
 }
 
@@ -229,7 +236,7 @@ function GetBatchForm($parent)
             $dl->AddValue($key, $key);
     }
     $layout->Width = "600px";
-    $layout->AppendRow( [ "Zone" ] );
+    $layout->AppendRow( [ "Note: only update statements are allowed, don't put send there, it will be there automatically" ] );
     $layout->AppendRow( [ $dl ] );
     $input = new BS_TextBox("record", $default_key, NULL, $layout);
     $input->SetMultiline();

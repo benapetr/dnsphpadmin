@@ -14,6 +14,19 @@ require_once("psf/psf.php");
 require_once("fatal.php");
 require_once("config.php");
 
+function GenerateBatch($operation)
+{
+    global $g_audit, $g_audit_batch_location;
+    if (!$g_audit)
+        return NULL;
+
+    $file_name = $g_audit_batch_location . "/" . str(time()) . ".txt";
+    $handle = fopen($file_name, 'w') or die('Cannot open file:  ' . $file_name);
+    fwrite($handle, $operation);
+    fclose($handle);
+    return $file_name;
+}
+
 function WriteToAuditFile($operation, $text)
 {
     global $g_audit, $g_audit_log;
@@ -25,7 +38,7 @@ function WriteToAuditFile($operation, $text)
     $log_line .= " user: " . $_SERVER['REMOTE_USER'] . " ip: " . $_SERVER['REMOTE_ADDR'] . " operation: " . $operation . " change: " . $text . "\n";
 
     $my_file = $g_audit_log;
-    $handle = fopen($my_file, 'a') or die('Cannot open file:  '.$my_file);
+    $handle = fopen($my_file, 'a') or die('Cannot open file:  ' . $my_file);
     fwrite($handle, $log_line);
     fclose($handle);
 }
