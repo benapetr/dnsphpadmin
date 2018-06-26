@@ -22,7 +22,8 @@ function GetMenu($parent)
     $menu_items = [
                     "<a href='index.php'>Zone overview</a>",
                     "<a href='index.php?action=manage" . $domain . "'>Manage zone</a>",
-                    "<a href='index.php?action=new" . $domain. "'>Insert / edit record</a>"
+                    "<a href='index.php?action=new" . $domain. "'>New / edit record</a>",
+                    "<a href='index.php?action=batch" . $domain. "'>Batch operations</a>"
                   ];
     $menu = new BS_Tabs($menu_items, $parent);
     switch ($g_action)
@@ -33,6 +34,9 @@ function GetMenu($parent)
         case "new":
         case "edit":
             $menu->SelectedTab = 2;
+            break;
+        case "batch":
+            $menu->SelectedTab = 3;
             break;
     }
     return $menu;

@@ -63,6 +63,9 @@ if ($g_action === null)
 } else if ($g_action == "edit")
 {
     $fc->AppendObject(GetEditForm($fc));
+} else if ($g_action == "batch")
+{
+    $fc->AppendObject(GetBatchForm($fc));
 }
 
 // Bug workaround - the footer seems to take up some space

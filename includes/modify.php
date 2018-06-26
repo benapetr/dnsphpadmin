@@ -168,6 +168,36 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
     return $form;
 }
 
+function HandleBatch($parent)
+{
+    global $g_domains;
+    if (!isset($_POST["submit"]))
+        return;
+    
+    $zone = $_POST["zone"];
+    if (!Check($form, $zone, "Zone"))
+        return;
+
+    $record = $_POST["record"];
+    if ($record === NULL)
+        Error("No zone selected");
+
+    $input = "server " . $g_domains[$zone]["update_server"] . "\n";
+    foreach (explode("\n", $record) as $line)
+    {
+        if (!psf_string_startsWith($line, "update "))
+        {
+            Error("Illegal operation for nsupdate, only update is allowed: " . $line);
+            return;
+        }
+    }
+    $input .= $record . "\n";
+    $input .= "send\nquit\n";
+    nsupdate($input);
+    WriteToAuditFile("batch", "zone: " . $zone . ": " . str_replace("\n", "; ", $record));
+    $parent->AppendObject(new BS_Alert("Successfully executed batch operation on zone " . $zone));
+}
+
 function GetEditForm($parent)
 {
     global $g_selected_domain;
@@ -180,4 +210,30 @@ function GetEditForm($parent)
     while (psf_string_endsWith($k, "."))
         $k = substr($k, 0, strlen($k) - 1);
     return GetInsertForm($parent, true, $k, $_GET["ttl"], $_GET["type"], $_GET["value"]);
+}
+
+function GetBatchForm($parent)
+{
+    global $g_selected_domain, $g_domains, $g_editable;
+    HandleBatch($parent);
+    $form = new Form("index.php?action=batch&domain=" . $g_selected_domain, $parent);
+    $form->Method = FormMethod::Post;
+    $layout = new HtmlTable($form);
+    $layout->BorderSize = 0;
+    $dl = new ComboBox("zone", $layout);
+    foreach ($g_domains as $key => $info)
+    {
+        if ($g_selected_domain == $key)
+            $dl->AddDefaultValue($key, $key);
+        else
+            $dl->AddValue($key, $key);
+    }
+    $layout->Width = "600px";
+    $layout->AppendRow( [ "Zone" ] );
+    $layout->AppendRow( [ $dl ] );
+    $input = new BS_TextBox("record", $default_key, NULL, $layout);
+    $input->SetMultiline();
+    $layout->AppendRow( [ $input ] );
+    $form->AppendObject(new BS_Button("submit", "Submit"));
+    return $form;
 }
