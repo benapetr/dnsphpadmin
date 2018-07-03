@@ -39,6 +39,9 @@ if (isset($_GET['action']))
     $g_action = $_GET['action'];
 if (isset($_GET['domain']))
     $g_selected_domain = $_GET['domain'];
+else if (isset($_POST["zone"]))
+    $g_selected_domain = $_POST["zone"];
+    
 
 $fc->AppendObject(GetMenu($fc));
 
