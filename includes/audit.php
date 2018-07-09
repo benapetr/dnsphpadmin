@@ -17,10 +17,10 @@ require_once("config.php");
 function GenerateBatch($operation)
 {
     global $g_audit, $g_audit_batch_location;
-    if (!$g_audit)
+    if (!$g_audit || $g_audit_batch_location === null)
         return NULL;
 
-    $file_name = $g_audit_batch_location . "/" . str(time()) . ".txt";
+    $file_name = $g_audit_batch_location . "/" . strval(time()) . ".txt";
     $handle = fopen($file_name, 'w') or die('Cannot open file:  ' . $file_name);
     fwrite($handle, $operation);
     fclose($handle);
