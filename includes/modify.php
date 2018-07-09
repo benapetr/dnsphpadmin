@@ -197,7 +197,9 @@ function HandleBatch($parent)
     $batch_file = GenerateBatch($input);
     if ($batch_file == NULL)
     {
-        WriteToAuditFile("batch", "zone: " . $zone . ": " . str_replace("\n", "; ", $record));
+        $log = str_replace("\n", "; ", $record);
+        $log = str_replace("\r", "", $log);
+        WriteToAuditFile("batch", "zone: " . $zone . ": " . $log);
     } else
     {
         WriteToAuditFile("batch", "zone: " . $zone . ": " . $batch_file);
