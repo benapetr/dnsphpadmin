@@ -118,7 +118,7 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
     HandleEdit($parent);
     if (psf_string_endsWith($g_selected_domain, ".in-addr.arpa"))
         $default_type = "PTR";
-    $form = new Form("index.php?action=new&domain=" . $g_selected_domain, $parent);
+    $form = new Form("index.php?action=new", $parent);
     $form->Method = FormMethod::Post;
     $layout = new HtmlTable($form);
     $layout->BorderSize = 0;
@@ -197,7 +197,9 @@ function HandleBatch($parent)
     $batch_file = GenerateBatch($input);
     if ($batch_file == NULL)
     {
-        WriteToAuditFile("batch", "zone: " . $zone . ": " . str_replace("\n", "; ", $record));
+        $log = str_replace("\n", "; ", $record);
+        $log = str_replace("\r", "", $log);
+        WriteToAuditFile("batch", "zone: " . $zone . ": " . $log);
     } else
     {
         WriteToAuditFile("batch", "zone: " . $zone . ": " . $batch_file);
@@ -223,7 +225,7 @@ function GetBatchForm($parent)
 {
     global $g_selected_domain, $g_domains, $g_editable;
     HandleBatch($parent);
-    $form = new Form("index.php?action=batch&domain=" . $g_selected_domain, $parent);
+    $form = new Form("index.php?action=batch", $parent);
     $form->Method = FormMethod::Post;
     $layout = new HtmlTable($form);
     $layout->BorderSize = 0;

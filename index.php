@@ -41,9 +41,14 @@ if (isset($_GET["login"]))
     ProcessLogin();
 
 if (isset($_GET["logout"]))
-{
 	session_unset();
-}
+
+if (isset($_GET['action']))
+    $g_action = $_GET['action'];
+if (isset($_GET['domain']))
+    $g_selected_domain = $_GET['domain'];
+else if (isset($_POST["zone"]))
+    $g_selected_domain = $_POST["zone"];
 
 // Check if login is needed
 if (RequireLogin())
