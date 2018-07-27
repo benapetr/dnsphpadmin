@@ -21,17 +21,17 @@ $g_login_failure_reason = "Invalid username or password";
 
 function RefreshSession()
 {
-	global $g_session_timeout;
-	session_start();
-	if (isset($_SESSION["time"]))
-	{
-		if ((time() - $_SESSION["time"]) > $g_session_timeout)
-		{
-			// This session timed out
-			session_unset();
-		}
-	}
-	$_SESSION["time"] = time();
+    global $g_session_timeout;
+    session_start();
+    if (isset($_SESSION["time"]))
+    {
+        if ((time() - $_SESSION["time"]) > $g_session_timeout)
+        {
+            // This session timed out
+            session_unset();
+        }
+    }
+    $_SESSION["time"] = time();
 }
 
 function GetLoginInfo()
@@ -56,16 +56,16 @@ function ProcessLogin()
     {
         // Login OK
         if ($g_auth_allowed_users !== NULL)
-		{
-			// Check if this user is allowed to login
-			if (!in_array($_POST["loginUsername"], $g_auth_allowed_users))
-			{
-				$g_login_failure_reason = "This user is not allowed to login to this tool (username not present in config.php)";
-				$g_login_failed = true;
-				$_SESSION["logged_in"] = false;
-				return;
-			}
-		}
+        {
+            // Check if this user is allowed to login
+            if (!in_array($_POST["loginUsername"], $g_auth_allowed_users))
+            {
+                $g_login_failure_reason = "This user is not allowed to login to this tool (username not present in config.php)";
+                $g_login_failed = true;
+                $_SESSION["logged_in"] = false;
+                return;
+            }
+        }
         $_SESSION["user"] = $_POST["loginUsername"];
         $_SESSION["logged_in"] = true;
         $g_logged_in = true;
