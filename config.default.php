@@ -37,3 +37,16 @@ $g_tsig_key = '';
 
 // Will print debug statements into html output
 $g_debug = false;
+
+// How long do sessions last in seconds
+$g_session_timeout = 3600;
+
+// Authentication setup - by default, don't provide any authentication mechanism, leave it up to sysadmin
+$g_auth = NULL;
+
+// Example auth
+// $g_auth = "ldap";
+// $g_auth_ldap_url = "ldap.example.com";
+
+// Set up a filter for usernames that are allowed to login
+// $g_auth_allowed_users = array( "domain\\bob", "joe" );

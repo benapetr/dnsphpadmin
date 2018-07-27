@@ -27,6 +27,14 @@ function GenerateBatch($operation)
     return $file_name;
 }
 
+function GetCurrentUserName()
+{
+    global $g_auth;
+    if ($g_auth === "ldap" && isset($_SESSION["user"]))
+        return $_SESSION["user"];
+    return $_SERVER['REMOTE_USER'];
+}
+
 function WriteToAuditFile($operation, $text)
 {
     global $g_audit, $g_audit_log;
@@ -35,7 +43,7 @@ function WriteToAuditFile($operation, $text)
 
     // Prepare audit log line
     $log_line = date('m/d/Y h:i:s a', time());
-    $log_line .= " user: " . $_SERVER['REMOTE_USER'] . " ip: " . $_SERVER['REMOTE_ADDR'] . " operation: " . $operation . " change: " . $text . "\n";
+    $log_line .= " user: " . GetCurrentUserName() . " ip: " . $_SERVER['REMOTE_ADDR'] . " operation: " . $operation . " change: " . $text . "\n";
 
     $my_file = $g_audit_log;
     $handle = fopen($my_file, 'a') or die('Cannot open file:  ' . $my_file);

@@ -15,8 +15,11 @@ require("includes/menu.php");
 require("includes/modify.php");
 require("includes/record_list.php");
 require("includes/select_form.php");
+require("includes/login.php");
 require_once("psf/psf.php");
 require_once("psf/default_config.php");
+
+RefreshSession();
 
 // Save us some coding
 $psf_containers_auto_insert_child = true;
@@ -26,46 +29,66 @@ $g_selected_domain = null;
 $g_action = null;
 
 $website = new HtmlPage("DNS management");
-$website->ExternalCss[] = "footer.css";
+$website->ExternalCss[] = "style.css";
 $website->ExternalJs[] = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js";
 $website->Style->items["td"]["word-wrap"] = "break-word";
 $website->Style->items["td"]["max-width"] = "280px";
 bootstrap_init($website);
 
 $fc = new BS_FluidContainer($website);
-$fc->AppendHeader("DNS management tool");
 
-if (isset($_GET['action']))
-    $g_action = $_GET['action'];
-if (isset($_GET['domain']))
-    $g_selected_domain = $_GET['domain'];
+if (isset($_GET["login"]))
+    ProcessLogin();
 
-$fc->AppendObject(GetMenu($fc));
-
-if ($g_action === null)
+if (isset($_GET["logout"]))
 {
-    $fc->AppendHeader("Select a zone to manage", 2);
-    $fc->AppendObject(GetSelectForm($fc));
-} else if ($g_action == "manage")
+	session_unset();
+}
+
+// Check if login is needed
+if (RequireLogin())
 {
-    ProcessDelete($fc);
-    if ($g_selected_domain == null)
+    $fc->AppendHeader("Login to DNS management tool");
+    if ($g_login_failed)
+		$fc->AppendObject(new BS_Alert($g_login_failure_reason, "danger"));
+    $fc->AppendObject(GetLogin());
+} else
+{
+    $fc->AppendHeader("DNS management tool");
+    if ($g_logged_in)
+        $fc->AppendHtml(GetLoginInfo());
+    if (isset($_GET['action']))
+        $g_action = $_GET['action'];
+    if (isset($_GET['domain']))
+        $g_selected_domain = $_GET['domain'];
+
+    $fc->AppendObject(GetMenu($fc));
+
+    if ($g_action === null)
     {
-        reset($g_domains);
-        $g_selected_domain = key($g_domains);
+        $fc->AppendHeader("Select a zone to manage", 2);
+        $fc->AppendObject(GetSelectForm($fc));
+    } else if ($g_action == "manage")
+    {
+        ProcessDelete($fc);
+        if ($g_selected_domain == null)
+        {
+            reset($g_domains);
+            $g_selected_domain = key($g_domains);
+        }
+        $fc->AppendObject(GetSwitcher($fc));
+        $fc->AppendHeader($g_selected_domain, 2);
+        $fc->AppendObject(GetRecordListTable($fc, $g_selected_domain));
+    } else if ($g_action == "new")
+    {
+        $fc->AppendObject(GetInsertForm($fc));
+    } else if ($g_action == "edit")
+    {
+        $fc->AppendObject(GetEditForm($fc));
+    } else if ($g_action == "batch")
+    {
+        $fc->AppendObject(GetBatchForm($fc));
     }
-    $fc->AppendObject(GetSwitcher($fc));
-    $fc->AppendHeader($g_selected_domain, 2);
-    $fc->AppendObject(GetRecordListTable($fc, $g_selected_domain));
-} else if ($g_action == "new")
-{
-    $fc->AppendObject(GetInsertForm($fc));
-} else if ($g_action == "edit")
-{
-    $fc->AppendObject(GetEditForm($fc));
-} else if ($g_action == "batch")
-{
-    $fc->AppendObject(GetBatchForm($fc));
 }
 
 // Bug workaround - the footer seems to take up some space
