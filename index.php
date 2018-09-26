@@ -41,7 +41,7 @@ if (isset($_GET["login"]))
     ProcessLogin();
 
 if (isset($_GET["logout"]))
-	session_unset();
+    session_unset();
 
 if (isset($_GET['action']))
     $g_action = $_GET['action'];
@@ -55,7 +55,7 @@ if (RequireLogin())
 {
     $fc->AppendHeader("Login to DNS management tool");
     if ($g_login_failed)
-		$fc->AppendObject(new BS_Alert($g_login_failure_reason, "danger"));
+        $fc->AppendObject(new BS_Alert($g_login_failure_reason, "danger"));
     $fc->AppendObject(GetLogin());
 } else
 {

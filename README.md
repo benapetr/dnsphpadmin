@@ -16,5 +16,3 @@ It's just a wrapper for CLI tools, nothing else. If you don't have nsupdate and 
 # How to set it up
 Copy config.default.php to config.php, then change it to match your setup. Domains are in variable $g_domains and each of them
 has defined servers for transfer and update, which is usually the same server, but may be different. 
-
-For now the tool has not authentication mechanism, so you need to setup auth using htpasswd
