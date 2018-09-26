@@ -43,7 +43,7 @@ function WriteToAuditFile($operation, $text)
 
     // Prepare audit log line
     $log_line = date('m/d/Y h:i:s a', time());
-    $log_line .= " user: " . GetCurrentUserName() . " ip: " . $_SERVER['REMOTE_ADDR'] . " operation: " . $operation . " change: " . $text . "\n";
+    $log_line .= " user: " . GetCurrentUserName() . " ip: " . $_SERVER['REMOTE_ADDR'] . " operation: " . $operation . " record: " . $text . "\n";
 
     $my_file = $g_audit_log;
     $handle = fopen($my_file, 'a') or die('Cannot open file:  ' . $my_file);
