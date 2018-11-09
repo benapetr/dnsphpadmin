@@ -15,6 +15,9 @@
 // nsupdate will send its requests
 $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_server' => 'localhost' ] ];
 
+// You can also specify custom TSIG override
+// $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_server' => 'localhost', 'tsig' => true, 'tsig_key' => 'some_key' ] ];
+
 // List of records that can be edited
 $g_editable = [ "A", "AAAA", "NS", "PTR", "SRV", "TXT", "SPF", "MX" ];
 
@@ -31,7 +34,8 @@ $g_audit_log = '/var/log/dns_audit.log';
 // Where the batch operations should be logged, each batch operation will be stored in separate file
 $g_audit_batch_location = null;
 
-// TSIG authentication for nsupdate
+// TSIG authentication for nsupdate - global config
+// you can specify individual TSIG settings per each domain, if you don't this is default value
 $g_tsig = false;
 $g_tsig_key = '';
 

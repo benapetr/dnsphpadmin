@@ -12,9 +12,28 @@
 
 require_once("psf/psf.php");
 require_once("audit.php");
+require_once("config.php");
+require_once("debug.php");
 require_once("nsupdate.php");
 require_once("fatal.php");
 require_once("config.php");
+
+//! Wrapper around nsupdate from nsupdate.php that checks if there are custom TSIG overrides for given domain
+function ProcessNSUpdateForDomain($input, $domain)
+{
+    global $g_domains;
+    if (!array_key_exists($domain, $g_domains))
+        die("No such domain: " . $domain);
+    $tsig = NULL;
+    $tsig_key = NULL;
+    $domain_info = $g_domains[$domain];
+    Debug("Processing update for: " . $domain);
+    if (array_key_exists("tsig", $domain_info))
+        $tsig = $domain_info["tsig"];
+    if (array_key_exists("tsig_key", $domain_info))
+        $tsig_key = $domain_info["tsig_key"];
+    return nsupdate($input, $tsig, $tsig_key);
+}
 
 function ShowError($form, $txt)
 {
@@ -47,7 +66,7 @@ function ProcessDelete($well)
 
     $input = "server " . $g_domains[$g_selected_domain]["update_server"] . "\n";
     $input .= "update delete " . $record . "\nsend\nquit\n";
-    nsupdate($input);
+    ProcessNSUpdateForDomain($input, $g_selected_domain);
     WriteToAuditFile("delete", $record);
     $well->AppendObject(new BS_Alert("Successfully deleted record " . $record));
 }
@@ -90,7 +109,9 @@ function HandleEdit($form)
     {
         $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
         $input .= "send\nquit\n";
-        nsupdate($input);
+        $result = ProcessNSUpdateForDomain($input, $zone);
+        if (strlen($result) > 0)
+            Debug("result: " . $result);
         WriteToAuditFile("create", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
         $form->AppendObject(new BS_Alert("Successfully inserted record " . $record . "." . $zone));
         return;
@@ -102,7 +123,9 @@ function HandleEdit($form)
         $input .= "update delete " . $_POST["old"] . "\n";
         $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
         $input .= "send\nquit\n";
-        nsupdate($input);
+        $result = ProcessNSUpdateForDomain($input, $zone);
+        if (strlen($result) > 0)
+            Debug("result: " . $result);
         WriteToAuditFile("replace_delete", $_POST["old"]);
         WriteToAuditFile("replace_add", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
         $form->AppendObject(new BS_Alert("Successfully replaced " . $_POST["old"] . " with " . $record . "." . $zone . " " .
@@ -193,7 +216,7 @@ function HandleBatch($parent)
     }
     $input .= $record . "\n";
     $input .= "send\nquit\n";
-    nsupdate($input);
+    ProcessNSUpdateForDomain($input, $zone);
     $batch_file = GenerateBatch($input);
     if ($batch_file == NULL)
     {

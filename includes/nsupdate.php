@@ -14,11 +14,22 @@ require_once("config.php");
 require_once("debug.php");
 require_once("fatal.php");
 
-function nsupdate($input)
+function nsupdate($input, $tsig_override = NULL, $tsig_override_key = NULL)
 {
     global $g_nsupdate, $g_tsig_key, $g_tsig;
-    if ($g_tsig)
-        $input = "key " . $g_tsig_key . "\n" . $input;
+
+    // check if we want to use TSIG for this update
+    $using_tsig = $g_tsig;
+    if ($tsig_override === true || $tsig_override === false)
+        $using_tsig = $tsig_override;
+
+    // get TSIG key, it can be overriden on custom requests
+    $tsig_key = $g_tsig_key;
+    if ($tsig_override_key !== NULL)
+        $tsig_key = $tsig_override_key;
+
+    if ($using_tsig)
+        $input = "key " . $tsig_key . "\n" . $input;
     $desc = array(
         0 => array('pipe', 'r'),
         1 => array('pipe', 'w'),
