@@ -54,3 +54,9 @@ $g_auth = NULL;
 
 // Set up a filter for usernames that are allowed to login
 // $g_auth_allowed_users = array( "domain\\bob", "joe" );
+
+// Use local bootstrap instead of CDN (useful for clients behind firewall)
+// In order for this to work, you need to download bootstrap 3.3.7 so that it's in root folder of htdocs (same level as index.php) example:
+// /bootstrap-3.3.7
+// /index.php
+$g_use_local_bootstrap = false;

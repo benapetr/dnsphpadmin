@@ -19,6 +19,13 @@ require("includes/login.php");
 require_once("psf/psf.php");
 require_once("psf/default_config.php");
 
+if ($g_use_local_bootstrap)
+{
+    // Use local bootstrap
+    $psf_bootstrap_js_url = "bootstrap-3.3.7/dist/js/bootstrap.min.js";
+    $psf_bootstrap_css_url = "bootstrap-3.3.7/dist/css/bootstrap.min.css";
+}
+
 RefreshSession();
 
 // Save us some coding
