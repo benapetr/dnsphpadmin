@@ -10,6 +10,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
+require("config.default.php");
 require("config.php");
 require("includes/menu.php");
 require("includes/modify.php");
@@ -37,7 +38,10 @@ $g_action = null;
 
 $website = new HtmlPage("DNS management");
 $website->ExternalCss[] = "style.css";
-$website->ExternalJs[] = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js";
+if (!$g_use_local_jquery)
+    $website->ExternalJs[] = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js";
+else
+    $website->ExternalJs[] = "jquery-3.3.1.min.js";
 $website->Style->items["td"]["word-wrap"] = "break-word";
 $website->Style->items["td"]["max-width"] = "280px";
 bootstrap_init($website);

@@ -60,3 +60,8 @@ $g_auth = NULL;
 // /bootstrap-3.3.7
 // /index.php
 $g_use_local_bootstrap = false;
+
+// Use local jquery instead of CDN (useful for clients behind firewall)
+// For this to work download compressed jquery 3.3.1 to root folder for example:
+// /jquery-3.3.1.min.js
+$g_use_local_jquery = false;
