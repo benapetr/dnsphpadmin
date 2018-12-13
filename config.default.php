@@ -10,6 +10,10 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
+// Security check
+if (!defined('G_DNSTOOL_ENTRY_POINT'))
+    die("Not a valid entry point");
+
 // List of domains, each domain has separate value for "transfer server" which server that
 // dig will do zone transfer on when reading zone data, and update_server which is where
 // nsupdate will send its requests

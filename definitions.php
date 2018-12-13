@@ -10,20 +10,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// Security check
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-require_once("psf/psf.php");
-require_once("config.php");
-
-function Debug($text)
-{
-    global $g_debug;
-    if ($g_debug)
-    {
-        $lines = explode("\n", $text);
-        foreach ($lines as $line)
-            psf_debug_log($line);
-    }
-}
+define('G_DNSTOOL_VERSION', '1.0.0');

@@ -10,6 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
+define('G_DNSTOOL_ENTRY_POINT', 'index.php');
+
+require("definitions.php");
 require("config.default.php");
 require("config.php");
 require("includes/menu.php");
@@ -111,7 +114,7 @@ if (RequireLogin())
 $website->AppendHtml("<br><br><br>");
 
 $website->AppendHtmlLine("<footer class='footer'><div class='container'>Created by Petr Bena [petr@bena.rocks] (c) 2018, source code at ".
-                    "<a href='http://github.com/benapetr/dnsphpadmin'>http://github.com/benapetr/dnsphpadmin</a></div></footer>");
+                    "<a href='http://github.com/benapetr/dnsphpadmin'>http://github.com/benapetr/dnsphpadmin</a> Version: " . G_DNSTOOL_VERSION . "</div></footer>");
 
 $website->PrintHtml();
 

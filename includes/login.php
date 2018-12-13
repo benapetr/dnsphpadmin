@@ -10,6 +10,10 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
+// Security check
+if (!defined('G_DNSTOOL_ENTRY_POINT'))
+    die("Not a valid entry point");
+
 require_once("psf/psf.php");
 require_once("audit.php");
 require_once("fatal.php");
