@@ -19,8 +19,15 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 // nsupdate will send its requests
 $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_server' => 'localhost' ] ];
 
+// You can specify multiple custom options per domain, this example here contains all available options with documentation:
 // You can also specify custom TSIG override
-// $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_server' => 'localhost', 'tsig' => true, 'tsig_key' => 'some_key' ] ];
+// $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost',
+//                                      'update_server' => 'localhost',
+//                                      'read_only' => false, // by default false, if true domain will be read only
+//                                      'in_transfer' => false, // if true domain will be marked as "in transfer" which means it's being transfered from one DNS master to another, so the records may not reflect truth
+//                                      'maintenance_note' => 'This domain is being configured now', // maintenance note to display for this domain
+//                                      'tsig' => true,
+//                                      'tsig_key' => 'some_key' ] ];
 
 // List of records that can be edited
 $g_editable = [ "A", "AAAA", "NS", "PTR", "SRV", "TXT", "SPF", "MX" ];

@@ -22,6 +22,20 @@ require_once("nsupdate.php");
 require_once("fatal.php");
 require_once("config.php");
 
+function IsEditable($domain)
+{
+    global $g_domains;
+    if (!array_key_exists($domain, $g_domains))
+        die("No such domain: $domain");
+
+    $domain_info = $g_domains[$domain];
+
+    if (array_key_exists('read_only', $domain_info) && $domain_info['read_only'] === true)
+        return false;
+
+    return true;
+}
+
 //! Wrapper around nsupdate from nsupdate.php that checks if there are custom TSIG overrides for given domain
 function ProcessNSUpdateForDomain($input, $domain)
 {
@@ -62,6 +76,9 @@ function ProcessDelete($well)
 
     if (strlen($g_selected_domain) == 0)
         Error("No domain");
+
+    if (!IsEditable($g_selected_domain))
+        Error("Domain $g_selected_domain is not writeable");
     
     $record = $_GET["delete"];
 
@@ -93,6 +110,10 @@ function HandleEdit($form)
         return;
     
     $zone = $_POST["zone"];
+
+    if (!IsEditable($zone))
+        Error("Domain $zone is not writeable");
+
     if (!Check($form, $zone, "Zone"))
         return;
     $record = $_POST["record"];
@@ -204,6 +225,9 @@ function HandleBatch($parent)
     $zone = $_POST["zone"];
     if (!Check($form, $zone, "Zone"))
         return;
+
+    if (!IsEditable($zone))
+        Error("Domain $zone is not writeable");
 
     $record = $_POST["record"];
     if ($record === NULL)

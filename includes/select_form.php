@@ -18,13 +18,46 @@ require_once("psf/psf.php");
 require_once("audit.php");
 require_once("config.php");
 
+function GetStatusOfZone($domain)
+{
+    global $g_domains;
+
+    if (!array_key_exists($domain, $g_domains))
+        die("No such domain: $domain");
+
+    $domain_info = $g_domains[$domain];
+
+    $is_ok = true;
+    $status = "";
+
+    if (array_key_exists('in_transfer', $domain_info) && $domain_info['in_transfer'] === true)
+    {
+        $is_ok = false;
+        $status .= '<span class="glyphicon glyphicon-refresh" title="In transfer"></span>&nbsp;';
+    }
+    if (array_key_exists('read_only', $domain_info) && $domain_info['read_only'] === true)
+    {
+        $is_ok = false;
+        $status .= '<span class="glyphicon glyphicon-floppy-remove" title="Read-Only"></span>&nbsp;';
+    }
+    if (array_key_exists('maintenance_note', $domain_info))
+    {
+        $is_ok = false;
+        $status .= '<span class="glyphicon glyphicon-alert" title="' . $domain_info['maintenance_note'] . '"></span>&nbsp;';
+    }
+
+    if ($is_ok)
+        return '<span class="glyphicon glyphicon-ok" title="OK"></span>' . $status;
+    return $status;
+}
+
 function GetSelectForm($parent)
 {
     global $g_domains;
     $table = new BS_Table($parent);
-    $table->Headers = [ "Domain name", "Update server", "Transfer server" ];
+    $table->Headers = [ "Domain name", "Status", "Update server", "Transfer server" ];
     foreach ($g_domains as $domain => $properties)
-        $table->AppendRow([ '<a href="?action=manage&domain=' . $domain . '">' . $domain . '</a>', $properties["update_server"], $properties["transfer_server"] ]);
+        $table->AppendRow([ '<a href="?action=manage&domain=' . $domain . '">' . $domain . '</a>', GetStatusOfZone($domain), $properties["update_server"], $properties["transfer_server"] ]);
     return $table;
 }
 
