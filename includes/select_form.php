@@ -56,6 +56,7 @@ function GetSelectForm($parent)
     global $g_domains;
     $table = new BS_Table($parent);
     $table->Headers = [ "Domain name", "Status", "Update server", "Transfer server" ];
+    $table->SetColumnWidth(1, '80px');
     foreach ($g_domains as $domain => $properties)
         $table->AppendRow([ '<a href="?action=manage&domain=' . $domain . '">' . $domain . '</a>', GetStatusOfZone($domain), $properties["update_server"], $properties["transfer_server"] ]);
     return $table;

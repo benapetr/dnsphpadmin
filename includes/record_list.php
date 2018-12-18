@@ -16,7 +16,43 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 require_once("psf/psf.php");
 require_once("includes/nsupdate.php");
+require_once("common.php");
 require_once("config.php");
+
+function GetStatusOfZoneAsNote($domain)
+{
+    global $g_domains;
+
+    if (!array_key_exists($domain, $g_domains))
+        die("No such domain: $domain");
+
+    $domain_info = $g_domains[$domain];
+
+    $is_ok = true;
+    $status = new BS_Alert('', 'info');
+    $status->EscapeHTML = false;
+
+    if (array_key_exists('in_transfer', $domain_info) && $domain_info['in_transfer'] === true)
+    {
+        $is_ok = false;
+        $status->Text .= '<span class="glyphicon glyphicon-refresh" title="In transfer"></span> <b>Warning:</b> This domain is being transfered between different master servers<br>';
+    }
+    if (array_key_exists('read_only', $domain_info) && $domain_info['read_only'] === true)
+    {
+        $is_ok = false;
+        $status->Text .= '<span class="glyphicon glyphicon-floppy-remove" title="Read-Only"></span> <b>Warning:</b> This domain is read only<br>';
+    }
+    if (array_key_exists('maintenance_note', $domain_info))
+    {
+        $is_ok = false;
+        $status->Text .= '<span class="glyphicon glyphicon-alert"></span> <b>Maintenance note:</b> ' .$domain_info['maintenance_note'];
+    }
+
+    if ($is_ok)
+        return NULL;
+
+    return $status;
+}
 
 function GetRecordList($domain)
 {
@@ -45,9 +81,10 @@ function GetRecordListTable($parent, $domain)
     $table->Condensed = true;
     $table->Headers = [ "Record", "TTL", "Scope", "Type", "Value", "Options" ];
     $records = GetRecordList($domain);
+    $is_editable = IsEditable($domain);
     foreach ($records as $record)
     {
-        if (!in_array($record[3], $g_editable))
+        if (!$is_editable || !in_array($record[3], $g_editable))
         {
             $record[] = '';
         } else

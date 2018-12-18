@@ -16,25 +16,12 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 require_once("psf/psf.php");
 require_once("audit.php");
+require_once("common.php");
 require_once("config.php");
 require_once("debug.php");
 require_once("nsupdate.php");
 require_once("fatal.php");
 require_once("config.php");
-
-function IsEditable($domain)
-{
-    global $g_domains;
-    if (!array_key_exists($domain, $g_domains))
-        die("No such domain: $domain");
-
-    $domain_info = $g_domains[$domain];
-
-    if (array_key_exists('read_only', $domain_info) && $domain_info['read_only'] === true)
-        return false;
-
-    return true;
-}
 
 //! Wrapper around nsupdate from nsupdate.php that checks if there are custom TSIG overrides for given domain
 function ProcessNSUpdateForDomain($input, $domain)

@@ -97,6 +97,7 @@ if (RequireLogin())
         }
         $fc->AppendObject(GetSwitcher($fc));
         $fc->AppendHeader($g_selected_domain, 2);
+        $fc->AppendObject(GetStatusOfZoneAsNote($g_selected_domain));
         $fc->AppendObject(GetRecordListTable($fc, $g_selected_domain));
     } else if ($g_action == "new")
     {
