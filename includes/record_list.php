@@ -80,6 +80,9 @@ function GetRecordListTable($parent, $domain)
     $table = new BS_Table($parent);
     $table->Condensed = true;
     $table->Headers = [ "Record", "TTL", "Scope", "Type", "Value", "Options" ];
+    $table->SetColumnWidth(2, '80px'); // Scope
+    $table->SetColumnWidth(3, '80px'); // Type
+    $table->SetColumnWidth(5, '80px'); // Options
     $records = GetRecordList($domain);
     $is_editable = IsEditable($domain);
     foreach ($records as $record)
@@ -91,11 +94,11 @@ function GetRecordListTable($parent, $domain)
         {
             $record[] = '<a href="index.php?action=manage&domain=' . $domain . '&delete=' .
                         urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
-                        '" onclick="return confirm(\'Are you sure?\')"><span class="glyphicon glyphicon-trash"></span></a>&nbsp;&nbsp;' .
+                        '" onclick="return confirm(\'Are you sure?\')"><span class="glyphicon glyphicon-trash" title="Delete"></span></a>&nbsp;&nbsp;' .
                         '<a href="index.php?action=edit&domain=' . $domain . '&key=' .
                         $record[0] . "&ttl=" . $record[1] . "&type=" . $record[3] . "&value=" . $record[4] .
                         "&old=" . urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
-                        '"><span class="glyphicon glyphicon-pencil"></span></a>';
+                        '"><span title="Edit" class="glyphicon glyphicon-pencil"></span></a>';
         }
         $table->AppendRow($record);
     }
