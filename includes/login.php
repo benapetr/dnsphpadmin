@@ -54,8 +54,9 @@ function ProcessLogin()
     // Check if we have the credentials
     if (!isset($_POST["loginUsername"]) || !isset($_POST["loginPassword"]))
         Error("No credentials provided");
-    
+
     $ldap = ldap_connect($g_auth_ldap_url);
+    ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
     if ($bind = ldap_bind($ldap, $_POST["loginUsername"], $_POST["loginPassword"]))
     {
         // Login OK
