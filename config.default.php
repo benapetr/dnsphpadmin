@@ -61,6 +61,8 @@ $g_auth = NULL;
 
 // Example auth
 // $g_auth = "ldap";
+// URL of LDAP server, prefix with ldaps:// to get SSL, if you need to ignore invalid certificate, follow this:
+// https://stackoverflow.com/questions/3866406/need-help-ignoring-server-certificate-while-binding-to-ldap-server-using-php
 // $g_auth_ldap_url = "ldap.example.com";
 
 // Set up a filter for usernames that are allowed to login
