@@ -26,5 +26,5 @@ function Error($msg)
     $web->PrintHtml();
     if ($g_debug)
         psf_print_debug_as_html();
-    die();
+    die(1);
 }

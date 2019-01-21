@@ -40,7 +40,13 @@ function RefreshSession()
 
 function GetLoginInfo()
 {
-    return '<div class="login_info"><span class="glyphicon glyphicon-user"></span>' . $_SESSION["user"] . ' <a href="?logout">logout</a></div>';
+    global $g_auth_roles_map;
+    $role_info = "";
+    if ($g_auth_roles_map !== NULL && array_key_exists($_SESSION["user"], $g_auth_roles_map))
+    {
+        $role_info = ' (' . implode (", ", $g_auth_roles_map[$_SESSION["user"]]) . ')';
+    }
+    return '<div class="login_info"><span class="glyphicon glyphicon-user"></span>' . $_SESSION["user"] . $role_info . ' <a href="?logout">logout</a></div>';
 }
 
 function ProcessLogin()

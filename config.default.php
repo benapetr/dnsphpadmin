@@ -68,6 +68,18 @@ $g_auth = NULL;
 // Set up a filter for usernames that are allowed to login
 // $g_auth_allowed_users = array( "domain\\bob", "joe" );
 
+// You can also setup authentication roles and their privileges here, there is special built-in role "root" which has unlimited privileges
+// Privileges are one of 'rw', 'r' or '' for nothing
+// $g_auth_roles = [ 'users' => [ 'example.domain' => 'rw' ] ];
+$g_auth_roles = NULL;
+
+// Each user can be member of multiple roles, in case no role is specified for user, this is default role
+$g_auth_default_role = NULL;
+
+// You can assign roles to users here
+// $g_auth_roles_map = [ 'joe' => [ 'admins', 'users' ] ];
+$g_auth_roles_map = [];
+
 // Use local bootstrap instead of CDN (useful for clients behind firewall)
 // In order for this to work, you need to download bootstrap 3.3.7 so that it's in root folder of htdocs (same level as index.php) example:
 // /bootstrap-3.3.7

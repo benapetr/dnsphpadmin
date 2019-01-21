@@ -42,6 +42,16 @@ function GetStatusOfZoneAsNote($domain)
         $is_ok = false;
         $status->Text .= '<span class="glyphicon glyphicon-floppy-remove" title="Read-Only"></span> <b>Warning:</b> This domain is read only<br>';
     }
+    if (!IsAuthorizedToRead($domain))
+    {
+        $is_ok = false;
+        $status->Text .= '<span class="glyphicon glyphicon-alert"></span> <b>Can\'t read:</b> you are not authorized to read this zone.<br>';
+    }
+    if (!IsAuthorizedToWrite($domain))
+    {
+        $is_ok = false;
+        $status->Text .= '<span class="glyphicon glyphicon-alert"></span> <b>Can\'t write:</b> you are not authorized to write this zone.<br>';
+    }
     if (array_key_exists('maintenance_note', $domain_info))
     {
         $is_ok = false;
@@ -83,8 +93,10 @@ function GetRecordListTable($parent, $domain)
     $table->SetColumnWidth(2, '80px'); // Scope
     $table->SetColumnWidth(3, '80px'); // Type
     $table->SetColumnWidth(5, '80px'); // Options
+    if (!IsAuthorizedToRead($domain))
+        return $table;
     $records = GetRecordList($domain);
-    $is_editable = IsEditable($domain);
+    $is_editable = IsEditable($domain) && IsAuthorizedToWrite($domain);
     foreach ($records as $record)
     {
         if (!$is_editable || !in_array($record[3], $g_editable))
