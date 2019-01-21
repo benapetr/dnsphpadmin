@@ -58,7 +58,11 @@ function GetSelectForm($parent)
     $table->Headers = [ "Domain name", "Status", "Update server", "Transfer server" ];
     $table->SetColumnWidth(1, '80px');
     foreach ($g_domains as $domain => $properties)
+    {
+        if (!IsAuthorizedToRead($domain))
+            continue;
         $table->AppendRow([ '<a href="?action=manage&domain=' . $domain . '">' . $domain . '</a>', GetStatusOfZone($domain), $properties["update_server"], $properties["transfer_server"] ]);
+    }
     return $table;
 }
 
@@ -71,6 +75,8 @@ function GetSwitcher($parent)
     $c->OnChangeCallback = "reload()";
     foreach ($g_domains as $domain => $properties)
     {
+        if (!IsAuthorizedToWrite($domain))
+            continue;
         if ($g_selected_domain == $domain)
             $c->AddDefaultValue($domain);
         else

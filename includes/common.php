@@ -54,7 +54,7 @@ function IsAuthorized($domain, $privilege)
     if (array_key_exists($user, $g_auth_roles_map))
         $roles = $g_auth_roles_map[$user];
 
-    if (array_key_exists('root', $roles))
+    if (in_array('root', $roles))
         return true;
 
     foreach ($roles as $role)
