@@ -66,6 +66,9 @@ function ProcessDelete($well)
 
     if (!IsEditable($g_selected_domain))
         Error("Domain $g_selected_domain is not writeable");
+
+    if (!IsAuthorizedToWrite($g_selected_domain))
+        Error("You are not authorized to edit $g_selected_domain");
     
     $record = $_GET["delete"];
 
@@ -100,6 +103,9 @@ function HandleEdit($form)
 
     if (!IsEditable($zone))
         Error("Domain $zone is not writeable");
+
+    if (!IsAuthorizedToWrite($zone))
+        Error("You are not authorized to edit $zone");
 
     if (!Check($form, $zone, "Zone"))
         return;
@@ -215,6 +221,9 @@ function HandleBatch($parent)
 
     if (!IsEditable($zone))
         Error("Domain $zone is not writeable");
+
+    if (!IsAuthorizedToWrite($zone))
+        Error("You are not authorized to edit $zone");
 
     $record = $_POST["record"];
     if ($record === NULL)
