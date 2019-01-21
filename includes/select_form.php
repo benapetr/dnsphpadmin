@@ -76,7 +76,7 @@ function GetSwitcher($parent)
     $c->OnChangeCallback = "reload()";
     foreach ($g_domains as $domain => $properties)
     {
-        if (!IsAuthorizedToWrite($domain))
+        if (!IsAuthorizedToRead($domain))
             continue;
         if ($g_selected_domain == $domain)
             $c->AddDefaultValue($domain);
