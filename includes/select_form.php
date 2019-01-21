@@ -16,6 +16,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 require_once("psf/psf.php");
 require_once("audit.php");
+require_once("common.php");
 require_once("config.php");
 
 function GetStatusOfZone($domain)
@@ -35,7 +36,7 @@ function GetStatusOfZone($domain)
         $is_ok = false;
         $status .= '<span class="glyphicon glyphicon-refresh" title="In transfer"></span>&nbsp;';
     }
-    if (array_key_exists('read_only', $domain_info) && $domain_info['read_only'] === true)
+    if (!IsAuthorizedToWrite($domain) || (array_key_exists('read_only', $domain_info) && $domain_info['read_only'] === true))
     {
         $is_ok = false;
         $status .= '<span class="glyphicon glyphicon-floppy-remove" title="Read-Only"></span>&nbsp;';
