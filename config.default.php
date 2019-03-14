@@ -42,7 +42,8 @@ $g_nsupdate = '/usr/bin/nsupdate';
 $g_audit = false;
 $g_audit_log = '/var/log/dns_audit.log';
 
-// Where the batch operations should be logged, each batch operation will be stored in separate file
+// Folder where the batch operations should be logged, each batch operation will be stored in separate file
+// Keep this null to log batch operations into single line to $g_audit_log
 $g_audit_batch_location = null;
 
 // TSIG authentication for nsupdate - global config

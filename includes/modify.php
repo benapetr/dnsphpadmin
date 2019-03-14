@@ -179,6 +179,8 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
     {
         foreach ($g_domains as $key => $info)
         {
+            if (!IsAuthorizedToWrite($key))
+                continue;
             if ($g_selected_domain == $key)
                 $dl->AddDefaultValue($key, "." . $key);
             else
@@ -279,6 +281,8 @@ function GetBatchForm($parent)
     $dl = new ComboBox("zone", $layout);
     foreach ($g_domains as $key => $info)
     {
+        if (!IsAuthorizedToWrite($key))
+            continue;
         if ($g_selected_domain == $key)
             $dl->AddDefaultValue($key, $key);
         else
