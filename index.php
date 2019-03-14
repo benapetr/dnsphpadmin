@@ -21,7 +21,6 @@ require("includes/record_list.php");
 require("includes/select_form.php");
 require("includes/login.php");
 require_once("psf/psf.php");
-require_once("psf/default_config.php");
 
 if ($g_use_local_bootstrap)
 {
