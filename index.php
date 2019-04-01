@@ -10,6 +10,12 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
+// This is useful for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Register index.php as valid entry point
 define('G_DNSTOOL_ENTRY_POINT', 'index.php');
 
 require("definitions.php");
