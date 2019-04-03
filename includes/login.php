@@ -41,25 +41,60 @@ function RefreshSession()
 function GetLoginInfo()
 {
     global $g_auth_roles_map;
-    $role_info = "";
-    if ($g_auth_roles_map !== NULL && array_key_exists($_SESSION["user"], $g_auth_roles_map))
+    $role_info = '';
+    if ($g_auth_roles_map !== NULL && array_key_exists($_SESSION['user'], $g_auth_roles_map))
     {
-        $role_info = ' (' . implode (", ", $g_auth_roles_map[$_SESSION["user"]]) . ')';
+        $role_info = ' (' . implode (', ', $g_auth_roles_map[$_SESSION['user']]) . ')';
     }
     return '<div class="login_info"><span class="glyphicon glyphicon-user"></span>' . $_SESSION["user"] . $role_info . ' <a href="?logout">logout</a></div>';
 }
 
+function ProcessLogin_Error($reason)
+{
+    global $g_login_failure_reason, $g_login_failed;
+    $g_login_failed = true;
+    $g_login_failure_reason = $reason;
+    $_SESSION['logged_in'] = false;
+}
+
+function ProcessTokenLogin()
+{
+    global $g_auth, $g_login_failed, $g_api_tokens;
+    if (!isset($_POST['token']))
+    {
+        ProcessLogin_Error("No token");
+        return;
+    }
+    $token = $_POST['token'];
+    if (in_array($token, $g_api_tokens))
+    {
+        $_SESSION["user"] = $token;
+        $_SESSION["logged_in"] = true;
+        $g_logged_in = true;
+        return;
+    }
+    // Invalid token
+    $g_login_failed = true;
+    $_SESSION["logged_in"] = false;
+}
+
 function ProcessLogin()
 {
-    global $g_auth, $g_auth_ldap_url, $g_login_failure_reason, $g_login_failed, $g_auth_allowed_users;
+    global $g_auth, $g_auth_ldap_url, $g_login_failed, $g_auth_allowed_users;
     
     // We support LDAP at this moment only
     if ($g_auth != "ldap")
-        Error("Unsupported authentication mechanism");
+    {
+        ProcessLogin_Error("Unsupported authentication mechanism");
+        return;
+    }
 
     // Check if we have the credentials
     if (!isset($_POST["loginUsername"]) || !isset($_POST["loginPassword"]))
-        Error("No credentials provided");
+    {
+        ProcessLogin_Error("No credentials provided");
+        return;
+    }
 
     $ldap = ldap_connect($g_auth_ldap_url);
     ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
@@ -71,9 +106,7 @@ function ProcessLogin()
             // Check if this user is allowed to login
             if (!in_array($_POST["loginUsername"], $g_auth_allowed_users))
             {
-                $g_login_failure_reason = "This user is not allowed to login to this tool (username not present in config.php)";
-                $g_login_failed = true;
-                $_SESSION["logged_in"] = false;
+                ProcessLogin_Error("This user is not allowed to login to this tool (username not present in config.php)");
                 return;
             }
         }

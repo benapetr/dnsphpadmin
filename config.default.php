@@ -91,3 +91,10 @@ $g_use_local_bootstrap = false;
 // For this to work download compressed jquery 3.3.1 to root folder for example:
 // /jquery-3.3.1.min.js
 $g_use_local_jquery = false;
+
+// Whether API interface is available or not
+$g_api_enabled = false;
+
+// List of access tokens that can be used with API calls (together with classic login)
+// This is a simple list of secrets. Each secret is a string that is used to authenticate for API subsystem.
+$g_api_tokens = [ ];

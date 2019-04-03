@@ -10,6 +10,12 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
+// This is useful for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Register index.php as valid entry point
 define('G_DNSTOOL_ENTRY_POINT', 'index.php');
 
 require("definitions.php");
@@ -25,8 +31,8 @@ require_once("psf/psf.php");
 if ($g_use_local_bootstrap)
 {
     // Use local bootstrap
-    $psf_bootstrap_js_url = "bootstrap-3.3.7/dist/js/bootstrap.min.js";
-    $psf_bootstrap_css_url = "bootstrap-3.3.7/dist/css/bootstrap.min.css";
+    $psf_bootstrap_js_url = 'bootstrap-3.3.7/dist/js/bootstrap.min.js';
+    $psf_bootstrap_css_url = 'bootstrap-3.3.7/dist/css/bootstrap.min.css';
 }
 
 RefreshSession();
@@ -39,7 +45,7 @@ $g_selected_domain = null;
 $g_action = null;
 
 $website = new HtmlPage("DNS management");
-$website->ExternalCss[] = "style.css";
+$website->ExternalCss[] = 'style.css';
 if (!$g_use_local_jquery)
     $website->ExternalJs[] = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js";
 else
@@ -50,29 +56,29 @@ bootstrap_init($website);
 
 $fc = new BS_FluidContainer($website);
 
-if (isset($_GET["login"]))
+if (isset($_GET['login']))
     ProcessLogin();
 
-if (isset($_GET["logout"]))
+if (isset($_GET['logout']))
     session_unset();
 
 if (isset($_GET['action']))
     $g_action = $_GET['action'];
 if (isset($_GET['domain']))
     $g_selected_domain = $_GET['domain'];
-else if (isset($_POST["zone"]))
-    $g_selected_domain = $_POST["zone"];
+else if (isset($_POST['zone']))
+    $g_selected_domain = $_POST['zone'];
 
 // Check if login is needed
 if (RequireLogin())
 {
-    $fc->AppendHeader("Login to DNS management tool");
+    $fc->AppendHeader('Login to DNS management tool');
     if ($g_login_failed)
-        $fc->AppendObject(new BS_Alert($g_login_failure_reason, "danger"));
+        $fc->AppendObject(new BS_Alert($g_login_failure_reason, 'danger'));
     $fc->AppendObject(GetLogin());
 } else
 {
-    $fc->AppendHeader("DNS management tool");
+    $fc->AppendHeader('DNS management tool');
     if ($g_logged_in)
         $fc->AppendHtml(GetLoginInfo());
     if (isset($_GET['action']))
