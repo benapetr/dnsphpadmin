@@ -67,6 +67,8 @@ function GetStatusOfZoneAsNote($domain)
 function GetRecordList($domain)
 {
     $records = array();
+    if (!IsAuthorizedToRead($domain))
+        return $records;
     $data = explode("\n", get_zone_data($domain));
     foreach ($data as $line)
     {
@@ -93,8 +95,6 @@ function GetRecordListTable($parent, $domain)
     $table->SetColumnWidth(2, '80px'); // Scope
     $table->SetColumnWidth(3, '80px'); // Type
     $table->SetColumnWidth(5, '80px'); // Options
-    if (!IsAuthorizedToRead($domain))
-        return $table;
     $records = GetRecordList($domain);
     $is_editable = IsEditable($domain) && IsAuthorizedToWrite($domain);
     foreach ($records as $record)

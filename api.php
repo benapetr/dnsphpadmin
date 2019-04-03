@@ -85,6 +85,24 @@ function api_call_list($api)
     return true;
 }
 
+function api_call_list_records($api)
+{
+    global $api, $g_domains;
+    $zone = NULL;
+    if (isset($_GET['zone']))
+        $zone = $_GET['zone'];
+    else if (isset($_POST['zone']))
+        $zone = $_POST['zone'];
+    else
+        $api->ThrowError('No zone', 'You provided no zone name to list records for');
+
+    if (!array_key_exists($zone, $g_domains))
+        $api->ThrowError('No such zone',  'This zone is not in configuration file');
+    
+    $api->PrintObj(GetRecordList($zone));
+    return true;
+}
+
 function api_call_is_logged($api)
 {
     global $api, $g_auth_roles_map;
@@ -154,7 +172,7 @@ register_api("login_token", "Logins via token", "Login into API via application 
              [], '?action=login_token&token=123ngfshegkernker5', true);
 register_api("list_zones", "List all existing zones that you have access to", "List all existing zones that you have access to.", "api_call_list", true,
              [], [], '?action=list_zones');
-register_api("list_records", "List all existing records for a specified zone", "List all existing records for a specified zone", "api_call_list", true,
+register_api("list_records", "List all existing records for a specified zone", "List all existing records for a specified zone", "api_call_list_records", true,
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to list records for") ],
              [], '?action=list_records&zone=domain.org');
 

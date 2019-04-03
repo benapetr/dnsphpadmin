@@ -42,7 +42,7 @@ function ProcessNSUpdateForDomain($input, $domain)
 
 function ShowError($form, $txt)
 {
-    $msg = new BS_Alert("FATAL: " . $txt, "danger", $form);
+    $msg = new BS_Alert('FATAL: ' . $txt, 'danger', $form);
 }
 
 function Check($form, $label, $name)
