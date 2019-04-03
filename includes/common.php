@@ -34,7 +34,7 @@ function IsEditable($domain)
 function LoginRequired()
 {
     global $g_auth;
-    if ($g_auth === NULL || $g_auth !== "ldap")
+    if ($g_auth === NULL || $g_auth !== 'ldap')
         return false;
     return true;
 }
@@ -47,9 +47,9 @@ function IsAuthorized($domain, $privilege)
         return true;
 
     $roles = [ $g_auth_default_role ];
-    $user = $_SESSION["user"];
-    if ($user === NULL || $user === "")
-        Error("Invalid username in session");
+    $user = $_SESSION['user'];
+    if ($user === NULL || $user === '')
+        Error('Invalid username in session');
 
     if (array_key_exists($user, $g_auth_roles_map))
         $roles = $g_auth_roles_map[$user];
