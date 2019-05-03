@@ -36,6 +36,8 @@ function GetCurrentUserName()
     global $g_auth;
     if ($g_auth === "ldap" && isset($_SESSION["user"]))
         return $_SESSION["user"];
+    if (!isset($_SERVER['REMOTE_USER']))
+        return "unknown user";
     return $_SERVER['REMOTE_USER'];
 }
 
