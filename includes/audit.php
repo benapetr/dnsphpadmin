@@ -49,8 +49,8 @@ function WriteToAuditFile($operation, $text)
     $log_line = date('m/d/Y h:i:s a', time());
     $log_line .= ' entry point: ' . G_DNSTOOL_ENTRY_POINT . ' user: ' . GetCurrentUserName() . " ip: " . $_SERVER['REMOTE_ADDR'] . " operation: " . $operation . " record: " . $text . "\n";
 
-    $my_file = $g_audit_log;
-    $handle = fopen($my_file, 'a') or die('Cannot open file:  ' . $my_file);
-    fwrite($handle, $log_line);
-    fclose($handle);
+    $g_audit_log;
+    $result = file_put_contents($g_audit_log, $log_line, FILE_APPEND | LOCK_EX);
+    if ($result === false)
+        throw new Exception('Unable to write to audit file: ' . $g_audit_log);
 }

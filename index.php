@@ -28,6 +28,8 @@ require("includes/select_form.php");
 require("includes/login.php");
 require_once("psf/psf.php");
 
+date_default_timezone_set($g_timezone);
+
 if ($g_use_local_bootstrap)
 {
     // Use local bootstrap
@@ -81,10 +83,6 @@ if (RequireLogin())
     $fc->AppendHeader('DNS management tool');
     if ($g_logged_in)
         $fc->AppendHtml(GetLoginInfo());
-    if (isset($_GET['action']))
-        $g_action = $_GET['action'];
-    if (isset($_GET['domain']))
-        $g_selected_domain = $_GET['domain'];
 
     $fc->AppendObject(GetMenu($fc));
 

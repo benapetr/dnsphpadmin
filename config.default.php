@@ -14,6 +14,9 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
+// Timezone (used when writing to audit logs)
+$g_timezone = 'UTC';
+
 // List of domains, each domain has separate value for "transfer server" which server that
 // dig will do zone transfer on when reading zone data, and update_server which is where
 // nsupdate will send its requests
