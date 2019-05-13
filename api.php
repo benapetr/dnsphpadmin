@@ -122,15 +122,9 @@ function api_call_is_logged($api)
     return true;
 }
 
-function api_call_create_record($api)
+function check_zone_access($zone)
 {
     global $api, $g_domains;
-    $zone = get_required_post_get_parameter('zone');
-    $record = get_required_post_get_parameter('record');
-    $ttl = get_required_post_get_parameter('ttl');
-    $type = get_required_post_get_parameter('type');
-    $value = get_required_post_get_parameter('value');
-
     if (!array_key_exists($zone, $g_domains))
     {
         $api->ThrowError('No such zone', "No such zone: $zone");
@@ -148,6 +142,21 @@ function api_call_create_record($api)
         $api->ThrowError('Permission denied', "You are not authorized to edit $zone");
         return false;
     }
+
+    return true;
+}
+
+function api_call_create_record($api)
+{
+    global $api, $g_domains;
+    $zone = get_required_post_get_parameter('zone');
+    $record = get_required_post_get_parameter('record');
+    $ttl = get_required_post_get_parameter('ttl');
+    $type = get_required_post_get_parameter('type');
+    $value = get_required_post_get_parameter('value');
+
+    if (!check_zone_access($zone))
+        return false;
 
     if (!IsValidRecordType($type))
     {
@@ -172,6 +181,29 @@ function api_call_create_record($api)
     return true;
 }
 
+function api_call_delete_record($api)
+{
+    global $api, $g_domains;
+    $zone = get_required_post_get_parameter('zone');
+    $record = get_required_post_get_parameter('record');
+    $ttl = get_required_post_get_parameter('ttl');
+    $type = get_required_post_get_parameter('type');
+    $value = get_required_post_get_parameter('value');
+
+    if (!check_zone_access($zone))
+        return false;
+
+    $n = "server " . $g_domains[$zone]['update_server'] . "\n";
+    $n .= "update delete " . $record . "." . $zone . " " . $ttl . " " . $type . " " . $value . "\n";
+    $n .= "send\nquit\n";
+
+    ProcessNSUpdateForDomain($n, $zone);
+    WriteToAuditFile("delete", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
+    print_success();
+
+    return true;
+}
+
 function get_required_post_get_parameter($name)
 {
     global $api;
@@ -185,6 +217,9 @@ function get_required_post_get_parameter($name)
 
     if ($result === NULL || strlen($result) == 0)
         $api->ThrowError('Missing parameter: ' . $name, 'This parameter is required' );
+
+    if (psf_string_contains($result, "\n"))
+        $api->ThrowError('Newline not allowed', 'Parameter values must not contain newlines for safety reasons');
 
     return $result;
 }
@@ -247,9 +282,14 @@ register_api('list_records', "List all existing records for a specified zone", "
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to list records for") ],
              [], '?action=list_records&zone=domain.org');
 register_api('create_record', 'Create a new DNS record in specified zone', 'Creates a new DNS record in specific zone', 'api_call_create_record', true,
-             [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to list records for"), new PsfApiParameter("record", PsfApiParameterType::String, "Record name"),
+             [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to insert record in"), new PsfApiParameter("record", PsfApiParameterType::String, "Record name"),
                new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type"),
                new PsfApiParameter("value", PsfApiParameterType::String, "Value of record") ],
              [], '?action=create_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
+register_api('delete_record', 'Delete a DNS record in specified zone', 'Deletes a DNS record in specific zone', 'api_call_delete_record', true,
+             [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify"), new PsfApiParameter("record", PsfApiParameterType::String, "Record name"),
+               new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type"),
+               new PsfApiParameter("value", PsfApiParameterType::String, "Value of record") ],
+             [], '?action=delete_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
 
 $api->Process();
