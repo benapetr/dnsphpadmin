@@ -16,7 +16,6 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 require_once("config.php");
 require_once("debug.php");
-require_once("fatal.php");
 
 function nsupdate($input, $tsig_override = NULL, $tsig_override_key = NULL)
 {

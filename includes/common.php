@@ -15,7 +15,12 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
 require_once("config.php");
-require_once("fatal.php");
+
+function IsValidRecordType($type)
+{
+    global $g_editable;
+    return in_array($type, $g_editable);
+}
 
 function IsEditable($domain)
 {

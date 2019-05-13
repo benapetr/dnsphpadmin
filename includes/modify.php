@@ -20,7 +20,6 @@ require_once("common.php");
 require_once("config.php");
 require_once("debug.php");
 require_once("nsupdate.php");
-require_once("fatal.php");
 require_once("config.php");
 
 //! Wrapper around nsupdate from nsupdate.php that checks if there are custom TSIG overrides for given domain
@@ -122,8 +121,14 @@ function HandleEdit($form)
     if (!Check($form, $type, "Type"))
         return;
 
-    $input = "server " . $g_domains[$zone]["update_server"] . "\n";
-    if ($_POST["submit"] == "Create")
+    if (!IsValidRecordType($type))
+        Error("Type $type is not a valid DNS record type");
+
+    if (!is_numeric($ttl))
+        Error('TTL must be a number');
+
+    $input = "server " . $g_domains[$zone]['update_server'] . "\n";
+    if ($_POST['submit'] == 'Create')
     {
         $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
         $input .= "send\nquit\n";

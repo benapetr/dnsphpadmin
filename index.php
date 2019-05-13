@@ -21,6 +21,7 @@ define('G_DNSTOOL_ENTRY_POINT', 'index.php');
 require("definitions.php");
 require("config.default.php");
 require("config.php");
+require("includes/fatal.php");
 require("includes/menu.php");
 require("includes/modify.php");
 require("includes/record_list.php");

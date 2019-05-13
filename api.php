@@ -20,13 +20,17 @@ define('G_DNSTOOL_ENTRY_POINT', 'api.php');
 require("definitions.php");
 require("config.default.php");
 require("config.php");
+require("includes/fatal_api.php");
 require("includes/record_list.php");
 require("includes/zone_list.php");
+require("includes/modify.php");
 require("includes/login.php");
 require_once("psf/psf.php");
 
 if ($g_api_enabled !== true)
     die('API subsystem is disabled, change $g_api_enabled to true in your config.php file to enable this');
+
+date_default_timezone_set($g_timezone);
 
 function print_result($result)
 {
@@ -118,6 +122,73 @@ function api_call_is_logged($api)
     return true;
 }
 
+function api_call_create_record($api)
+{
+    global $api, $g_domains;
+    $zone = get_required_post_get_parameter('zone');
+    $record = get_required_post_get_parameter('record');
+    $ttl = get_required_post_get_parameter('ttl');
+    $type = get_required_post_get_parameter('type');
+    $value = get_required_post_get_parameter('value');
+
+    if (!array_key_exists($zone, $g_domains))
+    {
+        $api->ThrowError('No such zone', "No such zone: $zone");
+        return false;
+    }
+
+    if (!IsEditable($zone))
+    {
+        $api->ThrowError('Unable to write: Read-only zone', "Domain $zone is not writeable");
+        return false;
+    }
+
+    if (!IsAuthorizedToWrite($zone))
+    {
+        $api->ThrowError('Permission denied', "You are not authorized to edit $zone");
+        return false;
+    }
+
+    if (!IsValidRecordType($type))
+    {
+        $api->ThrowError('Invalid type', "Type $type is not a valid DNS record type");
+        return false;
+    }
+
+    if (!is_numeric($ttl))
+    {
+        $api->ThrowError('Invalid ttl', "TTL must be a number");
+        return false;
+    }
+
+    $n = "server " . $g_domains[$zone]['update_server'] . "\n";
+    $n .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
+    $n .= "send\nquit\n";
+
+    ProcessNSUpdateForDomain($n, $zone);
+    WriteToAuditFile("create", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
+    print_success();
+
+    return true;
+}
+
+function get_required_post_get_parameter($name)
+{
+    global $api;
+    $result = NULL;
+    if (isset($_GET[$name]))
+        $result = $_GET[$name];
+    else if (isset($_POST[$name]))
+        $result = $_POST[$name];
+    else
+        $api->ThrowError('Missing parameter: ' . $name, 'This parameter is required' );
+
+    if ($result === NULL || strlen($result) == 0)
+        $api->ThrowError('Missing parameter: ' . $name, 'This parameter is required' );
+
+    return $result;
+}
+
 function register_api($name, $short_desc, $long_desc, $callback, $auth = true, $required_params = [], $optional_params = [], $example = NULL, $post_only = false)
 {
     global $api;
@@ -172,8 +243,13 @@ register_api("login_token", "Logins via token", "Login into API via application 
              [], '?action=login_token&token=123ngfshegkernker5', true);
 register_api("list_zones", "List all existing zones that you have access to", "List all existing zones that you have access to.", "api_call_list", true,
              [], [], '?action=list_zones');
-register_api("list_records", "List all existing records for a specified zone", "List all existing records for a specified zone", "api_call_list_records", true,
+register_api('list_records', "List all existing records for a specified zone", "List all existing records for a specified zone", "api_call_list_records", true,
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to list records for") ],
              [], '?action=list_records&zone=domain.org');
+register_api('create_record', 'Create a new DNS record in specified zone', 'Creates a new DNS record in specific zone', 'api_call_create_record', true,
+             [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to list records for"), new PsfApiParameter("record", PsfApiParameterType::String, "Record name"),
+               new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type"),
+               new PsfApiParameter("value", PsfApiParameterType::String, "Value of record") ],
+             [], '?action=create_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
 
 $api->Process();
