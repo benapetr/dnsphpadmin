@@ -13,4 +13,4 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-define('G_DNSTOOL_VERSION', '1.2.0');
+define('G_DNSTOOL_VERSION', '1.2.2');

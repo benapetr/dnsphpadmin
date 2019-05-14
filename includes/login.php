@@ -95,6 +95,15 @@ function ProcessLogin()
         return;
     }
 
+    // Security hole - some LDAP servers will allow anonymous bind so empty password = access granted
+    // PHP also kind of suck with strlen, so we need to check for multiple return values
+    $pwl = strlen($_POST["loginPassword"]);
+    if ($pwl === NULL || $pwl === 0)
+    {
+        ProcessLogin_Error('Empty password is not allowed');
+        return;
+    }
+
     $ldap = ldap_connect($g_auth_ldap_url);
     ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
     if ($bind = ldap_bind($ldap, $_POST["loginUsername"], $_POST["loginPassword"]))
