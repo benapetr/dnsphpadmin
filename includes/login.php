@@ -91,7 +91,7 @@ function ProcessLogin()
     // Check if we have the credentials
     if (!isset($_POST["loginUsername"]) || !isset($_POST["loginPassword"]))
     {
-        ProcessLogin_Error("No credentials provided");
+        ProcessLogin_Error("No credentials provided (loginUsername or loginPassword missing)");
         return;
     }
 
