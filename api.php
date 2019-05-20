@@ -281,7 +281,7 @@ register_api("list_zones", "List all existing zones that you have access to", "L
 register_api('list_records', "List all existing records for a specified zone", "List all existing records for a specified zone", "api_call_list_records", true,
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to list records for") ],
              [], '?action=list_records&zone=domain.org');
-register_api('create_record', 'Create a new DNS record in specified zone', 'Creates a new DNS record in specific zone', 'api_call_create_record', true,
+register_api('create_record', 'Create a new DNS record in specified zone', 'Creates a new DNS record in specific zone. Please mind that domain name / zone is appended to record name automatically, so if you want to add test.domain.org, name of key is only test.', 'api_call_create_record', true,
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to insert record in"), new PsfApiParameter("record", PsfApiParameterType::String, "Record name"),
                new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type"),
                new PsfApiParameter("value", PsfApiParameterType::String, "Value of record") ],
