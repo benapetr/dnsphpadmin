@@ -61,26 +61,73 @@ $g_debug = false;
 $g_session_timeout = 3600;
 
 // Authentication setup - by default, don't provide any authentication mechanism, leave it up to sysadmin
+// Only supported authentication backend right now is LDAP ($g_auth = "ldap";)
 $g_auth = NULL;
+
+// Application ID for sessions, if you have multiple separate installations of dns php admin, you should create unique strings for each of them
+// to prevent sharing session information between them
+$g_auth_session_name = "dnsphpadmin";
+
+// Few words about LDAP integration within dns php admin:
+// This tool was written in a very large corporation world with extreme edge use-cases in mind. Therefore it's very flexible and it has
+// large amount of options that may look quite hard to understand on first sight. While it supports generic LDAP protocol it was written
+// with Active Directory in mind. This tool supports multiple authentication schemes such as:
+// * anyone who has access to LDAP / AD can use it without limits (keep g_auth_roles and g_auth_allowed_users NULL)
+// * selected users can login only (g_auth_allowed_users)
+// * RBAC access - there are roles defined with fine-grained permissions where each user is bound to one or more of these roles (groups)
+// Many of the options present in this config may be left as default value unless you are aiming for one of these edge cases that I unfortunatelly
+// had to prepare this tool for.
 
 // Example auth
 // $g_auth = "ldap";
 // URL of LDAP server, prefix with ldaps:// to get SSL, if you need to ignore invalid certificate, follow this:
 // https://stackoverflow.com/questions/3866406/need-help-ignoring-server-certificate-while-binding-to-ldap-server-using-php
 // $g_auth_ldap_url = "ldap.example.com";
+$g_auth_ldap_url = NULL;
 
-// Set up a filter for usernames that are allowed to login
+// Custom login information
+// Example:
+// $g_auth_login_banner = "You can login with your domain name";
+$g_auth_login_banner = NULL;
+
+// Set up optional filter for usernames that are allowed to login
+// Example:
 // $g_auth_allowed_users = array( "domain\\bob", "joe" );
+$g_auth_allowed_users = NULL;
+
+// Optional prefix for users - this prefix is automatically appended in front of every username unless it's already present
+// this is useful for AD domain logins where domain has to be specified in front of username
+// Example:
+// $g_auth_domain_prefix = "CORP\\";
+// will result in joe being changed to CORP\joe while authenticating to LDAP, but when retrieving a list of groups, only joe will be used
+$g_auth_domain_prefix = NULL;
+
+// If true, following string will be used to fetch group membership for each user. These groups will be added to list of roles that user is member of.
+// If you want to grant some privileges to an LDAP group, you should create a special role with exactly same name as LDAP group, that way each member
+// of this group will have these privileges
+$g_auth_fetch_domain_groups = false;
+
+// This is only used if g_auth_fetch_domain_groups option is set to true to fetch list of groups user is in
+$g_auth_ldap_dn = "CN=Users,DC=ad,DC=domain";
 
 // You can also setup authentication roles and their privileges here, there is special built-in role "root" which has unlimited privileges
 // Privileges are one of 'rw', 'r' or '' for nothing
+// Examples:
 // $g_auth_roles = [ 'users' => [ 'example.domain' => 'rw' ] ];
+// $g_auth_roles = [ 'DOMAIN.GROUP.WITH.FANCY.NAME' => [ 'example.domain' => 'rw' ] ]; // in combination with g_auth_fetch_domain_groups
+// $g_auth_roles = [ 'admins' => [ 'example.domain' => 'rw' ], 'users' => [ 'example.domain' => 'r' ] ];
+// IMPORTANT: if you are using LDAP groups, you will still need to define some authentication roles here and later you can bind these roles to
+//            individual groups
 $g_auth_roles = NULL;
 
 // Each user can be member of multiple roles, in case no role is specified for user, this is default role
 $g_auth_default_role = NULL;
 
-// You can assign roles to users here
+// Don't allow users who don't belong to any role to login to this tool - this is only enforced in case that g_auth_roles is not nullptr
+$g_auth_disallow_users_with_no_roles = true;
+
+// You can assign roles to users or LDAP groups here
+// Example:
 // $g_auth_roles_map = [ 'joe' => [ 'admins', 'users' ] ];
 $g_auth_roles_map = [];
 

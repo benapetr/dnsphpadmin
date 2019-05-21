@@ -24,7 +24,8 @@ $g_login_failure_reason = "Invalid username or password";
 
 function RefreshSession()
 {
-    global $g_session_timeout;
+    global $g_session_timeout, $g_auth_session_name, $g_auth_roles_map;
+    session_name($g_auth_session_name);
     session_start();
     if (isset($_SESSION["time"]))
     {
@@ -35,6 +36,11 @@ function RefreshSession()
         }
     }
     $_SESSION["time"] = time();
+    if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] && isset($_SESSION['user']) && isset($_SESSION['groups']))
+    {
+        // This user is logged in - we cached group list within session so that we don't need to query LDAP every single time
+        $g_auth_roles_map[$_SESSION['user']] = $_SESSION['groups'];
+    }
 }
 
 function GetLoginInfo()
@@ -77,9 +83,22 @@ function ProcessTokenLogin()
     $_SESSION["logged_in"] = false;
 }
 
+function LDAP_GroupNameFromCN($name)
+{
+    if (!psf_string_startsWith($name, 'CN='))
+        return $name;
+
+    $name = substr($name, 3);
+    if (!psf_string_contains($name, ','))
+        return $name;
+
+    return substr($name, 0, strpos($name, ','));
+}
+
 function ProcessLogin()
 {
-    global $g_auth, $g_auth_ldap_url, $g_login_failed, $g_auth_allowed_users;
+    global $g_auth, $g_auth_ldap_url, $g_login_failed, $g_auth_allowed_users, $g_auth_fetch_domain_groups, $g_auth_roles_map,
+           $g_auth_ldap_dn, $g_auth_domain_prefix, $g_auth_roles, $g_auth_disallow_users_with_no_roles;
     
     // We support LDAP at this moment only
     if ($g_auth != "ldap")
@@ -97,6 +116,9 @@ function ProcessLogin()
 
     // Security hole - some LDAP servers will allow anonymous bind so empty password = access granted
     // PHP also kind of suck with strlen, so we need to check for multiple return values
+
+    // This probably could be replaced with empty() which however has weird behaviour depending on PHP versions
+    // so let's be safe here since this is a security thing and implement our own "is_really_empty_string"
     $pwl = strlen($_POST["loginPassword"]);
     if ($pwl === NULL || $pwl === 0)
     {
@@ -106,20 +128,84 @@ function ProcessLogin()
 
     $ldap = ldap_connect($g_auth_ldap_url);
     ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-    if ($bind = ldap_bind($ldap, $_POST["loginUsername"], $_POST["loginPassword"]))
+    ldap_set_option($ldap, LDAP_OPT_REFERRALS, 0);
+
+    $login_name = $_POST["loginUsername"];
+    // Check if we need to tweak the username
+    if ($g_auth_domain_prefix !== NULL)
+    {
+        if (!psf_string_startsWith($login_name, $g_auth_domain_prefix))
+            $login_name = $g_auth_domain_prefix . $login_name;
+    }
+
+    if ($bind = ldap_bind($ldap, $login_name, $_POST["loginPassword"]))
     {
         // Login OK
         if ($g_auth_allowed_users !== NULL)
         {
             // Check if this user is allowed to login
-            if (!in_array($_POST["loginUsername"], $g_auth_allowed_users))
+            if (!in_array($login_name, $g_auth_allowed_users))
             {
                 ProcessLogin_Error("This user is not allowed to login to this tool (username not present in config.php)");
                 return;
             }
         }
-        $_SESSION["user"] = $_POST["loginUsername"];
-        $_SESSION["logged_in"] = true;
+        if ($g_auth_fetch_domain_groups)
+        {
+            $ldap_user_search_string = $_POST["loginUsername"];
+            // Automatically correct user name
+            if ($g_auth_domain_prefix !== NULL && psf_string_startsWith($ldap_user_search_string, $g_auth_domain_prefix))
+                $ldap_user_search_string = substr($ldap_user_search_string, strlen($g_auth_domain_prefix));
+            
+            // Read groups and insert them to list of roles this user is member of
+            $ldap_groups = ldap_search($ldap, $g_auth_ldap_dn, "(samaccountname=$ldap_user_search_string)", array("memberof", "primarygroupid"));
+            if ($ldap_groups === false)
+            {
+                ProcessLogin_Error("Unable to retrieve list of groups for this user from LDAP (ldap_search() returned false) - is your ldap_dn correct?");
+                return;
+            } else
+            {
+                $entries = ldap_get_entries($ldap, $ldap_groups);
+                if ($entries === false)
+                {
+                    ProcessLogin_Error("Unable to retrieve list of groups for this user from LDAP (ldap_get_entries() returned false) - is your ldap_dn correct?");
+                    return;
+                }
+                if ($entries['count'] == 0)
+                {
+                    ProcessLogin_Error('Unable to retrieve list of groups for this user from LDAP ($entries[\'count\'] == 0) - is your ldap_dn correct?');
+                    return;
+                }
+                if (!array_key_exists($login_name, $g_auth_roles_map))
+                {
+                    // Create an empty array to fill up with groups this user is member of
+                    $g_auth_roles_map[$login_name] = [];
+                }
+                // Convert these insane LDAP strings to human readable format that it's far easier to work with
+                $ldap_group_entries = [];
+                foreach ($entries[0]['memberof'] as $ldap_group_entry)
+                {
+                    $ldap_group_name = LDAP_GroupNameFromCN($ldap_group_entry);
+                    // Only store relevant groups, users are typically members of many groups, but we only care about these which also exist as roles
+                    if (array_key_exists($ldap_group_name, $g_auth_roles))
+                        $ldap_group_entries[] = $ldap_group_name;
+                }
+                $g_auth_roles_map[$login_name] = array_merge($g_auth_roles_map[$login_name], $ldap_group_entries);
+                // Preserve the list of groups this user is in
+                $_SESSION['groups'] = $g_auth_roles_map[$login_name];
+            }
+        }
+        // Check if only users with some groups are allowed to login
+        if ($g_auth_roles !== NULL && $g_auth_disallow_users_with_no_roles)
+        {
+            if (empty($g_auth_roles_map[$login_name]))
+            {
+                ProcessLogin_Error('You are not member of any groups with access to this tool');
+                return;
+            }
+        }
+        $_SESSION['user'] = $login_name;
+        $_SESSION['logged_in'] = true;
         $g_logged_in = true;
     } else
     {

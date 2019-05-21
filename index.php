@@ -74,6 +74,9 @@ else if (isset($_POST['zone']))
 if (RequireLogin())
 {
     $fc->AppendHeader('Login to DNS management tool');
+    if ($g_auth_login_banner !== NULL)
+        $fc->AppendObject(new BS_Alert($g_auth_login_banner, 'info'));
+
     if ($g_login_failed)
         $fc->AppendObject(new BS_Alert($g_login_failure_reason, 'danger'));
     $fc->AppendObject(GetLogin());
