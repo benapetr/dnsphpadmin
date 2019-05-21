@@ -10,11 +10,6 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// This is useful for debugging
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL);
-
 // Register index.php as valid entry point
 define('G_DNSTOOL_ENTRY_POINT', 'index.php');
 
@@ -28,6 +23,9 @@ require("includes/record_list.php");
 require("includes/select_form.php");
 require("includes/login.php");
 require_once("psf/psf.php");
+
+if ($g_debug === true)
+    psf_php_enable_debug();
 
 date_default_timezone_set($g_timezone);
 

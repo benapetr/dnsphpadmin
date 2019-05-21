@@ -10,11 +10,6 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// This is useful for debugging
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL);
-
 define('G_DNSTOOL_ENTRY_POINT', 'api.php');
 
 require("definitions.php");
@@ -29,6 +24,9 @@ require_once("psf/psf.php");
 
 if ($g_api_enabled !== true)
     die('API subsystem is disabled, change $g_api_enabled to true in your config.php file to enable this');
+
+if ($g_debug === true)
+    psf_php_enable_debug();
 
 date_default_timezone_set($g_timezone);
 
