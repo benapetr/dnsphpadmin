@@ -5,8 +5,9 @@ DNS admin panel, designed to operate via nsupdate, for all kinds of RFC complian
 * Database-less simple stupid setup
 * Communicates directly with DNS servers, no external DB, can be used in combination with other interfaces or tools
 * Different servers for querying zone info (transfer) and for update, useful for load balancing
-* Audit logs of changes
-* Individual user permissions to edit zones via roles (read/write)
+* Audit logs
+* Support LDAP / Active Directory authentication
+* Individual user and LDAP group permissions to edit zones via roles (read/write)
 
 # How does it work
 DNS PHP admin is a very simple GUI utility that helps sysadmins manage their DNS records and also provides easy to use interface for end users, which is more idiot friendly than low level command line tools that are typically used to manage BIND9 servers.
@@ -29,6 +30,6 @@ cp config.default.php config.php
 vi config.php
 ```
 
-**IMPORTANT:** DNS tool doesn't use any authentication by default so everyone with access to web server will have access to DNS tool. If this is just a simple setup for 1 or 2 admins who should have unlimited access to everything, you should setup login via htaccess or similar see https://httpd.apache.org/docs/2.4/howto/auth.html for apache. If have LDAP (active directory is also LDAP), you can configure this tool to use LDAP authentication as well.
-
 Now update `$g_domains` so that it contains information about zones you want to manage. Web server must have nsupdate and dig Linux commands installed in paths that are in config.php and it also needs to have firewall access to perform zone transfer and to perform nsupdate updates.
+
+**IMPORTANT:** DNS tool doesn't use any authentication by default, so everyone with access to web server will have access to DNS tool. If this is just a simple setup for 1 or 2 admins who should have unlimited access to everything, you should setup login via htaccess or similar see https://httpd.apache.org/docs/2.4/howto/auth.html for apache. If you have LDAP (active directory is also LDAP), you can configure this tool to use LDAP authentication as well.
