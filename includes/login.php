@@ -57,9 +57,13 @@ function GetLoginInfo()
 function ProcessLogin_Error($reason)
 {
     global $g_login_failure_reason, $g_login_failed;
+    $extra = '';
+    if (isset($_POST["loginUsername"]))
+       $extra = 'username=' . $_POST["loginUsername"] . ' ';
     $g_login_failed = true;
     $g_login_failure_reason = $reason;
     $_SESSION['logged_in'] = false;
+    WriteToAuditFile('login_fail', $extra . 'reason=' . $reason);
 }
 
 function ProcessTokenLogin()
@@ -76,11 +80,13 @@ function ProcessTokenLogin()
         $_SESSION["user"] = $token;
         $_SESSION["logged_in"] = true;
         $g_logged_in = true;
+        WriteToAuditFile('login_success');
         return;
     }
     // Invalid token
     $g_login_failed = true;
     $_SESSION["logged_in"] = false;
+    WriteToAuditFile('login_fail', 'token=' . $token . ' reason=invalid token');
 }
 
 function LDAP_GroupNameFromCN($name)
@@ -207,9 +213,11 @@ function ProcessLogin()
         $_SESSION['user'] = $login_name;
         $_SESSION['logged_in'] = true;
         $g_logged_in = true;
+        WriteToAuditFile('login_success');
     } else
     {
         // Invalid user / pw
+        WriteToAuditFile('login_fail', 'username=' . $login_name . ' reason=invalid username or password');
         $g_login_failed = true;
         $_SESSION["logged_in"] = false;
     }

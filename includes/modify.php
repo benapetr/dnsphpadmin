@@ -135,7 +135,7 @@ function HandleEdit($form)
         $result = ProcessNSUpdateForDomain($input, $zone);
         if (strlen($result) > 0)
             Debug("result: " . $result);
-        WriteToAuditFile("create", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
+        WriteToAuditFile('create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
         $form->AppendObject(new BS_Alert("Successfully inserted record " . $record . "." . $zone));
         return;
     } else if ($_POST["submit"] == "Edit")
@@ -149,8 +149,8 @@ function HandleEdit($form)
         $result = ProcessNSUpdateForDomain($input, $zone);
         if (strlen($result) > 0)
             Debug("result: " . $result);
-        WriteToAuditFile("replace_delete", $_POST["old"]);
-        WriteToAuditFile("replace_add", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
+        WriteToAuditFile('replace_delete', $_POST["old"]);
+        WriteToAuditFile('replace_create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
         $form->AppendObject(new BS_Alert("Successfully replaced " . $_POST["old"] . " with " . $record . "." . $zone . " " .
                                          $ttl . " " . $type . " " . $value));
         return;

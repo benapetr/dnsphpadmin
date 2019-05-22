@@ -43,6 +43,19 @@ $g_nsupdate = '/usr/bin/nsupdate';
 
 // If true all changes will go to this file
 $g_audit = false;
+
+// Define which events are logged into audit log
+$g_audit_events = [
+                    'login_success' => true,
+                    'login_fail' => true,
+                    'batch' => true,
+                    'create' => true,
+                    'replace_delete' => true,
+                    'replace_create' => true,
+                    'delete' => true,
+                    'display' => false
+                  ];
+
 $g_audit_log = '/var/log/dns_audit.log';
 
 // Folder where the batch operations should be logged, each batch operation will be stored in separate file

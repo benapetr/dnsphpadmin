@@ -40,15 +40,21 @@ function GetCurrentUserName()
     return $_SERVER['REMOTE_USER'];
 }
 
-function WriteToAuditFile($operation, $text)
+function WriteToAuditFile($operation, $text = '')
 {
-    global $g_audit, $g_audit_log;
+    global $g_audit, $g_audit_log, $g_audit_events;
     if (!$g_audit)
+        return;
+    
+    if ($g_audit_events[$operation] !== true)
         return;
 
     // Prepare audit log line
     $log_line = date('m/d/Y h:i:s a', time());
-    $log_line .= ' entry point: ' . G_DNSTOOL_ENTRY_POINT . ' user: ' . GetCurrentUserName() . " ip: " . $_SERVER['REMOTE_ADDR'] . " operation: " . $operation . " record: " . $text . "\n";
+    $record = '';
+    if (!empty($text))
+        $record = " record: " . $text;
+    $log_line .= ' entry point: ' . G_DNSTOOL_ENTRY_POINT . ' user: ' . GetCurrentUserName() . " ip: " . $_SERVER['REMOTE_ADDR'] . " operation: " . $operation . $record . "\n";
 
     $g_audit_log;
     $result = file_put_contents($g_audit_log, $log_line, FILE_APPEND | LOCK_EX);
