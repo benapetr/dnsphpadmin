@@ -208,7 +208,7 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
     $layout->AppendRow($form_items);
     //$form->AppendObject(new BS_CheckBox("ptr", "true", false, NULL, $form, "Create PTR record for this (works only with A records)"));
     if (isset($_GET["old"]))
-    $form->AppendObject(new Hidden("old", $_GET["old"]));
+    $form->AppendObject(new Hidden("old", htmlspecialchars($_GET["old"])));
     if ($edit_mode)
         $form->AppendObject(new BS_Button("submit", "Edit"));
     else
