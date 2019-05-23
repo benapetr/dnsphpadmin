@@ -272,6 +272,7 @@ function GetEditForm($parent)
         $k = substr($k, 0, strlen($k) - strlen($suffix) - 1);
     while (psf_string_endsWith($k, "."))
         $k = substr($k, 0, strlen($k) - 1);
+
     return GetInsertForm($parent, true, $k, $_GET["ttl"], $_GET["type"], $_GET["value"]);
 }
 

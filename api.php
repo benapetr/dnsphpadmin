@@ -73,7 +73,7 @@ function api_call_login_token($api)
     ProcessTokenLogin();
     if ($g_login_failed)
     {
-        $api->ThrowError("Login failed", $g_login_failure_reason);
+        $api->ThrowError('Login failed', $g_login_failure_reason);
         return true;
     }
     print_success();
@@ -247,7 +247,7 @@ function is_authenticated($backend)
     ProcessTokenLogin();
     if ($g_login_failed)
     {
-        $api->ThrowError("Login failed", $g_login_failure_reason);
+        $api->ThrowError('Login failed', $g_login_failure_reason);
         return false;
     }
     return true;
