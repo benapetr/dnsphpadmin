@@ -16,10 +16,12 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 require_once("psf/psf.php");
 require_once("audit.php");
+require_once("common.php");
 require_once("config.php");
 
 $g_login_failed = false;
 $g_logged_in = false;
+//! Error message that is displayed in case that login fails
 $g_login_failure_reason = "Invalid username or password";
 
 function RefreshSession()
@@ -101,6 +103,53 @@ function LDAP_GroupNameFromCN($name)
     return substr($name, 0, strpos($name, ','));
 }
 
+function FetchDomainGroups($ldap, $login_name)
+{
+    global $g_auth_domain_prefix, $g_auth_ldap_dn, $g_auth_roles_map, $g_auth_roles;
+    $ldap_user_search_string = $_POST["loginUsername"];
+    // Automatically correct user name
+    if ($g_auth_domain_prefix !== NULL && psf_string_startsWith($ldap_user_search_string, $g_auth_domain_prefix))
+        $ldap_user_search_string = substr($ldap_user_search_string, strlen($g_auth_domain_prefix));
+    
+    // Read groups and insert them to list of roles this user is member of
+    $ldap_groups = ldap_search($ldap, $g_auth_ldap_dn, "(samaccountname=$ldap_user_search_string)", array("memberof", "primarygroupid"));
+    if ($ldap_groups === false)
+    {
+        DisplayWarning("Unable to retrieve list of groups for this user from LDAP (ldap_search() returned false) - is your ldap_dn correct?");
+        return;
+    } else
+    {
+        $entries = ldap_get_entries($ldap, $ldap_groups);
+        if ($entries === false)
+        {
+            DisplayWarning("Unable to retrieve list of groups for this user from LDAP (ldap_get_entries() returned false) - is your ldap_dn correct?");
+            return;
+        }
+        if ($entries['count'] == 0)
+        {
+            DisplayWarning('Unable to retrieve list of groups for this user from LDAP ($entries[\'count\'] == 0) - is your ldap_dn correct?');
+            return;
+        }
+        if (!array_key_exists($login_name, $g_auth_roles_map))
+        {
+            // Create an empty array to fill up with groups this user is member of
+            $g_auth_roles_map[$login_name] = [];
+        }
+        // Convert these insane LDAP strings to human readable format that it's far easier to work with
+        $ldap_group_entries = [];
+        foreach ($entries[0]['memberof'] as $ldap_group_entry)
+        {
+            $ldap_group_name = LDAP_GroupNameFromCN($ldap_group_entry);
+            // Only store relevant groups, users are typically members of many groups, but we only care about these which also exist as roles
+            if (array_key_exists($ldap_group_name, $g_auth_roles))
+                $ldap_group_entries[] = $ldap_group_name;
+        }
+        $g_auth_roles_map[$login_name] = array_merge($g_auth_roles_map[$login_name], $ldap_group_entries);
+        // Preserve the list of groups this user is in
+        $_SESSION['groups'] = $g_auth_roles_map[$login_name];
+    }
+}
+
 function ProcessLogin()
 {
     global $g_auth, $g_auth_ldap_url, $g_login_failed, $g_auth_allowed_users, $g_auth_fetch_domain_groups, $g_auth_roles_map,
@@ -156,51 +205,11 @@ function ProcessLogin()
                 return;
             }
         }
+
+        // If it's enabled get a list of LDAP groups for this user
         if ($g_auth_fetch_domain_groups)
-        {
-            $ldap_user_search_string = $_POST["loginUsername"];
-            // Automatically correct user name
-            if ($g_auth_domain_prefix !== NULL && psf_string_startsWith($ldap_user_search_string, $g_auth_domain_prefix))
-                $ldap_user_search_string = substr($ldap_user_search_string, strlen($g_auth_domain_prefix));
-            
-            // Read groups and insert them to list of roles this user is member of
-            $ldap_groups = ldap_search($ldap, $g_auth_ldap_dn, "(samaccountname=$ldap_user_search_string)", array("memberof", "primarygroupid"));
-            if ($ldap_groups === false)
-            {
-                ProcessLogin_Error("Unable to retrieve list of groups for this user from LDAP (ldap_search() returned false) - is your ldap_dn correct?");
-                return;
-            } else
-            {
-                $entries = ldap_get_entries($ldap, $ldap_groups);
-                if ($entries === false)
-                {
-                    ProcessLogin_Error("Unable to retrieve list of groups for this user from LDAP (ldap_get_entries() returned false) - is your ldap_dn correct?");
-                    return;
-                }
-                if ($entries['count'] == 0)
-                {
-                    ProcessLogin_Error('Unable to retrieve list of groups for this user from LDAP ($entries[\'count\'] == 0) - is your ldap_dn correct?');
-                    return;
-                }
-                if (!array_key_exists($login_name, $g_auth_roles_map))
-                {
-                    // Create an empty array to fill up with groups this user is member of
-                    $g_auth_roles_map[$login_name] = [];
-                }
-                // Convert these insane LDAP strings to human readable format that it's far easier to work with
-                $ldap_group_entries = [];
-                foreach ($entries[0]['memberof'] as $ldap_group_entry)
-                {
-                    $ldap_group_name = LDAP_GroupNameFromCN($ldap_group_entry);
-                    // Only store relevant groups, users are typically members of many groups, but we only care about these which also exist as roles
-                    if (array_key_exists($ldap_group_name, $g_auth_roles))
-                        $ldap_group_entries[] = $ldap_group_name;
-                }
-                $g_auth_roles_map[$login_name] = array_merge($g_auth_roles_map[$login_name], $ldap_group_entries);
-                // Preserve the list of groups this user is in
-                $_SESSION['groups'] = $g_auth_roles_map[$login_name];
-            }
-        }
+            FetchDomainGroups($ldap, $login_name);
+
         // Check if only users with some groups are allowed to login
         if ($g_auth_roles !== NULL && $g_auth_disallow_users_with_no_roles)
         {

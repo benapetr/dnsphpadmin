@@ -77,6 +77,9 @@ if (RequireLogin())
     if ($g_auth_login_banner !== NULL)
         $fc->AppendObject(new BS_Alert($g_auth_login_banner, 'info'));
 
+    // Display warnings if there are any
+    $fc->AppendObject(GetWarningBanner());
+
     if ($g_login_failed)
         $fc->AppendObject(new BS_Alert($g_login_failure_reason, 'danger'));
     $fc->AppendObject(GetLogin());
@@ -85,6 +88,9 @@ if (RequireLogin())
     $fc->AppendHeader('DNS management tool');
     if ($g_logged_in)
         $fc->AppendHtml(GetLoginInfo());
+
+    // Display warnings if there are any
+    $fc->AppendObject(GetWarningBanner());
 
     $fc->AppendObject(GetMenu($fc));
 

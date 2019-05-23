@@ -16,6 +16,32 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 require_once("config.php");
 
+//! Warning message - if not NULL it's displayed on any page in respective location
+$g_warning_text = NULL;
+
+function DisplayWarning($text)
+{
+    global $g_warning_text;
+    if (empty($g_warning_text))
+    {
+        $g_warning_text = '<b>WARNING:</b> ' . htmlspecialchars($text);
+    } else
+    {
+        $g_warning_text .= '<br><b>WARNING:</b> ' . htmlspecialchars($text);
+    }
+}
+
+function GetWarningBanner()
+{
+    global $g_warning_text;
+    if ($g_warning_text === NULL)
+        return NULL;
+
+    $warning_box = new BS_Alert($g_warning_text, 'warning');
+    $warning_box->EscapeHTML = false;
+    return $warning_box;
+}
+
 function IsValidRecordType($type)
 {
     global $g_editable;
