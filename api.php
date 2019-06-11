@@ -33,8 +33,7 @@ date_default_timezone_set($g_timezone);
 function print_result($result)
 {
     global $api;
-    $result = [ 'result' => 'success' ];
-    $api->PrintObj($result);
+    $api->PrintObj([ 'result' => $result ]);
 }
 
 function print_success()
