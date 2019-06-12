@@ -106,7 +106,7 @@ function GetRecordListTable($parent, $domain)
         {
             $record[] = '<a href="index.php?action=manage&domain=' . $domain . '&delete=' .
                         urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
-                        '" onclick="return confirm(\'Are you sure?\')"><span class="glyphicon glyphicon-trash" title="Delete"></span></a>&nbsp;&nbsp;' .
+                        '" onclick="return confirm(\'Are you sure?\')"><span class="glyphicon glyphicon-trash" title="Delete"></span></a>&nbsp;&nbsp;&nbsp;&nbsp;' .
                         '<a href="index.php?action=edit&domain=' . $domain . '&key=' .
                         urlencode($record[0]) . "&ttl=" . $record[1] . "&type=" . $record[3] . "&value=" . urlencode($record[4]) .
                         "&old=" . urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .

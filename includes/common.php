@@ -62,6 +62,9 @@ function IsEditable($domain)
     return true;
 }
 
+//! Return true if application supports and require user to login, no matter if current user
+//! is logged in or not. Don't confuse with login.php's RequireLogin() which returns false
+//! even when login is enabled in case user is already logged in
 function LoginRequired()
 {
     global $g_auth;
