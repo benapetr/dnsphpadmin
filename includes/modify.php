@@ -162,6 +162,9 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
 {
     global $g_selected_domain, $g_domains, $g_editable;
     HandleEdit($parent);
+    // In case we are returning to insert form from previous insert, make default type the one we used before
+    if (isset($_POST['type']))
+        $default_type = $_POST['type'];
     if (psf_string_endsWith($g_selected_domain, ".in-addr.arpa"))
         $default_type = "PTR";
     $form = new Form("index.php?action=new", $parent);
