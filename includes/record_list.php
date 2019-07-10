@@ -116,3 +116,16 @@ function GetRecordListTable($parent, $domain)
     }
     return $table;
 }
+
+//! This return similar results to GetRecordListTable but without option buttons in format friendly for exporting
+function GetRecordListTablePlainFormat($parent, $domain)
+{
+    $table = new HtmlTable($parent);
+    $table->Headers = [ "Record", "TTL", "Scope", "Type", "Value" ];
+    $records = GetRecordList($domain);
+    foreach ($records as $record)
+    {
+        $table->AppendRow($record);
+    }
+    return $table;
+}

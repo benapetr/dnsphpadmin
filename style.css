@@ -21,3 +21,9 @@ body {
   top: 20px;
   right: 20px;
 }
+
+.export_csv {
+  position: absolute;
+  top: 120px;
+  right: 20px;
+}

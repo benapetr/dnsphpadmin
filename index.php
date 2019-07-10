@@ -108,15 +108,25 @@ if (RequireLogin())
         }
         $fc->AppendObject(GetSwitcher($fc));
         $fc->AppendHeader($g_selected_domain, 2);
+        $fc->AppendHtml('<div class="export_csv"><a href="?action=csv&domain=' . $g_selected_domain . '">Export as CSV</a></div>');
         $fc->AppendObject(GetStatusOfZoneAsNote($g_selected_domain));
         $fc->AppendObject(GetRecordListTable($fc, $g_selected_domain));
-    } else if ($g_action == "new")
+    } else if ($g_action == 'csv')
+    {
+        // Export the current zone as CSV (if user can actually read it)
+        $table = GetRecordListTablePlainFormat($fc, $g_selected_domain);
+        header('Content-Type: application/csv');
+        header('Content-Disposition: attachment; filename=' . $g_selected_domain . '.csv');
+        header('Pragma: no-cache');
+        print ($table->ToCSV(';', true));
+        exit(0);
+    } else if ($g_action == 'new')
     {
         $fc->AppendObject(GetInsertForm($fc));
-    } else if ($g_action == "edit")
+    } else if ($g_action == 'edit')
     {
         $fc->AppendObject(GetEditForm($fc));
-    } else if ($g_action == "batch")
+    } else if ($g_action == 'batch')
     {
         $fc->AppendObject(GetBatchForm($fc));
     }
