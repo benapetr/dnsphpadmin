@@ -300,7 +300,7 @@ function GetBatchForm($parent)
     $layout->Width = "600px";
     $layout->AppendRow( [ "Note: only update statements are allowed, don't put send there, it will be there automatically" ] );
     $layout->AppendRow( [ $dl ] );
-    $input = new BS_TextBox("record", $default_key, NULL, $layout);
+    $input = new BS_TextBox("record", NULL, NULL, $layout);
     $input->SetMultiline();
     $layout->AppendRow( [ $input ] );
     $form->AppendObject(new BS_Button("submit", "Submit"));
