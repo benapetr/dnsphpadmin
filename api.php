@@ -41,13 +41,26 @@ function print_success()
     print_result('success');
 }
 
+function print_login_error($reason)
+{
+    global $api;
+    http_response_code(400);
+    $api->PrintObj([
+                       'result' => 'failure',
+                       'error' => 'Login failed',
+                       'message' => $reason,
+                       'code' => G_API_ELOGIN
+                   ]);
+    die(G_API_ELOGIN);
+}
+
 function api_call_login($source)
 {
     global $api, $g_login_failed, $g_login_failure_reason;
     ProcessLogin();
     if ($g_login_failed)
     {
-        $api->ThrowError("Login failed", $g_login_failure_reason);
+        print_login_error($g_login_failure_reason);
         return true;
     }
     print_success();
@@ -72,7 +85,7 @@ function api_call_login_token($source)
     ProcessTokenLogin();
     if ($g_login_failed)
     {
-        $api->ThrowError('Login failed', $g_login_failure_reason);
+        print_login_error($g_login_failure_reason);
         return true;
     }
     print_success();
