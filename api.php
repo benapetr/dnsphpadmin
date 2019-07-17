@@ -41,7 +41,7 @@ function print_success()
     print_result('success');
 }
 
-function api_call_login($api)
+function api_call_login($source)
 {
     global $api, $g_login_failed, $g_login_failure_reason;
     ProcessLogin();
@@ -54,14 +54,14 @@ function api_call_login($api)
     return true;
 }
 
-function api_call_logout($api)
+function api_call_logout($source)
 {
     session_unset();
     print_success();
     return true;
 }
 
-function api_call_login_token($api)
+function api_call_login_token($source)
 {
     global $api, $g_login_failed, $g_login_failure_reason;
     if (!isset($_POST['token']))
@@ -79,14 +79,14 @@ function api_call_login_token($api)
     return true;
 }
 
-function api_call_list($api)
+function api_call_list($source)
 {
     global $api;
     $api->PrintObj(GetZoneList());
     return true;
 }
 
-function api_call_list_records($api)
+function api_call_list_records($source)
 {
     global $api, $g_domains;
     $zone = NULL;
@@ -104,7 +104,7 @@ function api_call_list_records($api)
     return true;
 }
 
-function api_call_is_logged($api)
+function api_call_is_logged($source)
 {
     global $api, $g_auth_roles_map;
     $logged = is_authenticated($api->AuthenticationBackend);
@@ -143,7 +143,7 @@ function check_zone_access($zone)
     return true;
 }
 
-function api_call_create_record($api)
+function api_call_create_record($source)
 {
     global $api, $g_domains;
     $zone = get_required_post_get_parameter('zone');
@@ -178,7 +178,7 @@ function api_call_create_record($api)
     return true;
 }
 
-function api_call_delete_record($api)
+function api_call_delete_record($source)
 {
     global $api, $g_domains;
     $zone = get_required_post_get_parameter('zone');
