@@ -16,6 +16,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 require_once("psf/psf.php");
 require_once("includes/nsupdate.php");
+require_once("audit.php");
 require_once("common.php");
 require_once("config.php");
 
@@ -69,6 +70,9 @@ function GetRecordList($domain)
     $records = array();
     if (!IsAuthorizedToRead($domain))
         return $records;
+
+    WriteToAuditFile("display", $domain);
+
     $data = explode("\n", get_zone_data($domain));
     foreach ($data as $line)
     {
