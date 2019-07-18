@@ -215,7 +215,7 @@ function ProcessLogin()
         {
             if (empty($g_auth_roles_map[$login_name]))
             {
-                ProcessLogin_Error('You are not member of any groups with access to this tool');
+                ProcessLogin_Error('You are not a member of any group with access to this tool');
                 return;
             }
         }
