@@ -33,7 +33,7 @@ $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_s
 //                                      'tsig_key' => 'some_key' ] ];
 
 // List of records that can be edited
-$g_editable = [ "A", "AAAA", "NS", "PTR", "SRV", "TXT", "SPF", "MX" ];
+$g_editable = [ "A", "AAAA", "CNAME", "DNAME", "NS", "PTR", "SRV", "TXT", "SPF", "MX" ];
 
 // Path to executable of dig
 $g_dig = '/usr/bin/dig';
