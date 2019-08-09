@@ -156,6 +156,41 @@ function check_zone_access($zone)
     return true;
 }
 
+function get_required_post_get_parameter($name)
+{
+    global $api;
+    $result = NULL;
+    if (isset($_GET[$name]))
+        $result = $_GET[$name];
+    else if (isset($_POST[$name]))
+        $result = $_POST[$name];
+    else
+        $api->ThrowError('Missing parameter: ' . $name, 'This parameter is required' );
+
+    if ($result === NULL || strlen($result) == 0)
+        $api->ThrowError('Missing parameter: ' . $name, 'This parameter is required' );
+
+    if (psf_string_contains($result, "\n"))
+        $api->ThrowError('Newline not allowed', 'Parameter values must not contain newlines for safety reasons');
+
+    return $result;
+}
+
+function get_optional_post_get_parameter($name)
+{
+    global $api;
+    $result = NULL;
+    if (isset($_GET[$name]))
+        $result = $_GET[$name];
+    else if (isset($_POST[$name]))
+        $result = $_POST[$name];
+
+    if ($result !== NULL && psf_string_contains($result, "\n"))
+        $api->ThrowError('Newline not allowed', 'Parameter values must not contain newlines for safety reasons');
+
+    return $result;
+}
+
 function api_call_create_record($source)
 {
     global $api, $g_domains;
@@ -164,6 +199,7 @@ function api_call_create_record($source)
     $ttl = get_required_post_get_parameter('ttl');
     $type = get_required_post_get_parameter('type');
     $value = get_required_post_get_parameter('value');
+    $comment = get_optional_post_get_parameter('comment');
 
     if (!check_zone_access($zone))
         return false;
@@ -185,7 +221,7 @@ function api_call_create_record($source)
     $n .= "send\nquit\n";
 
     ProcessNSUpdateForDomain($n, $zone);
-    WriteToAuditFile("create", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
+    WriteToAuditFile("create", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
     print_success();
 
     return true;
@@ -199,6 +235,7 @@ function api_call_delete_record($source)
     $ttl = get_required_post_get_parameter('ttl');
     $type = get_required_post_get_parameter('type');
     $value = get_required_post_get_parameter('value');
+    $comment = get_optional_post_get_parameter('comment');
 
     if (!check_zone_access($zone))
         return false;
@@ -208,30 +245,10 @@ function api_call_delete_record($source)
     $n .= "send\nquit\n";
 
     ProcessNSUpdateForDomain($n, $zone);
-    WriteToAuditFile("delete", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
+    WriteToAuditFile("delete", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
     print_success();
 
     return true;
-}
-
-function get_required_post_get_parameter($name)
-{
-    global $api;
-    $result = NULL;
-    if (isset($_GET[$name]))
-        $result = $_GET[$name];
-    else if (isset($_POST[$name]))
-        $result = $_POST[$name];
-    else
-        $api->ThrowError('Missing parameter: ' . $name, 'This parameter is required' );
-
-    if ($result === NULL || strlen($result) == 0)
-        $api->ThrowError('Missing parameter: ' . $name, 'This parameter is required' );
-
-    if (psf_string_contains($result, "\n"))
-        $api->ThrowError('Newline not allowed', 'Parameter values must not contain newlines for safety reasons');
-
-    return $result;
 }
 
 function register_api($name, $short_desc, $long_desc, $callback, $auth = true, $required_params = [], $optional_params = [], $example = NULL, $post_only = false)
@@ -295,11 +312,11 @@ register_api('create_record', 'Create a new DNS record in specified zone', 'Crea
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to insert record in"), new PsfApiParameter("record", PsfApiParameterType::String, "Record name"),
                new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type"),
                new PsfApiParameter("value", PsfApiParameterType::String, "Value of record") ],
-             [], '?action=create_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
+             [ new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ], '?action=create_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
 register_api('delete_record', 'Delete a DNS record in specified zone', 'Deletes a DNS record in specific zone', 'api_call_delete_record', true,
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify"), new PsfApiParameter("record", PsfApiParameterType::String, "Record name"),
                new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type"),
                new PsfApiParameter("value", PsfApiParameterType::String, "Value of record") ],
-             [], '?action=delete_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
+             [ new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ], '?action=delete_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
 
 $api->Process();

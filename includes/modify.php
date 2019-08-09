@@ -44,7 +44,7 @@ function ShowError($form, $txt)
     $msg = new BS_Alert('FATAL: ' . $txt, 'danger', $form);
 }
 
-function Check($form, $label, $name)
+function CheckEmpty($form, $label, $name)
 {
     if ($label === NULL || strlen($label) == 0)
     {
@@ -106,19 +106,19 @@ function HandleEdit($form)
     if (!IsAuthorizedToWrite($zone))
         Error("You are not authorized to edit $zone");
 
-    if (!Check($form, $zone, "Zone"))
+    if (!CheckEmpty($form, $zone, "Zone"))
         return;
     $record = $_POST["record"];
     if ($record === NULL)
         $record = "";
     $ttl = $_POST["ttl"];
-    if (!Check($form, $ttl, "ttl"))
+    if (!CheckEmpty($form, $ttl, "ttl"))
         return;
     $value = $_POST["value"];
-    if (!Check($form, $value, "Value"))
+    if (!CheckEmpty($form, $value, "Value"))
         return;
     $type = $_POST["type"];
-    if (!Check($form, $type, "Type"))
+    if (!CheckEmpty($form, $type, "Type"))
         return;
 
     if (!IsValidRecordType($type))
@@ -128,6 +128,10 @@ function HandleEdit($form)
         Error('TTL must be a number');
 
     $input = "server " . $g_domains[$zone]['update_server'] . "\n";
+    $comment = NULL;
+    if (isset($_POST["comment"]))
+        $comment = $_POST["comment"];
+
     if ($_POST['submit'] == 'Create')
     {
         $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
@@ -135,7 +139,7 @@ function HandleEdit($form)
         $result = ProcessNSUpdateForDomain($input, $zone);
         if (strlen($result) > 0)
             Debug("result: " . $result);
-        WriteToAuditFile('create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
+        WriteToAuditFile('create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
         $form->AppendObject(new BS_Alert("Successfully inserted record " . $record . "." . $zone));
         return;
     } else if ($_POST["submit"] == "Edit")
@@ -149,8 +153,8 @@ function HandleEdit($form)
         $result = ProcessNSUpdateForDomain($input, $zone);
         if (strlen($result) > 0)
             Debug("result: " . $result);
-        WriteToAuditFile('replace_delete', $_POST["old"]);
-        WriteToAuditFile('replace_create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value);
+        WriteToAuditFile('replace_delete', $_POST["old"], $comment);
+        WriteToAuditFile('replace_create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
         $form->AppendObject(new BS_Alert("Successfully replaced " . $_POST["old"] . " with " . $record . "." . $zone . " " .
                                          $ttl . " " . $type . " " . $value));
         return;
@@ -158,9 +162,9 @@ function HandleEdit($form)
     Error("Unknown modify mode");
 }
 
-function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_ttl = "3600", $default_type = "A", $default_value = "")
+function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_ttl = "3600", $default_type = "A", $default_value = "", $default_comment = "")
 {
-    global $g_selected_domain, $g_domains, $g_editable;
+    global $g_audit, $g_selected_domain, $g_domains, $g_editable;
     HandleEdit($parent);
     // In case we are returning to insert form from previous insert, make default type the one we used before
     if (isset($_POST['type']))
@@ -172,6 +176,8 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
     $layout = new HtmlTable($form);
     $layout->BorderSize = 0;
     $layout->Headers = [ "Record", "Zone", "TTL", "Type", "Value" ];
+    if ($g_audit)
+        $layout->Headers[] = 'Comment';
     $form_items = [];
     $form_items[] = new BS_TextBox("record", $default_key, NULL, $layout);
     $dl = new ComboBox("zone", $layout);
@@ -208,6 +214,13 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
     }
     $form_items[] = $tl;
     $form_items[] = new BS_TextBox("value", $default_value, NULL, $layout);
+    if ($g_audit)
+    {
+        $comment = new BS_TextBox("comment", $default_comment, NULL, $layout);
+        $comment->Placeholder = 'Optional comment for audit log';
+        $comment->Size = 80;
+        $form_items[] = $comment;
+    }
     $layout->AppendRow($form_items);
     //$form->AppendObject(new BS_CheckBox("ptr", "true", false, NULL, $form, "Create PTR record for this (works only with A records)"));
     if (isset($_GET["old"]))
@@ -226,7 +239,7 @@ function HandleBatch($parent)
         return;
     
     $zone = $_POST["zone"];
-    if (!Check($form, $zone, "Zone"))
+    if (!CheckEmpty($parent, $zone, "Zone"))
         return;
 
     if (!IsEditable($zone))
@@ -252,14 +265,17 @@ function HandleBatch($parent)
     $input .= "send\nquit\n";
     ProcessNSUpdateForDomain($input, $zone);
     $batch_file = GenerateBatch($input);
+    $comment = NULL;
+    if (isset($_POST["comment"]))
+        $comment = $_POST["comment"];
     if ($batch_file == NULL)
     {
         $log = str_replace("\n", "; ", $record);
         $log = str_replace("\r", "", $log);
-        WriteToAuditFile("batch", "zone: " . $zone . ": " . $log);
+        WriteToAuditFile("batch", "zone: " . $zone . ": " . $log, $comment);
     } else
     {
-        WriteToAuditFile("batch", "zone: " . $zone . ": " . $batch_file);
+        WriteToAuditFile("batch", "zone: " . $zone . ": " . $batch_file, $comment);
     }
     $parent->AppendObject(new BS_Alert("Successfully executed batch operation on zone " . $zone));
 }
@@ -281,7 +297,7 @@ function GetEditForm($parent)
 
 function GetBatchForm($parent)
 {
-    global $g_selected_domain, $g_domains, $g_editable;
+    global $g_audit, $g_selected_domain, $g_domains, $g_editable;
     HandleBatch($parent);
     $form = new Form("index.php?action=batch", $parent);
     $form->Method = FormMethod::Post;
@@ -303,6 +319,12 @@ function GetBatchForm($parent)
     $input = new BS_TextBox("record", NULL, NULL, $layout);
     $input->SetMultiline();
     $layout->AppendRow( [ $input ] );
+    if ($g_audit)
+    {
+        $comment = new BS_TextBox("comment", NULL, NULL, $layout);
+        $comment->Placeholder = 'Optional comment for audit log';
+        $layout->AppendRow( [ $comment ] );
+    }
     $form->AppendObject(new BS_Button("submit", "Submit"));
     return $form;
 }
