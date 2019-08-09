@@ -171,6 +171,11 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
         $default_type = $_POST['type'];
     if (psf_string_endsWith($g_selected_domain, ".in-addr.arpa"))
         $default_type = "PTR";
+    
+    // Reuse some values from previous POST request
+    if (isset($_POST['comment']))
+        $default_comment = $_POST['comment'];
+    
     $form = new Form("index.php?action=new", $parent);
     $form->Method = FormMethod::Post;
     $layout = new HtmlTable($form);
