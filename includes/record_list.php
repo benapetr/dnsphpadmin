@@ -86,8 +86,6 @@ function GetRecordList($zone)
     if (!IsAuthorizedToRead($zone))
         return array();
 
-    WriteToAuditFile("display", $zone);
-
     // Check if zone data exist in cache
     if ($g_caching_engine_instance->IsCached($zone))
     {
@@ -105,6 +103,7 @@ function GetRecordList($zone)
         } else if ($current_soa == $cached_soa)
         {
             Debug("Cache match! Not running a full zone transfer");
+            WriteToAuditFile("display", $zone, "(cached)");
             // Return data from cache instead of running full zone transfer
             return $g_caching_engine_instance->GetData($zone);
         }
@@ -113,6 +112,7 @@ function GetRecordList($zone)
         Debug('Zone ' . $zone . ' does not exist in cache, running full zone transfer');
     }
     
+    WriteToAuditFile("display", $zone, "(full transfer)");
     Debug('Running full zone transfer for: ' . $zone);
     $data = get_zone_data($zone);
     $soa = GetSOAFromData($data);
