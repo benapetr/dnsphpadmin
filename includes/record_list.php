@@ -103,9 +103,17 @@ function GetRecordList($zone)
         } else if ($current_soa == $cached_soa)
         {
             Debug("Cache match! Not running a full zone transfer");
-            WriteToAuditFile("display", $zone, "(cached)");
             // Return data from cache instead of running full zone transfer
-            return $g_caching_engine_instance->GetData($zone);
+            $result = $g_caching_engine_instance->GetData($zone);
+            if ($result === false)
+            {
+                Debug('SOA exist in cache, but data not (corrupted cache), dropping memory and falling back to full zone transfer');
+                $g_caching_engine_instance->Drop($zone);
+            } else
+            {
+                WriteToAuditFile("display", $zone, "(cached)");
+                return $result;
+            }
         }
     } else if ($g_caching_engine !== NULL)
     {
