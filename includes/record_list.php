@@ -65,29 +65,65 @@ function GetStatusOfZoneAsNote($domain)
     return $status;
 }
 
-function GetRecordList($domain)
+// This function will go through parsed zone data and will return SOA record if present, otherwise will return NULL
+function GetSOAFromData($data)
 {
-    $records = array();
-    if (!IsAuthorizedToRead($domain))
-        return $records;
-
-    WriteToAuditFile("display", $domain);
-
-    $data = explode("\n", get_zone_data($domain));
-    foreach ($data as $line)
+    $soa = NULL;
+    foreach ($data as $record)
     {
-        if (psf_string_startsWith($line, ";"))
-            continue;
-        // Sanitize string, we replace all double tabs with single tabs, then replace all tabs with spaces and then replace
-        // double spaces, so that each item is separated only with single space
-        $line = str_replace("\t", " ", $line);
-        while (psf_string_contains($line, "  "))
-            $line = str_replace("  ", " ", $line);
-        if (strlen(str_replace(" ", "", $line)) == 0)
-            continue;
-        $records[] = explode(" ", $line, 5);
+        if ($record[3] === 'SOA')
+        {
+            $soa = $record[4];
+            break;
+        }
     }
-    return $records;
+    return $soa;
+}
+
+function GetRecordList($zone)
+{
+    global $g_caching_engine, $g_caching_engine_instance;
+    if (!IsAuthorizedToRead($zone))
+        return array();
+
+    WriteToAuditFile("display", $zone);
+
+    // Check if zone data exist in cache
+    if ($g_caching_engine_instance->IsCached($zone))
+    {
+        // There is something in the zone cache
+        Debug('Zone ' . $zone . ' exist in cache, checking if SOA record is identical');
+        $current_soa = GetSOAFromData(get_zone_soa($zone));
+        $cached_soa = $g_caching_engine_instance->GetSOA($zone);
+        if ($current_soa === NULL)
+        {
+            // Something is very wrong - there is no SOA record in our query
+            Fatal("Unable to retrieve SOA record - dig SOA didn't contain any result");
+        } else if ($current_soa != $cached_soa)
+        {
+            Debug("Cache miss: '$current_soa' != '$cached_soa'");
+        } else if ($current_soa == $cached_soa)
+        {
+            Debug("Cache match! Not running a full zone transfer");
+            // Return data from cache instead of running full zone transfer
+            return $g_caching_engine_instance->GetData($zone);
+        }
+    } else if ($g_caching_engine !== NULL)
+    {
+        Debug('Zone ' . $zone . ' does not exist in cache, running full zone transfer');
+    }
+    
+    Debug('Running full zone transfer for: ' . $zone);
+    $data = get_zone_data($zone);
+    $soa = GetSOAFromData($data);
+    if ($soa === NULL)
+    {
+        Fatal("Unable to retrieve SOA record - dig SOA didn't contain any result");
+    } else
+    {
+        $g_caching_engine_instance->CacheZone($zone, $soa, $data);
+    }
+    return $data;
 }
 
 function GetRecordListTable($parent, $domain)

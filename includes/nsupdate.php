@@ -67,10 +67,39 @@ function dig($parameters)
     return shell_exec($g_dig . " " . $parameters);
 }
 
+// Convert standard DNS list of records as returned by transfer to PHP array
+function raw_zone_to_array($data)
+{
+    $records = array();
+    $data = explode("\n", $data);
+    foreach ($data as $line)
+    {
+        if (psf_string_startsWith($line, ";"))
+            continue;
+        // Sanitize string, we replace all double tabs with single tabs, then replace all tabs with spaces and then replace
+        // double spaces, so that each item is separated only with single space
+        $line = str_replace("\t", " ", $line);
+        while (psf_string_contains($line, "  "))
+            $line = str_replace("  ", " ", $line);
+        if (strlen(str_replace(" ", "", $line)) == 0)
+            continue;
+        $records[] = explode(" ", $line, 5);
+    }
+    return $records;
+}
+
 function get_zone_data($zone)
 {
     global $g_domains;
     $zone_servers = $g_domains[$zone];
     $data = dig("axfr " . $zone . " @" . $zone_servers["transfer_server"]);
-    return $data;
+    return raw_zone_to_array($data);
+}
+
+function get_zone_soa($zone)
+{
+    global $g_domains;
+    $zone_servers = $g_domains[$zone];
+    $data = dig("SOA " . $zone . " @" . $zone_servers["transfer_server"]);
+    return raw_zone_to_array($data);
 }

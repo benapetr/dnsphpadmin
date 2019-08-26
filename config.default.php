@@ -78,8 +78,8 @@ $g_session_timeout = 3600;
 $g_auth = NULL;
 
 // Application ID for sessions, if you have multiple separate installations of dns php admin, you should create unique strings for each of them
-// to prevent sharing session information between them
-$g_auth_session_name = "dnsphpadmin";
+// to prevent sharing session information between them, this string is also used as prefix for caching keys
+$g_auth_session_name = 'dnsphpadmin';
 
 // Few words about LDAP integration within dns php admin:
 // This tool was written in a very large corporation world with extreme edge use-cases in mind. Therefore it's very flexible and it has
@@ -161,3 +161,17 @@ $g_api_enabled = false;
 // List of access tokens that can be used with API calls (together with classic login)
 // This is a simple list of secrets. Each secret is a string that is used to authenticate for API subsystem.
 $g_api_tokens = [ ];
+
+// Transfer cache is optional and used to cache the results of zone transfer in order to prevent unnecessary transfers, that might put heavy load
+// on both DNS server as well as network. Caching will store a whole zone and instead of performing full zone transfer, DNS tool will just query SOA record and it will
+// check if record serial is matching serial in our cache. If it doesn't, full zone transfer will be executed.
+// You can check whether caching is functioning in debug logs - see $g_debug. Following caching engines are provided:
+// NULL - no caching
+// 'memcache' - Memcache daemon (using memcache class, not memcached class - PHP has two classes for same purpose) https://www.php.net/manual/en/book.memcache.php
+$g_caching_engine = NULL;
+
+// In case you decide to use memcached as caching engine, you can adjust some parameters with these variables
+// NOTE: memcached engine uses $g_auth_session_name as key prefixes
+$g_caching_memcached_host = 'localhost';
+$g_caching_memcached_port = 11211;
+$g_caching_memcached_expiry = 0;

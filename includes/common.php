@@ -15,9 +15,29 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
 require_once("config.php");
+require_once("debug.php");
+require_once("caching_memcache.php");
 
 //! Warning message - if not NULL it's displayed on any page in respective location
 $g_warning_text = NULL;
+
+function InitializeCaching()
+{
+    global $g_caching_engine, $g_caching_engine_instance;
+    switch ($g_caching_engine)
+    {
+        case NULL:
+            $g_caching_engine_instance = new PHPDNS_CachingEngine();
+            break;
+        case 'memcache':
+            $g_caching_engine_instance = new PHPDNS_CachingEngine_Memcache();
+            break;
+        default:
+            die('Invalid caching engine: ' . $g_caching_engine);
+    }
+    Debug('Caching engine: ' . $g_caching_engine_instance->GetEngineName());
+    $g_caching_engine_instance->Initialize();
+}
 
 function DisplayWarning($text)
 {

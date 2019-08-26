@@ -287,6 +287,7 @@ function is_privileged($backend, $privilege)
     return true;
 }
 
+InitializeCaching();
 RefreshSession();
 
 $api = new PsfApiBase_JSON();
