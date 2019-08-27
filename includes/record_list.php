@@ -96,7 +96,7 @@ function GetRecordList($zone)
         if ($current_soa === NULL)
         {
             // Something is very wrong - there is no SOA record in our query
-            Error("Unable to retrieve SOA record - dig SOA didn't contain any result");
+            Error("Unable to retrieve SOA record for " . $zone . " - transfer NS didn't return any data for it", false);
         } else if ($current_soa != $cached_soa)
         {
             Debug("Cache miss: '$current_soa' != '$cached_soa'");
@@ -126,7 +126,7 @@ function GetRecordList($zone)
     $soa = GetSOAFromData($data);
     if ($soa === NULL)
     {
-        Error("Unable to retrieve SOA record - dig SOA didn't contain any result");
+        Error("Unable to retrieve SOA record for " . $zone . " - transfer NS didn't return any data for it", false);
     } else
     {
         $g_caching_engine_instance->CacheZone($zone, $soa, $data);

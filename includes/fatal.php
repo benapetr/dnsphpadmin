@@ -17,14 +17,31 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 require_once("psf/psf.php");
 require_once("config.php");
 
-function Error($msg)
+$g_error = false;
+$g_error_message = NULL;
+
+//! Display a fatal error - if error is blocking, it will stop execution of program and just display an error message in very ugly way
+//! otherwise program will continue execution and error will be rendered somewhere in the interface
+function Error($msg, $blocking = true)
 {
-    global $g_debug;
-    $web = new HtmlPage("Error");
-    bootstrap_init($web);
-    $web->AppendObject(new BS_Alert("ERROR: " . $msg, "danger"));
-    $web->PrintHtml();
-    if ($g_debug)
-        psf_print_debug_as_html();
-    die(1);
+    global $g_debug, $g_error, $g_error_message, $g_error_container;
+    if ($blocking)
+    {
+        $web = new HtmlPage("Error");
+        bootstrap_init($web);
+        $web->AppendObject(new BS_Alert("ERROR: " . $msg, "danger"));
+        $web->PrintHtml();
+        if ($g_debug)
+            psf_print_debug_as_html();
+        die(1);
+    } else
+    {
+        // Store last error message just in case we needed to work with it anywhere else and in case we needed to know whether there was some error during execution
+        $g_error = true;
+        $g_error_message = $msg;
+
+        $fatal_box = new BS_Alert('<b>ERROR:</b> ' . $g_error_message, 'danger');
+        $fatal_box->EscapeHTML = false;
+        $g_error_container->AppendObject($fatal_box);
+    }
 }

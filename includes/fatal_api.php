@@ -16,7 +16,8 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 require_once("psf/psf.php");
 
-function Error($msg)
+//! Similar to Error from fatal.php except API errors are always blocking, so second parameter is irrelevant
+function Error($msg, $blocking = true)
 {
     global $api, $g_debug;
     $api->ThrowError('ERROR: ' . $msg, $msg);

@@ -56,7 +56,9 @@ $website->Style->items["td"]["word-wrap"] = "break-word";
 $website->Style->items["td"]["max-width"] = "280px";
 bootstrap_init($website);
 
+// Create a bootstrap fluid containers, one for whole website and one for errors, which are dynamically inserted to error container as they are generated
 $fc = new BS_FluidContainer($website);
+$g_error_container = new BS_FluidContainer();
 
 if (isset($_GET['login']))
     ProcessLogin();
@@ -78,8 +80,9 @@ if (RequireLogin())
     if ($g_auth_login_banner !== NULL)
         $fc->AppendObject(new BS_Alert($g_auth_login_banner, 'info'));
 
-    // Display warnings if there are any
+    // Display warnings and errors if there are any
     $fc->AppendObject(GetWarningBanner());
+    $fc->AppendObject($g_error_container);
 
     if ($g_login_failed)
         $fc->AppendObject(new BS_Alert($g_login_failure_reason, 'danger'));
@@ -92,6 +95,7 @@ if (RequireLogin())
 
     // Display warnings if there are any
     $fc->AppendObject(GetWarningBanner());
+    $fc->AppendObject($g_error_container);
 
     $fc->AppendObject(GetMenu($fc));
 
