@@ -49,7 +49,7 @@ function WriteToAuditFile($operation, $text = '', $comment = NULL)
     if ($g_audit_events[$operation] !== true)
         return;
 
-    if ($comment === NULL)
+    if (empty($comment))
         $comment = '';
     else
         $comment = ' comment: ' . $comment;
