@@ -36,7 +36,10 @@ function ProcessNSUpdateForDomain($input, $domain)
         $tsig = $domain_info["tsig"];
     if (array_key_exists("tsig_key", $domain_info))
         $tsig_key = $domain_info["tsig_key"];
-    return nsupdate($input, $tsig, $tsig_key);
+    $zone_name = NULL;
+    if (!array_key_exists("explicit", $domain_info) || $domain_info["explicit"] === true)
+        $zone_name = $domain;
+    return nsupdate($input, $tsig, $tsig_key, $zone_name);
 }
 
 function ShowError($form, $txt)

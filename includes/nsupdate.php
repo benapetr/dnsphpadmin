@@ -17,7 +17,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 require_once("config.php");
 require_once("debug.php");
 
-function nsupdate($input, $tsig_override = NULL, $tsig_override_key = NULL)
+function nsupdate($input, $tsig_override = NULL, $tsig_override_key = NULL, $zone_name = NULL)
 {
     global $g_nsupdate, $g_tsig_key, $g_tsig;
 
@@ -31,8 +31,12 @@ function nsupdate($input, $tsig_override = NULL, $tsig_override_key = NULL)
     if ($tsig_override_key !== NULL)
         $tsig_key = $tsig_override_key;
 
+    if ($zone_name !== NULL)
+        $input = 'zone ' . $zone_name . "\n" . $input;
+
     if ($using_tsig)
         $input = "key " . $tsig_key . "\n" . $input;
+    
     $desc = array(
         0 => array('pipe', 'r'),
         1 => array('pipe', 'w'),
