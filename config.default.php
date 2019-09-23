@@ -17,9 +17,9 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 // Timezone (used when writing to audit logs)
 $g_timezone = 'UTC';
 
-// List of domains, each domain has separate value for "transfer server" which server that
-// dig will do zone transfer on when reading zone data, and update_server which is where
-// nsupdate will send its requests
+// List of domains (zones), each zone has separate value for "transfer server" - which is a server that would be used by dig
+// to perform a zone transfer when reading zone data, and "update_server" which is server used to write to via nsupdate
+// There are some extra options that can be specified for each zone (see next example)
 $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_server' => 'localhost' ] ];
 
 // You can specify multiple custom options per domain, this example here contains all available options with documentation:
@@ -33,7 +33,7 @@ $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_s
 //                                      'tsig' => true,
 //                                      'tsig_key' => 'some_key' ] ];
 
-// List of records that can be edited
+// List of record types that can be edited
 $g_editable = [ "A", "AAAA", "CNAME", "DNAME", "NS", "PTR", "SRV", "TXT", "SPF", "MX" ];
 
 // Path to executable of dig
@@ -42,7 +42,7 @@ $g_dig = '/usr/bin/dig';
 // Path to executable of nsupdate
 $g_nsupdate = '/usr/bin/nsupdate';
 
-// If true all changes will go to this file
+// Whether audit subsystem should be enabled
 $g_audit = false;
 
 // Define which events are logged into audit log
@@ -57,6 +57,7 @@ $g_audit_events = [
                     'display' => false
                   ];
 
+// Destination file to which the audit events are written to
 $g_audit_log = '/var/log/dns_audit.log';
 
 // Folder where the batch operations should be logged, each batch operation will be stored in separate file
