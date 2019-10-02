@@ -162,7 +162,14 @@ $g_api_enabled = false;
 
 // List of access tokens that can be used with API calls (together with classic login)
 // This is a simple list of secrets. Each secret is a string that is used to authenticate for API subsystem.
+// It's recommended to optionally prefix each secret with a memorable string (user name) and underscore, for example:
+// my_favorite_tool_secretstring123345
+// In this case if masking is enabled, audit logs will not contain the last part after last underscore to prevent secret from leaking
+// into the audit logs
 $g_api_tokens = [ ];
+
+// If enabled text after last underscore of each api token will be removed from audit logs
+$g_api_token_mask = true;
 
 // Transfer cache is optional and used to cache the results of zone transfer in order to prevent unnecessary transfers, that might put heavy load
 // on both DNS server as well as network. Caching will store a whole zone and instead of performing full zone transfer, DNS tool will just query SOA record and it will

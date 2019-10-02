@@ -33,6 +33,13 @@ function GenerateBatch($operation)
 function GetCurrentUserName()
 {
     global $g_auth;
+    if (isset($_SESSION["logged_in"]) && $_SESSION["logged_in"] === true && isset($_SESSION["token"]) && $_SESSION["token"] === true)
+    {
+        $trimmed_name = $_SESSION["user"];
+        if (psf_string_contains($trimmed_name, '_'))
+            $trimmed_name = substr($trimmed_name, 0, strpos($trimmed_name, '_'));
+        return $trimmed_name;
+    }
     if ($g_auth === "ldap" && isset($_SESSION["user"]))
         return $_SESSION["user"];
     if (!isset($_SERVER['REMOTE_USER']))

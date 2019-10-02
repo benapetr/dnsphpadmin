@@ -81,6 +81,7 @@ function ProcessTokenLogin()
     {
         $_SESSION["user"] = $token;
         $_SESSION["logged_in"] = true;
+        $_SESSION["token"] = true;
         $g_logged_in = true;
         WriteToAuditFile('login_success');
         return;
