@@ -32,8 +32,8 @@ function GenerateBatch($operation)
 
 function GetCurrentUserName()
 {
-    global $g_auth;
-    if (isset($_SESSION["logged_in"]) && $_SESSION["logged_in"] === true && isset($_SESSION["token"]) && $_SESSION["token"] === true)
+    global $g_auth, $g_api_token_mask;
+    if ($g_api_token_mask && isset($_SESSION["logged_in"]) && $_SESSION["logged_in"] === true && isset($_SESSION["token"]) && $_SESSION["token"] === true)
     {
         $trimmed_name = $_SESSION["user"];
         if (psf_string_contains($trimmed_name, '_'))
