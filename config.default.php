@@ -36,6 +36,9 @@ $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_s
 // List of record types that can be edited
 $g_editable = [ "A", "AAAA", "CNAME", "DNAME", "NS", "PTR", "SRV", "TXT", "SPF", "MX" ];
 
+// Default TTL for new DNS records
+$g_default_ttl = 3600;
+
 // Path to executable of dig
 $g_dig = '/usr/bin/dig';
 

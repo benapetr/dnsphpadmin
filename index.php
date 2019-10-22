@@ -127,9 +127,13 @@ if (RequireLogin())
         exit(0);
     } else if ($g_action == 'new')
     {
+        // Process previous inserting call (via submit) in case there was some
+        HandleEdit($fc);
         $fc->AppendObject(GetInsertForm($fc));
     } else if ($g_action == 'edit')
     {
+        // Process previous edit call (via submit) in case there was some
+        HandleEdit($fc);
         $fc->AppendObject(GetEditForm($fc));
     } else if ($g_action == 'batch')
     {

@@ -165,10 +165,10 @@ function HandleEdit($form)
     Error("Unknown modify mode");
 }
 
-function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_ttl = "3600", $default_type = "A", $default_value = "", $default_comment = "")
+function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_ttl = NULL, $default_type = "A", $default_value = "", $default_comment = "")
 {
-    global $g_audit, $g_selected_domain, $g_domains, $g_editable;
-    HandleEdit($parent);
+    global $g_audit, $g_selected_domain, $g_domains, $g_editable, $g_default_ttl;
+
     // In case we are returning to insert form from previous insert, make default type the one we used before
     if (isset($_POST['type']))
         $default_type = $_POST['type'];
@@ -178,6 +178,10 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
     // Reuse some values from previous POST request
     if (isset($_POST['comment']))
         $default_comment = $_POST['comment'];
+
+    // If ttl is not specified use default one from config file
+    if ($default_ttl === NULL)
+        $default_ttl = strval($g_default_ttl);
     
     $form = new Form("index.php?action=new", $parent);
     $form->Method = FormMethod::Post;
