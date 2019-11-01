@@ -39,7 +39,8 @@ $g_editable = [ "A", "AAAA", "CNAME", "DNAME", "NS", "PTR", "SRV", "TXT", "SPF",
 // Default TTL for new DNS records
 $g_default_ttl = 3600;
 
-// Path to executable of dig
+// Path to executable of dig, you can also use this to specify some dig options for example:
+// $g_dig = '/usr/bin/dig +tcp +time=10';
 $g_dig = '/usr/bin/dig';
 
 // Path to executable of nsupdate
