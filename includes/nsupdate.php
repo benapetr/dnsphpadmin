@@ -68,6 +68,7 @@ function nsupdate($input, $tsig_override = NULL, $tsig_override_key = NULL, $zon
 function dig($parameters)
 {
     global $g_dig;
+    Debug("shell_exec: " . $g_dig . " " . $parameters);
     return shell_exec($g_dig . " " . $parameters);
 }
 
