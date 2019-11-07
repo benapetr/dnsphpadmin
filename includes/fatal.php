@@ -15,6 +15,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
 require_once("psf/psf.php");
+require_once("fatal_shared.php");
 require_once("config.php");
 
 $g_error = false;
@@ -25,6 +26,7 @@ $g_error_message = NULL;
 function Error($msg, $blocking = true)
 {
     global $g_debug, $g_error, $g_error_message, $g_error_container;
+    WriteToErrorLog($msg);
     if ($blocking)
     {
         $web = new HtmlPage("Error");

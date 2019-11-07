@@ -46,6 +46,9 @@ $g_dig = '/usr/bin/dig';
 // Path to executable of nsupdate
 $g_nsupdate = '/usr/bin/nsupdate';
 
+// Error log, keep NULL to disable error logging to external file, or set to absolute path to writeable error log file
+$g_error_log = NULL;
+
 // Whether audit subsystem should be enabled
 $g_audit = false;
 
