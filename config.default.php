@@ -46,6 +46,9 @@ $g_dig = '/usr/bin/dig';
 // Path to executable of nsupdate
 $g_nsupdate = '/usr/bin/nsupdate';
 
+// If set to value higher than 0, dig will be retried for N times, this is useful on broken networks with heavy packet loss
+$g_retry_on_error = 2;
+
 // Error log, keep NULL to disable error logging to external file, or set to absolute path to writeable error log file
 $g_error_log = NULL;
 

@@ -82,7 +82,7 @@ function GetSOAFromData($data)
 
 function GetRecordList($zone)
 {
-    global $g_caching_engine, $g_caching_engine_instance;
+    global $g_caching_engine, $g_caching_engine_instance, $g_retry_on_error;
     if (!IsAuthorizedToRead($zone))
         return array();
 
@@ -96,7 +96,26 @@ function GetRecordList($zone)
         if ($current_soa === NULL)
         {
             // Something is very wrong - there is no SOA record in our query
-            Error("Unable to retrieve SOA record for " . $zone . " - transfer NS didn't return any data for it", false);
+            // Check if retry on error is enabled, if yes, try N more times, if it doesn't help, show error
+            if ($g_retry_on_error > 0)
+            {
+                $retry = $g_retry_on_error;
+                $current_retry = 0;
+                while ($retry-- > 0)
+                {
+                    $current_retry++;
+                    Debug("Unable to retrieve SOA record for " . $zone . " (dig returned no data), retrying dig ($current_retry/$g_retry_on_error)...");
+                    $current_soa = GetSOAFromData(get_zone_soa($zone));
+                    if ($current_soa !== NULL)
+                    {
+                        DisplayWarning("Transfer NS for " . $zone . " had troubles returning SOA record, had to retry $current_retry times, check your network");
+                        break;
+                    }
+                }
+            }
+            // if SOA is still NULL, show non-blocking error
+            if ($current_soa === NULL)
+                Error("Unable to retrieve SOA record for " . $zone . " - transfer NS didn't return any data for it", false);
         } else if ($current_soa != $cached_soa)
         {
             Debug("Cache miss: '$current_soa' != '$cached_soa'");
