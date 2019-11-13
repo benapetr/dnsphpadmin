@@ -82,6 +82,12 @@ $g_tsig_key = '';
 // Will print debug statements into html output
 $g_debug = false;
 
+// Will print debug messages into specified file (lot of text)
+$g_debug_log = NULL;
+
+// Optional execution ID used to identify separate executions in logs (debug / audit / error)
+$g_eid = bin2hex(openssl_random_pseudo_bytes(8));
+
 // How long do sessions last in seconds
 $g_session_timeout = 3600;
 

@@ -49,7 +49,7 @@ function GetCurrentUserName()
 
 function WriteToAuditFile($operation, $text = '', $comment = NULL)
 {
-    global $g_audit, $g_audit_log, $g_audit_events;
+    global $g_audit, $g_audit_log, $g_audit_events, $g_eid;
     if (!$g_audit)
         return;
     
@@ -66,7 +66,7 @@ function WriteToAuditFile($operation, $text = '', $comment = NULL)
     $record = '';
     if (!empty($text))
         $record = " record: " . $text;
-    $log_line .= ' entry point: ' . G_DNSTOOL_ENTRY_POINT . ' user: ' . GetCurrentUserName() . " ip: " . $_SERVER['REMOTE_ADDR'] . " operation: " . $operation . $record . $comment . "\n";
+    $log_line .= ' entry point: ' . G_DNSTOOL_ENTRY_POINT . ' eid: ' . $g_eid . ' user: ' . GetCurrentUserName() . " ip: " . $_SERVER['REMOTE_ADDR'] . " operation: " . $operation . $record . $comment . "\n";
 
     $g_audit_log;
     $result = file_put_contents($g_audit_log, $log_line, FILE_APPEND | LOCK_EX);

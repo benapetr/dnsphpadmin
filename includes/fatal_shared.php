@@ -18,7 +18,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 function WriteToErrorLog($text)
 {
-    global $g_error_log;
+    global $g_error_log, $g_eid;
     if ($g_error_log === NULL)
         return;
 
@@ -27,7 +27,7 @@ function WriteToErrorLog($text)
 
     // Prepare audit log line
     $log_line = date('m/d/Y h:i:s a', time());
-    $log_line .= ' entry point: ' . G_DNSTOOL_ENTRY_POINT . " ip: " . $_SERVER['REMOTE_ADDR'] . " ERROR: " . $text . "\n";
+    $log_line .= ' entry point: ' . G_DNSTOOL_ENTRY_POINT . ' eid: ' . $g_eid . " ip: " . $_SERVER['REMOTE_ADDR'] . " ERROR: " . $text . "\n";
 
     $result = file_put_contents($g_error_log, $log_line, FILE_APPEND | LOCK_EX);
     if ($result === false)
