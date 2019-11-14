@@ -104,7 +104,7 @@ function GetRecordList($zone)
                 while ($retry-- > 0)
                 {
                     $current_retry++;
-                    Debug("Unable to retrieve SOA record for " . $zone . " (dig returned no data), retrying dig ($current_retry/$g_retry_on_error)...");
+                    Debug("Unable to retrieve SOA record for " . $zone . " (dig SOA returned no data), retrying dig ($current_retry/$g_retry_on_error)...");
                     $current_soa = GetSOAFromData(get_zone_soa($zone));
                     if ($current_soa !== NULL)
                     {
@@ -115,7 +115,7 @@ function GetRecordList($zone)
             }
             // if SOA is still NULL, show non-blocking error
             if ($current_soa === NULL)
-                Error("Unable to retrieve SOA record for " . $zone . " - transfer NS didn't return any data for it", false);
+                Error("Unable to retrieve SOA record for " . $zone . " - (dig SOA) transfer NS didn't return any data for it", false);
         } else if ($current_soa != $cached_soa)
         {
             Debug("Cache miss: '$current_soa' != '$cached_soa'");
@@ -145,7 +145,28 @@ function GetRecordList($zone)
     $soa = GetSOAFromData($data);
     if ($soa === NULL)
     {
-        Error("Unable to retrieve SOA record for " . $zone . " - transfer NS didn't return any data for it", false);
+        // Again - server returned no SOA record, there is some network issue
+        if ($g_retry_on_error > 0)
+        {
+            $retry = $g_retry_on_error;
+            $current_retry = 0;
+            while ($retry-- > 0)
+            {
+                $current_retry++;
+                Debug("Unable to retrieve SOA record for " . $zone . " (dig AXFR returned no data), retrying dig ($current_retry/$g_retry_on_error)...");
+                $data = get_zone_data($zone);
+                $soa = GetSOAFromData($data);
+                if ($soa !== NULL)
+                {
+                    DisplayWarning("Transfer NS for " . $zone . " had troubles returning SOA record during AXFR, had to retry $current_retry times, check your network");
+                    break;
+                }
+            }
+        }
+        if ($soa === NULL)
+            Error("Unable to retrieve SOA record for " . $zone . " - (dig AXFR) transfer NS didn't return any data for it", false);
+        else
+            $g_caching_engine_instance->CacheZone($zone, $soa, $data);
     } else
     {
         $g_caching_engine_instance->CacheZone($zone, $soa, $data);

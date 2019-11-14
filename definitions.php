@@ -13,5 +13,5 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-define('G_DNSTOOL_VERSION', '1.5.0');
+define('G_DNSTOOL_VERSION', '1.6.0');
 define('G_API_ELOGIN', 2);
