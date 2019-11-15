@@ -53,7 +53,7 @@ class PHPDNS_CachingEngine_Memcache extends PHPDNS_CachingEngine
         if (!$this->memcache->set($this->getPrefix() . 'soa_' . $zone, $soa, $g_caching_memcached_expiry) ||
             !$this->memcache->set($this->getPrefix() . 'data_' . $zone, $data, $g_caching_memcached_expiry))
         {
-            die('Unable to store data in memcache: ' . $this->memcache->getResultMessage());
+            die('Unable to store data in memcache');
         }
     }
 
