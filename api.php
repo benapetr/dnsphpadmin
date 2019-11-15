@@ -338,6 +338,7 @@ function api_call_get_record($source)
     if (!IsAuthorizedToRead($zone))
         $api->ThrowError('Permission denied', "You don't have access to read data from this zone");
     
+    WriteToAuditFile("get_record", $record . ' ('. $zone .')');
     $api->PrintObj(get_records_from_zone($record, $type, $zone));
     return true;
 }

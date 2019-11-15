@@ -64,7 +64,8 @@ $g_audit_events = [
                     'replace_delete' => true,
                     'replace_create' => true,
                     'delete' => true,
-                    'display' => false
+                    'display' => false,
+                    'get_record' => false
                   ];
 
 // Destination file to which the audit events are written to
