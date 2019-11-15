@@ -108,3 +108,11 @@ function get_zone_soa($zone)
     $data = dig("SOA " . $zone . " @" . $zone_servers["transfer_server"]);
     return raw_zone_to_array($data);
 }
+
+function get_records_from_zone($fqdn, $type, $zone)
+{
+    global $g_domains;
+    $zone_servers = $g_domains[$zone];
+    $data = dig('+nocomments +noauthority +noadditional ' . $type . ' ' . $fqdn . " @" . $zone_servers["transfer_server"]);
+    return raw_zone_to_array($data);
+}

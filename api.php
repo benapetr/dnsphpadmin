@@ -313,6 +313,35 @@ function api_call_get_zone_for_fqdn($source)
     return true;
 }
 
+function api_call_get_record($source)
+{
+    global $api;
+    $record = get_required_post_get_parameter('record');
+    $type = get_optional_post_get_parameter('type');
+    if ($type === NULL)
+        $type = 'A';
+    
+    if (!IsValidRecordType($type))
+    {
+        $api->ThrowError('Invalid type', "Type $type is not a valid DNS record type");
+        return false;
+    }
+
+    $zone = get_optional_post_get_parameter('zone');
+    if ($zone === NULL)
+    {
+        $zone = get_zone_for_fqdn_or_throw($record);
+    } else
+    {
+        $record .= '.' . $zone;
+    }
+    if (!IsAuthorizedToRead($zone))
+        $api->ThrowError('Permission denied', "You don't have access to read data from this zone");
+    
+    $api->PrintObj(get_records_from_zone($record, $type, $zone));
+    return true;
+}
+
 function register_api($name, $short_desc, $long_desc, $callback, $auth = true, $required_params = [], $optional_params = [], $example = NULL, $post_only = false)
 {
     global $api;
@@ -376,7 +405,7 @@ register_api('list_records', "List all existing records for a specified zone", "
 register_api('create_record', 'Create a new DNS record in specified zone', 'Creates a new DNS record in specific zone. Please mind that domain name / zone is appended to record name automatically, ' .
                                                                            'so if you want to add test.domain.org, name of key is only test.', 'api_call_create_record', true,
              // Required parameters
-             [ new PsfApiParameter("record", PsfApiParameterType::String, "Record name"),
+             [ new PsfApiParameter("record", PsfApiParameterType::String, "Record name, if you don't provide zone name explicitly, this should be FQDN"),
                new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type"),
                new PsfApiParameter("value", PsfApiParameterType::String, "Value of record") ],
              // Optional parameters
@@ -386,7 +415,7 @@ register_api('create_record', 'Create a new DNS record in specified zone', 'Crea
              '?action=create_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
 register_api('delete_record', 'Delete a DNS record in specified zone', 'Deletes a DNS record in specific zone', 'api_call_delete_record', true,
              // Required parameters
-             [ new PsfApiParameter("record", PsfApiParameterType::String, "Record name"),
+             [ new PsfApiParameter("record", PsfApiParameterType::String, "Record name, if you don't provide zone name explicitly, this should be FQDN"),
                new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type"),
                new PsfApiParameter("value", PsfApiParameterType::String, "Value of record") ],
              // Optional parameters
@@ -396,4 +425,9 @@ register_api('delete_record', 'Delete a DNS record in specified zone', 'Deletes 
              '?action=delete_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
 register_api('get_zone_for_fqdn', 'Returns zone name for given FQDN', 'Attempts to look up zone name for given FQDN using configuration file of php dns admin using auto-lookup function',
              'api_call_get_zone_for_fqdn', false, [ new PsfApiParameter("fqdn", PsfApiParameterType::String, "FQDN") ], [], '?action=get_zone_for_fqdn&fqdn=test.example.org');
+register_api('get_record', 'Return single record with specified FQDN', 'Lookup single record from master server responsible for zone that hosts this record', 'api_call_get_record', true,
+             [ new PsfApiParameter("record", PsfApiParameterType::String, "Record name, if you don't provide zone name explicitly, this should be FQDN") ],
+             [ new PsfApiParameter("type", PsfApiParameterType::String, "Record type (if not specified, will be A)"),
+               new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify, if not specified and record is fully qualified, it's automatically looked up from config file") ],
+             '?action=get_record&record=test.example.org');
 $api->Process();
