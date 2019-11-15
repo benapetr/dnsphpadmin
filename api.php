@@ -191,15 +191,33 @@ function get_optional_post_get_parameter($name)
     return $result;
 }
 
+function get_zone_for_fqdn_or_throw($fqdn)
+{
+    global $api;
+    $zone = GetZoneForFQDN($fqdn);
+
+    if ($zone === NULL)
+        $api->ThrowError('No such zone', 'Zone for given fqdn was not found');
+
+    return $zone;
+}
+
 function api_call_create_record($source)
 {
     global $api, $g_domains;
-    $zone = get_required_post_get_parameter('zone');
+    $zone = get_optional_post_get_parameter('zone');
     $record = get_required_post_get_parameter('record');
     $ttl = get_required_post_get_parameter('ttl');
     $type = get_required_post_get_parameter('type');
     $value = get_required_post_get_parameter('value');
     $comment = get_optional_post_get_parameter('comment');
+    $merge_record = true;
+
+    if ($zone === NULL)
+    {
+        $merge_record = false;
+        $zone = get_zone_for_fqdn_or_throw($record);
+    }
 
     if (!check_zone_access($zone))
         return false;
@@ -217,37 +235,81 @@ function api_call_create_record($source)
     }
 
     $n = "server " . $g_domains[$zone]['update_server'] . "\n";
-    $n .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
+    if ($merge_record)
+        $n .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
+    else
+        $n .= ProcessInsertFromPOST("" , $record, $value, $type, $ttl);
     $n .= "send\nquit\n";
 
     ProcessNSUpdateForDomain($n, $zone);
-    WriteToAuditFile("create", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
-    print_success();
 
+    if ($merge_record)
+        WriteToAuditFile("create", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
+    else
+        WriteToAuditFile("create", $record . " " . $ttl . " " . $type . " " . $value, $comment);
+
+    print_success();
     return true;
 }
 
 function api_call_delete_record($source)
 {
     global $api, $g_domains;
-    $zone = get_required_post_get_parameter('zone');
+    $zone = get_optional_post_get_parameter('zone');
     $record = get_required_post_get_parameter('record');
     $ttl = get_required_post_get_parameter('ttl');
     $type = get_required_post_get_parameter('type');
     $value = get_required_post_get_parameter('value');
     $comment = get_optional_post_get_parameter('comment');
+    $merge_record = true;
+
+    if ($zone === NULL)
+    {
+        $merge_record = false;
+        $zone = get_zone_for_fqdn_or_throw($record);
+    }
 
     if (!check_zone_access($zone))
         return false;
 
+    if (!IsValidRecordType($type))
+    {
+        $api->ThrowError('Invalid type', "Type $type is not a valid DNS record type");
+        return false;
+    }
+
+    if (!is_numeric($ttl))
+    {
+        $api->ThrowError('Invalid ttl', "TTL must be a number");
+        return false;
+    }
+
     $n = "server " . $g_domains[$zone]['update_server'] . "\n";
-    $n .= "update delete " . $record . "." . $zone . " " . $ttl . " " . $type . " " . $value . "\n";
+    if ($merge_record)
+        $n .= "update delete " . $record . "." . $zone . " " . $ttl . " " . $type . " " . $value . "\n";
+    else
+        $n .= "update delete " . $record . " " . $ttl . " " . $type . " " . $value . "\n";
     $n .= "send\nquit\n";
 
     ProcessNSUpdateForDomain($n, $zone);
-    WriteToAuditFile("delete", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
-    print_success();
 
+    if ($merge_record)
+        WriteToAuditFile("delete", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
+    else
+        WriteToAuditFile("delete", $record . " " . $ttl . " " . $type . " " . $value, $comment);
+
+    print_success();
+    return true;
+}
+
+function api_call_get_zone_for_fqdn($source)
+{
+    global $api;
+    $fqdn = get_required_post_get_parameter('fqdn');
+    $zone = GetZoneForFQDN($fqdn);
+    if ($zone === NULL)
+        $api->ThrowError('No such zone', 'Zone for given fqdn was not found');
+    $api->PrintObj(['zone' => $zone]);
     return true;
 }
 
@@ -296,28 +358,42 @@ $api->AuthenticationBackend = new PsfCallbackAuth($api);
 $api->AuthenticationBackend->callback_IsAuthenticated = "is_authenticated";
 $api->AuthenticationBackend->callback_IsPrivileged = "is_privileged";
 
-register_api("is_logged", "Returns information whether you are currently logged in, or not", "Returns information whether you are currently logged in or not.", "api_call_is_logged", false, [], [], '?action=is_logged');
-register_api("login", "Logins via username and password", "Login into API via username and password using exactly same login method as index.php. This API can be only accessed via POST method", "api_call_login", false,
+register_api("is_logged", "Returns information whether you are currently logged in, or not", "Returns information whether you are currently logged in or not.",
+             "api_call_is_logged", false, [], [], '?action=is_logged');
+register_api("login", "Logins via username and password", "Login into API via username and password using exactly same login method as index.php. This API can be only accessed via POST method",
+             "api_call_login", false,
              [ new PsfApiParameter("loginUsername", PsfApiParameterType::String, "Username to login"), new PsfApiParameter("loginPassword", PsfApiParameterType::String, "Password") ],
              [], '?action=login', true);
 register_api("logout", "Logs you out", "Logs you out and clear your session data", "api_call_logout", true, [], [], '?action=logout');
 register_api("login_token", "Logins via token", "Login into API via application token", "api_call_login_token", false,
              [ new PsfApiParameter("token", PsfApiParameterType::String, "Token that is used to login with") ],
              [], '?action=login_token&token=123ngfshegkernker5', true);
-register_api("list_zones", "List all existing zones that you have access to", "List all existing zones that you have access to.", "api_call_list", true,
-             [], [], '?action=list_zones');
+register_api("list_zones", "List all existing zones that you have access to", "List all existing zones that you have access to.",
+             "api_call_list", true, [], [], '?action=list_zones');
 register_api('list_records', "List all existing records for a specified zone", "List all existing records for a specified zone", "api_call_list_records", true,
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to list records for") ],
              [], '?action=list_records&zone=domain.org');
-register_api('create_record', 'Create a new DNS record in specified zone', 'Creates a new DNS record in specific zone. Please mind that domain name / zone is appended to record name automatically, so if you want to add test.domain.org, name of key is only test.', 'api_call_create_record', true,
-             [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to insert record in"), new PsfApiParameter("record", PsfApiParameterType::String, "Record name"),
+register_api('create_record', 'Create a new DNS record in specified zone', 'Creates a new DNS record in specific zone. Please mind that domain name / zone is appended to record name automatically, ' .
+                                                                           'so if you want to add test.domain.org, name of key is only test.', 'api_call_create_record', true,
+             // Required parameters
+             [ new PsfApiParameter("record", PsfApiParameterType::String, "Record name"),
                new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type"),
                new PsfApiParameter("value", PsfApiParameterType::String, "Value of record") ],
-             [ new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ], '?action=create_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
+             // Optional parameters
+             [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify, if not specified and record is fully qualified, it's automatically looked up from config file"),
+               new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ],
+             // Example call
+             '?action=create_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
 register_api('delete_record', 'Delete a DNS record in specified zone', 'Deletes a DNS record in specific zone', 'api_call_delete_record', true,
-             [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify"), new PsfApiParameter("record", PsfApiParameterType::String, "Record name"),
+             // Required parameters
+             [ new PsfApiParameter("record", PsfApiParameterType::String, "Record name"),
                new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type"),
                new PsfApiParameter("value", PsfApiParameterType::String, "Value of record") ],
-             [ new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ], '?action=delete_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
-
+             // Optional parameters
+             [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify, if not specified and record is fully qualified, it's automatically looked up from config file"),
+               new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ],
+             // Example call
+             '?action=delete_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
+register_api('get_zone_for_fqdn', 'Returns zone name for given FQDN', 'Attempts to look up zone name for given FQDN using configuration file of php dns admin using auto-lookup function',
+             'api_call_get_zone_for_fqdn', false, [ new PsfApiParameter("fqdn", PsfApiParameterType::String, "FQDN") ], [], '?action=get_zone_for_fqdn&fqdn=test.example.org');
 $api->Process();

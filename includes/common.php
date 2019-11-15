@@ -137,3 +137,18 @@ function IsAuthorizedToWrite($domain)
 {
     return IsAuthorized($domain, 'rw');
 }
+
+function GetZoneForFQDN($fqdn)
+{
+    global $g_domains;
+    do
+    {
+        if (!array_key_exists($fqdn, $g_domains))
+        {
+            $fqdn= substr($fqdn, strpos($fqdn, '.') + 1);
+            continue;
+        }
+        return $fqdn;
+    } while (psf_string_contains($fqdn, '.'));
+    return NULL;
+}

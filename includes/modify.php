@@ -86,15 +86,23 @@ function ProcessDelete($well)
 
 function ProcessInsertFromPOST($zone, $record, $value, $type, $ttl)
 {
-    $input = "";
-    
-    if (strlen($record) == 0)
-        $input .= "update add " . $zone . " " . $ttl . " " . $type . " " . $value . "\n";
-    else
-        $input .= "update add " . $record . "." . $zone . " " . $ttl . " " . $type . " " . $value . "\n";
-    return $input;
+    if (empty($record) && empty($zone))
+        Error("Both record and zone can't be empty");
+
+    $fqdn = $record;
+    if (!empty($zone))
+    {
+        // Make sure we don't add trailing dot
+        if (!empty ($fqdn))
+            $fqdn .= '.' . $zone;
+        else
+            $fqdn = $zone;
+    }
+
+    return "update add " . $fqdn . " " . $ttl . " " . $type . " " . $value . "\n";
 }
 
+//! This function checks if there is a request to edit any record in POST data and if yes, it processes it
 function HandleEdit($form)
 {
     global $g_domains;
