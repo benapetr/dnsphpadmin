@@ -17,6 +17,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 require_once("config.php");
 require_once("debug.php");
 require_once("caching_memcache.php");
+require_once("caching_memcached.php");
 
 //! Warning message - if not NULL it's displayed on any page in respective location
 $g_warning_text = NULL;
@@ -31,6 +32,9 @@ function InitializeCaching()
             break;
         case 'memcache':
             $g_caching_engine_instance = new PHPDNS_CachingEngine_Memcache();
+            break;
+        case 'memcached':
+            $g_caching_engine_instance = new PHPDNS_CachingEngine_Memcached();
             break;
         default:
             die('Invalid caching engine: ' . $g_caching_engine);

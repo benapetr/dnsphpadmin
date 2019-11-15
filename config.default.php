@@ -194,6 +194,7 @@ $g_api_token_mask = true;
 // You can check whether caching is functioning in debug logs - see $g_debug. Following caching engines are provided:
 // NULL - no caching
 // 'memcache' - Memcache daemon (using memcache class, not memcached class - PHP has two classes for same purpose) https://www.php.net/manual/en/book.memcache.php
+// 'memcached' - Memcache daemon (using memcached class)
 $g_caching_engine = NULL;
 
 // In case you decide to use memcached as caching engine, you can adjust some parameters with these variables
