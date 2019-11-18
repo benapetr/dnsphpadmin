@@ -58,6 +58,7 @@ bootstrap_init($website);
 // Create a bootstrap fluid containers, one for whole website and one for errors, which are dynamically inserted to error container as they are generated
 $fc = new BS_FluidContainer($website);
 $g_error_container = new BS_FluidContainer();
+$g_warning_container = new BS_FluidContainer();
 
 if (isset($_GET['login']))
     ProcessLogin();
@@ -80,7 +81,7 @@ if (RequireLogin())
         $fc->AppendObject(new BS_Alert($g_auth_login_banner, 'info'));
 
     // Display warnings and errors if there are any
-    $fc->AppendObject(GetWarningBanner());
+    $fc->AppendObject($g_warning_container);
     $fc->AppendObject($g_error_container);
 
     if ($g_login_failed)
@@ -93,7 +94,7 @@ if (RequireLogin())
         $fc->AppendHtml(GetLoginInfo());
 
     // Display warnings if there are any
-    $fc->AppendObject(GetWarningBanner());
+    $fc->AppendObject($g_warning_container);
     $fc->AppendObject($g_error_container);
 
     $fc->AppendObject(GetMenu($fc));

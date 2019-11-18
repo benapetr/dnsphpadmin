@@ -19,9 +19,6 @@ require_once("debug.php");
 require_once("caching_memcache.php");
 require_once("caching_memcached.php");
 
-//! Warning message - if not NULL it's displayed on any page in respective location
-$g_warning_text = NULL;
-
 function InitializeCaching()
 {
     global $g_caching_engine, $g_caching_engine_instance;
@@ -45,25 +42,10 @@ function InitializeCaching()
 
 function DisplayWarning($text)
 {
-    global $g_warning_text;
-    if (empty($g_warning_text))
-    {
-        $g_warning_text = '<b>WARNING:</b> ' . htmlspecialchars($text);
-    } else
-    {
-        $g_warning_text .= '<br><b>WARNING:</b> ' . htmlspecialchars($text);
-    }
-}
-
-function GetWarningBanner()
-{
-    global $g_warning_text;
-    if ($g_warning_text === NULL)
-        return NULL;
-
-    $warning_box = new BS_Alert($g_warning_text, 'warning');
+    global $g_warning_container;
+    $warning_box = new BS_Alert('<b>WARNING:</b> ' . htmlspecialchars($text), 'warning');
     $warning_box->EscapeHTML = false;
-    return $warning_box;
+    $g_warning_container->AppendObject($warning_box);
 }
 
 function IsValidRecordType($type)
@@ -155,4 +137,15 @@ function GetZoneForFQDN($fqdn)
         return $fqdn;
     } while (psf_string_contains($fqdn, '.'));
     return NULL;
+}
+
+function HasPTRZones()
+{
+    global $g_domains;
+    foreach ($g_domains as $key => $info)
+    {
+        if (psf_string_endsWith($key, ".in-addr.arpa"))
+            return true;
+    }
+    return false;
 }

@@ -152,7 +152,6 @@ function HandleEdit($form)
             Debug("result: " . $result);
         WriteToAuditFile('create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
         $form->AppendObject(new BS_Alert("Successfully inserted record " . $record . "." . $zone));
-        return;
     } else if ($_POST["submit"] == "Edit")
     {
         if (!isset($_POST["old"]))
@@ -168,9 +167,55 @@ function HandleEdit($form)
         WriteToAuditFile('replace_create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
         $form->AppendObject(new BS_Alert("Successfully replaced " . $_POST["old"] . " with " . $record . "." . $zone . " " .
                                          $ttl . " " . $type . " " . $value));
-        return;
+    } else
+    {
+        Error("Unknown modify mode");
     }
-    Error("Unknown modify mode");
+
+    // Create PTR if wanted
+    if (isset($_POST['ptr']) && $_POST['ptr'] === "true")
+    {
+        Debug('PTR record was requested, checking zone name');
+        if ($type !== "A")
+        {
+            DisplayWarning('PTR record was not created: PTR record can be only created when you are inserting A record, you created ' . $type . ' record instead');
+            return;
+        }
+        $ip_parts = explode('.', $value);
+        if (count($ip_parts) != 4)
+        {
+            DisplayWarning('PTR record was not created: record '. $value .' is not a valid IPv4 quad');
+            return;
+        }
+        $arpa = $ip_parts[3] . '.' . $ip_parts[2] . '.' . $ip_parts[1] . '.' . $ip_parts[0] . '.in-addr.arpa';
+        $arpa_zone = GetZoneForFQDN($arpa);
+        if ($arpa_zone === NULL)
+        {
+            DisplayWarning('PTR record was not created: there is no PTR zone for record '. $value);
+            return;
+        }
+        if (!IsEditable($arpa_zone))
+        {
+            DisplayWarning('PTR record was not created: zone ' . $arpa_zone . ' is read only');
+            return;
+        }
+        if (!IsAuthorizedToWrite($arpa_zone))
+        {
+            DisplayWarning("PTR record was not created: you don't have write access to zone " . $arpa_zone);
+            return;
+        }
+        Debug('Found PTR useable zone: ' . $arpa_zone);
+        $arpa_value = $record . '.' . $zone . '.';
+
+        // Let's insert this record
+        $input = "server " . $g_domains[$arpa_zone]['update_server'] . "\n";
+        $input .= ProcessInsertFromPOST(NULL, $arpa, $arpa_value, 'PTR', $ttl);
+        $input .= "send\nquit\n";
+        $result = ProcessNSUpdateForDomain($input, $arpa_zone);
+        if (strlen($result) > 0)
+            Debug("result: " . $result);
+        WriteToAuditFile('create', $arpa . " " . $ttl . " PTR " . $arpa_value, $comment);
+    }
 }
 
 function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_ttl = NULL, $default_type = "A", $default_value = "", $default_comment = "")
@@ -242,7 +287,8 @@ function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_
         $form_items[] = $comment;
     }
     $layout->AppendRow($form_items);
-    //$form->AppendObject(new BS_CheckBox("ptr", "true", false, NULL, $form, "Create PTR record for this (works only with A records)"));
+    if (!$edit_mode && HasPTRZones())
+        $form->AppendObject(new BS_CheckBox("ptr", "true", false, NULL, $form, "Create PTR record for this IP (works only with A records)"));
     if (isset($_GET["old"]))
     $form->AppendObject(new Hidden("old", htmlspecialchars($_GET["old"])));
     if ($edit_mode)
