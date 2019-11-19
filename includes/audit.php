@@ -37,7 +37,7 @@ function GetCurrentUserName()
     {
         $trimmed_name = $_SESSION["user"];
         if (psf_string_contains($trimmed_name, '_'))
-            $trimmed_name = substr($trimmed_name, 0, strpos($trimmed_name, '_'));
+            $trimmed_name = substr($trimmed_name, 0, strrpos($trimmed_name, '_'));
         return $trimmed_name;
     }
     if ($g_auth === "ldap" && isset($_SESSION["user"]))
