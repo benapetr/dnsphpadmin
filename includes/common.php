@@ -42,6 +42,8 @@ function InitializeCaching()
 
 function DisplayWarning($text)
 {
+    if (G_DNSTOOL_ENTRY_POINT === "api.php")
+        return;
     global $g_warning_container;
     $warning_box = new BS_Alert('<b>WARNING:</b> ' . htmlspecialchars($text), 'warning');
     $warning_box->EscapeHTML = false;
