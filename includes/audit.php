@@ -15,7 +15,9 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
 require_once("psf/psf.php");
+require_once("common.php");
 require_once("config.php");
+require_once("logging.php");
 
 function GenerateBatch($operation)
 {
@@ -30,26 +32,9 @@ function GenerateBatch($operation)
     return $file_name;
 }
 
-function GetCurrentUserName()
-{
-    global $g_auth, $g_api_token_mask;
-    if ($g_api_token_mask && isset($_SESSION["logged_in"]) && $_SESSION["logged_in"] === true && isset($_SESSION["token"]) && $_SESSION["token"] === true)
-    {
-        $trimmed_name = $_SESSION["user"];
-        if (psf_string_contains($trimmed_name, '_'))
-            $trimmed_name = substr($trimmed_name, 0, strrpos($trimmed_name, '_'));
-        return $trimmed_name;
-    }
-    if ($g_auth === "ldap" && isset($_SESSION["user"]))
-        return $_SESSION["user"];
-    if (!isset($_SERVER['REMOTE_USER']))
-        return "unknown user";
-    return $_SERVER['REMOTE_USER'];
-}
-
 function WriteToAuditFile($operation, $text = '', $comment = NULL)
 {
-    global $g_audit, $g_audit_log, $g_audit_events, $g_eid;
+    global $g_audit, $g_audit_log, $g_audit_events, $g_eid, $g_syslog, $g_syslog_targets;
     if (!$g_audit)
         return;
     
@@ -61,15 +46,23 @@ function WriteToAuditFile($operation, $text = '', $comment = NULL)
     else
         $comment = ' comment: ' . $comment;
 
-    // Prepare audit log line
-    $log_line = date('m/d/Y h:i:s a', time());
     $record = '';
     if (!empty($text))
         $record = " record: " . $text;
-    $log_line .= ' entry point: ' . G_DNSTOOL_ENTRY_POINT . ' eid: ' . $g_eid . ' user: ' . GetCurrentUserName() . " ip: " . $_SERVER['REMOTE_ADDR'] . " operation: " . $operation . $record . $comment . "\n";
 
-    $g_audit_log;
-    $result = file_put_contents($g_audit_log, $log_line, FILE_APPEND | LOCK_EX);
-    if ($result === false)
-        throw new Exception('Unable to write to audit file: ' . $g_audit_log);
+    // Line to write both to syslog and to file
+    $raw_line = 'entry point: ' . G_DNSTOOL_ENTRY_POINT . ' eid: ' . $g_eid . ' user: ' . GetCurrentUserName() . " ip: " . $_SERVER['REMOTE_ADDR'] . " operation: " . $operation . $record . $comment;
+    
+    if ($g_syslog && $g_syslog_targets['audit'] === true)
+    {
+        WriteToSyslog($raw_line);
+    }
+
+    if ($g_audit_log !== NULL)
+    {
+        $log_line = date('m/d/Y h:i:s a', time()) . ' ' . $raw_line . "\n";
+        $result = file_put_contents($g_audit_log, $log_line, FILE_APPEND | LOCK_EX);
+        if ($result === false)
+            throw new Exception('Unable to write to audit file: ' . $g_audit_log);
+    }
 }

@@ -14,10 +14,22 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-require_once("config.php");
 require_once("debug.php");
+require_once("logging.php");
 require_once("caching_memcache.php");
 require_once("caching_memcached.php");
+
+function Initialize()
+{
+    OpenSyslog();
+    InitializeCaching();
+    RefreshSession();
+}
+
+function ResourceCleanup()
+{
+    CloseSyslog();
+}
 
 function InitializeCaching()
 {
@@ -124,6 +136,23 @@ function IsAuthorizedToRead($domain)
 function IsAuthorizedToWrite($domain)
 {
     return IsAuthorized($domain, 'rw');
+}
+
+function GetCurrentUserName()
+{
+    global $g_auth, $g_api_token_mask;
+    if ($g_api_token_mask && isset($_SESSION["logged_in"]) && $_SESSION["logged_in"] === true && isset($_SESSION["token"]) && $_SESSION["token"] === true)
+    {
+        $trimmed_name = $_SESSION["user"];
+        if (psf_string_contains($trimmed_name, '_'))
+            $trimmed_name = substr($trimmed_name, 0, strrpos($trimmed_name, '_'));
+        return $trimmed_name;
+    }
+    if ($g_auth === "ldap" && isset($_SESSION["user"]))
+        return $_SESSION["user"];
+    if (!isset($_SERVER['REMOTE_USER']))
+        return "unknown user";
+    return $_SERVER['REMOTE_USER'];
 }
 
 function GetZoneForFQDN($fqdn)

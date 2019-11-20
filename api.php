@@ -379,8 +379,8 @@ function is_privileged($backend, $privilege)
     return true;
 }
 
-InitializeCaching();
-RefreshSession();
+// Start up the program, initialize all sorts of resources, syslog, session data etc.
+Initialize();
 
 $api = new PsfApiBase_JSON();
 $api->ExamplePrefix = "/api.php";
@@ -432,3 +432,5 @@ register_api('get_record', 'Return single record with specified FQDN', 'Lookup s
                new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify, if not specified and record is fully qualified, it's automatically looked up from config file") ],
              '?action=get_record&record=test.example.org');
 $api->Process();
+
+CleanupResources();

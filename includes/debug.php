@@ -16,34 +16,21 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 require_once("psf/psf.php");
 require_once("config.php");
-
-function WriteToDebugLog($text)
-{
-    global $g_error_log;
-    if ($g_error_log === NULL)
-        return;
-
-    // Remove newlines
-    $text = trim(preg_replace('/\s+/', ' ', $text));
-
-    // Prepare audit log line
-    $log_line = date('m/d/Y h:i:s a', time());
-    $log_line .= ' entry point: ' . G_DNSTOOL_ENTRY_POINT . " ip: " . $_SERVER['REMOTE_ADDR'] . " ERROR: " . $text . "\n";
-
-    $result = file_put_contents($g_error_log, $log_line, FILE_APPEND | LOCK_EX);
-    if ($result === false)
-        throw new Exception('Unable to write to error log file: ' . $g_error_log);
-}
-
+require_once("logging.php");
 
 function Debug($text)
 {
-    global $g_debug, $g_debug_log, $g_eid;
-    if ($g_debug === false && $g_debug_log === NULL)
+    global $g_debug, $g_debug_log, $g_eid, $g_syslog_targets, $g_syslog;
+    if ($g_debug === false && $g_debug_log === NULL && $g_syslog !== true)
         return;
 
     $lines = explode("\n", $text);
 
+    if ($g_syslog && $g_syslog_targets['debug'] === true)
+    {
+        foreach ($lines as $line)
+            WriteToSyslog('entry point: ' . G_DNSTOOL_ENTRY_POINT . ' eid: ' . $g_eid .  " ip: " . $_SERVER['REMOTE_ADDR'] . " DEBUG: " . $line, LOG_DEBUG);
+    }
     if ($g_debug)
     {
         foreach ($lines as $line)

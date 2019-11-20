@@ -86,6 +86,21 @@ $g_debug = false;
 // Will print debug messages into specified file (lot of text)
 $g_debug_log = NULL;
 
+// Log to syslog
+$g_syslog = false;
+
+$g_syslog_targets = [
+                      'error' => true,
+                      'audit' => true,
+                      'debug' => false
+                    ];
+
+// Syslog facility
+$g_syslog_facility = LOG_LOCAL0;
+
+// Syslog ident (program name)
+$g_syslog_ident = 'dnsphpmyadmin';
+
 // Optional execution ID used to identify separate executions in logs (debug / audit / error)
 $g_eid = bin2hex(openssl_random_pseudo_bytes(8));
 

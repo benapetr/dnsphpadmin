@@ -16,6 +16,7 @@ define('G_DNSTOOL_ENTRY_POINT', 'index.php');
 require("definitions.php");
 require("config.default.php");
 require("config.php");
+require("includes/common.php");
 require("includes/fatal.php");
 require("includes/menu.php");
 require("includes/modify.php");
@@ -35,8 +36,8 @@ if ($g_use_local_bootstrap)
     $psf_bootstrap_css_url = 'bootstrap-3.3.7/dist/css/bootstrap.min.css';
 }
 
-InitializeCaching();
-RefreshSession();
+// Start up the program, initialize all sorts of resources, syslog, session data etc.
+Initialize();
 
 // Save us some coding
 $psf_containers_auto_insert_child = true;
@@ -154,4 +155,7 @@ if ($g_debug)
 {
     psf_print_debug_as_html();
 }
+
+// Close open FD's etc
+ResourceCleanup();
 

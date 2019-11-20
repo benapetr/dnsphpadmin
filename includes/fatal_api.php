@@ -15,7 +15,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
 require_once("psf/psf.php");
-require_once("fatal_shared.php");
+require_once("logging.php");
 
 //! Similar to Error from fatal.php except API errors are always blocking, so second parameter is irrelevant
 function Error($msg, $blocking = true)
