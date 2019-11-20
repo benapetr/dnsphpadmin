@@ -15,6 +15,7 @@ define('G_DNSTOOL_ENTRY_POINT', 'api.php');
 require("definitions.php");
 require("config.default.php");
 require("config.php");
+require("includes/common.php");
 require("includes/fatal_api.php");
 require("includes/record_list.php");
 require("includes/zone_list.php");
@@ -433,4 +434,4 @@ register_api('get_record', 'Return single record with specified FQDN', 'Lookup s
              '?action=get_record&record=test.example.org');
 $api->Process();
 
-CleanupResources();
+ResourceCleanup();
