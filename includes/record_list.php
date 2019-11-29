@@ -18,7 +18,9 @@ require_once("psf/psf.php");
 require_once("includes/nsupdate.php");
 require_once("audit.php");
 require_once("common.php");
+require_once("common_ui.php");
 require_once("config.php");
+require_once("zones.php");
 
 function GetStatusOfZoneAsNote($domain)
 {
@@ -184,7 +186,7 @@ function GetRecordListTable($parent, $domain)
     $table->SetColumnWidth(3, '80px'); // Type
     $table->SetColumnWidth(5, '80px'); // Options
     $records = GetRecordList($domain);
-    $is_editable = IsEditable($domain) && IsAuthorizedToWrite($domain);
+    $is_editable = Zones::IsEditable($domain) && IsAuthorizedToWrite($domain);
     foreach ($records as $record)
     {
         if (!$is_editable || !in_array($record[3], $g_editable))
