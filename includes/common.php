@@ -16,6 +16,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 require_once("debug.php");
 require_once("logging.php");
+require_once("notifications.php");
 require_once("caching_memcache.php");
 require_once("caching_memcached.php");
 
@@ -50,6 +51,14 @@ function InitializeCaching()
     }
     Debug('Caching engine: ' . $g_caching_engine_instance->GetEngineName());
     $g_caching_engine_instance->Initialize();
+}
+
+//! Display warning message
+function Warning($text)
+{
+    if (G_DNSTOOL_ENTRY_POINT === "api.php")
+        return;
+    Notifications::DisplayWarning($text);
 }
 
 function IsValidRecordType($type)

@@ -17,33 +17,35 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 require_once("psf/psf.php");
 require_once("logging.php");
 require_once("config.php");
+require_once("notifications.php");
 
 $g_error = false;
 $g_error_message = NULL;
 
-//! Display a fatal error - if error is blocking, it will stop execution of program and just display an error message in very ugly way
+//! Display an error - if error is fatal, it will stop execution of program and just display an error message in very ugly way
 //! otherwise program will continue execution and error will be rendered somewhere in the interface
-function Error($msg, $blocking = true)
+function Error($msg, $fatal = true)
 {
-    global $g_debug, $g_error, $g_error_message, $g_error_container;
+    global $g_debug, $g_error, $g_error_message;
+    // Store last error message just in case we needed to work with it anywhere else and in case we needed to know whether there was some error during execution
+    $g_error = true;
+    $g_error_message = $msg;
     WriteToErrorLog($msg);
-    if ($blocking)
+    if ($fatal)
     {
         $web = new HtmlPage("Error");
         bootstrap_init($web);
-        $web->AppendObject(new BS_Alert("ERROR: " . $msg, "danger"));
+        $fc = new BS_FluidContainer();
+        $fc->AppendHeader(G_HEADER);
+        $fc->AppendObject(new BS_Alert("FATAL ERROR: " . $msg, "danger"));
+        $fc->AppendHtmlLine('<a href="javascript:history.back()">Go Back</a>');
+        $web->AppendObject($fc);
         $web->PrintHtml();
         if ($g_debug)
             psf_print_debug_as_html();
         die(1);
     } else
     {
-        // Store last error message just in case we needed to work with it anywhere else and in case we needed to know whether there was some error during execution
-        $g_error = true;
-        $g_error_message = $msg;
-
-        $fatal_box = new BS_Alert('<b>ERROR:</b> ' . $g_error_message, 'danger');
-        $fatal_box->EscapeHTML = false;
-        $g_error_container->AppendObject($fatal_box);
+        Notifications::DisplayError($msg);
     }
 }

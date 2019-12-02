@@ -15,3 +15,4 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 define('G_DNSTOOL_VERSION', '1.6.0');
 define('G_API_ELOGIN', 2);
+define('G_HEADER', 'DNS management tool');

@@ -61,8 +61,6 @@ bootstrap_init($website);
 
 // Create a bootstrap fluid containers, one for whole website and one for errors, which are dynamically inserted to error container as they are generated
 $fc = new BS_FluidContainer($website);
-$g_error_container = new BS_FluidContainer();
-$g_warning_container = new BS_FluidContainer();
 
 if (isset($_GET['login']))
     ProcessLogin();
@@ -80,7 +78,7 @@ else if (isset($_POST['zone']))
 // Check if login is needed
 if (RequireLogin())
 {
-    $fc->AppendHeader('Login to DNS management tool');
+    $fc->AppendHeader('Login to ' . G_HEADER);
     if ($g_auth_login_banner !== NULL)
         $fc->AppendObject(new BS_Alert($g_auth_login_banner, 'info'));
 
@@ -93,7 +91,7 @@ if (RequireLogin())
     $fc->AppendObject(GetLogin());
 } else
 {
-    $fc->AppendHeader('DNS management tool');
+    $fc->AppendHeader(G_HEADER);
     if ($g_logged_in)
         $fc->AppendHtml(GetLoginInfo());
 
