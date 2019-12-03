@@ -15,12 +15,12 @@ define('G_DNSTOOL_ENTRY_POINT', 'api.php');
 require("definitions.php");
 require("config.default.php");
 require("config.php");
-require("includes/common.php");
-require("includes/fatal_api.php");
-require("includes/record_list.php");
-require("includes/zone_list.php");
-require("includes/modify.php");
-require("includes/login.php");
+require_once("includes/common.php");
+require_once("includes/fatal_api.php");
+require_once("includes/record_list.php");
+require_once("includes/modify.php");
+require_once("includes/login.php");
+require_once("includes/zones.php");
 require_once("psf/psf.php");
 
 if ($g_api_enabled !== true)
@@ -96,7 +96,7 @@ function api_call_login_token($source)
 function api_call_list($source)
 {
     global $api;
-    $api->PrintObj(GetZoneList());
+    $api->PrintObj(Zones::GetZoneList());
     return true;
 }
 
@@ -142,7 +142,7 @@ function check_zone_access($zone)
         return false;
     }
 
-    if (!IsEditable($zone))
+    if (!Zones::IsEditable($zone))
     {
         $api->ThrowError('Unable to write: Read-only zone', "Domain $zone is not writeable");
         return false;
@@ -195,7 +195,7 @@ function get_optional_post_get_parameter($name)
 function get_zone_for_fqdn_or_throw($fqdn)
 {
     global $api;
-    $zone = GetZoneForFQDN($fqdn);
+    $zone = Zones::GetZoneForFQDN($fqdn);
 
     if ($zone === NULL)
         $api->ThrowError('No such zone', 'Zone for given fqdn was not found');
@@ -307,7 +307,7 @@ function api_call_get_zone_for_fqdn($source)
 {
     global $api;
     $fqdn = get_required_post_get_parameter('fqdn');
-    $zone = GetZoneForFQDN($fqdn);
+    $zone = Zones::GetZoneForFQDN($fqdn);
     if ($zone === NULL)
         $api->ThrowError('No such zone', 'Zone for given fqdn was not found');
     $api->PrintObj(['zone' => $zone]);

@@ -17,6 +17,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 require_once("psf/psf.php");
 require_once("audit.php");
 require_once("common.php");
+require_once("common_ui.php");
 require_once("config.php");
 
 $g_login_failed = false;

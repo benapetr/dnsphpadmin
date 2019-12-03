@@ -16,6 +16,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 require_once("debug.php");
 require_once("logging.php");
+require_once("notifications.php");
 require_once("caching_memcache.php");
 require_once("caching_memcached.php");
 
@@ -52,34 +53,18 @@ function InitializeCaching()
     $g_caching_engine_instance->Initialize();
 }
 
-function DisplayWarning($text)
+//! Display warning message
+function Warning($text)
 {
     if (G_DNSTOOL_ENTRY_POINT === "api.php")
         return;
-    global $g_warning_container;
-    $warning_box = new BS_Alert('<b>WARNING:</b> ' . htmlspecialchars($text), 'warning');
-    $warning_box->EscapeHTML = false;
-    $g_warning_container->AppendObject($warning_box);
+    Notifications::DisplayWarning($text);
 }
 
 function IsValidRecordType($type)
 {
     global $g_editable;
     return in_array($type, $g_editable);
-}
-
-function IsEditable($domain)
-{
-    global $g_domains;
-    if (!array_key_exists($domain, $g_domains))
-        die("No such domain: $domain");
-
-    $domain_info = $g_domains[$domain];
-
-    if (array_key_exists('read_only', $domain_info) && $domain_info['read_only'] === true)
-        return false;
-
-    return true;
 }
 
 //! Return true if application supports and require user to login, no matter if current user
@@ -153,30 +138,4 @@ function GetCurrentUserName()
     if (!isset($_SERVER['REMOTE_USER']))
         return "unknown user";
     return $_SERVER['REMOTE_USER'];
-}
-
-function GetZoneForFQDN($fqdn)
-{
-    global $g_domains;
-    do
-    {
-        if (!array_key_exists($fqdn, $g_domains))
-        {
-            $fqdn= substr($fqdn, strpos($fqdn, '.') + 1);
-            continue;
-        }
-        return $fqdn;
-    } while (psf_string_contains($fqdn, '.'));
-    return NULL;
-}
-
-function HasPTRZones()
-{
-    global $g_domains;
-    foreach ($g_domains as $key => $info)
-    {
-        if (psf_string_endsWith($key, ".in-addr.arpa"))
-            return true;
-    }
-    return false;
 }

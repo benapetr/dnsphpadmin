@@ -16,13 +16,16 @@ define('G_DNSTOOL_ENTRY_POINT', 'index.php');
 require("definitions.php");
 require("config.default.php");
 require("config.php");
-require("includes/common.php");
-require("includes/fatal.php");
-require("includes/menu.php");
-require("includes/modify.php");
-require("includes/record_list.php");
-require("includes/select_form.php");
-require("includes/login.php");
+require_once("includes/common.php");
+require_once("includes/fatal.php");
+require_once("includes/menu.php");
+require_once("includes/modify.php");
+require_once("includes/tab_overview.php");
+require_once("includes/tab_manage.php");
+require_once("includes/tab_edit.php");
+require_once("includes/tab_batch.php");
+require_once("includes/record_list.php");
+require_once("includes/login.php");
 require_once("psf/psf.php");
 
 if ($g_debug === true)
@@ -58,8 +61,6 @@ bootstrap_init($website);
 
 // Create a bootstrap fluid containers, one for whole website and one for errors, which are dynamically inserted to error container as they are generated
 $fc = new BS_FluidContainer($website);
-$g_error_container = new BS_FluidContainer();
-$g_warning_container = new BS_FluidContainer();
 
 if (isset($_GET['login']))
     ProcessLogin();
@@ -77,7 +78,7 @@ else if (isset($_POST['zone']))
 // Check if login is needed
 if (RequireLogin())
 {
-    $fc->AppendHeader('Login to DNS management tool');
+    $fc->AppendHeader('Login to ' . G_HEADER);
     if ($g_auth_login_banner !== NULL)
         $fc->AppendObject(new BS_Alert($g_auth_login_banner, 'info'));
 
@@ -90,7 +91,7 @@ if (RequireLogin())
     $fc->AppendObject(GetLogin());
 } else
 {
-    $fc->AppendHeader('DNS management tool');
+    $fc->AppendHeader(G_HEADER);
     if ($g_logged_in)
         $fc->AppendHtml(GetLoginInfo());
 
@@ -103,20 +104,11 @@ if (RequireLogin())
     if ($g_action === null)
     {
         $fc->AppendHeader("Select a zone to manage", 2);
-        $fc->AppendObject(GetSelectForm($fc));
+        $fc->AppendObject(TabOverview::GetSelectForm($fc));
     } else if ($g_action == "manage")
     {
         ProcessDelete($fc);
-        if ($g_selected_domain == null)
-        {
-            reset($g_domains);
-            $g_selected_domain = key($g_domains);
-        }
-        $fc->AppendObject(GetSwitcher($fc));
-        $fc->AppendHeader($g_selected_domain, 2);
-        $fc->AppendHtml('<div class="export_csv"><a href="?action=csv&domain=' . $g_selected_domain . '">Export as CSV</a></div>');
-        $fc->AppendObject(GetStatusOfZoneAsNote($g_selected_domain));
-        $fc->AppendObject(GetRecordListTable($fc, $g_selected_domain));
+        TabManage::GetContents($fc);
     } else if ($g_action == 'csv')
     {
         // Export the current zone as CSV (if user can actually read it)
@@ -129,16 +121,18 @@ if (RequireLogin())
     } else if ($g_action == 'new')
     {
         // Process previous inserting call (via submit) in case there was some
-        HandleEdit($fc);
-        $fc->AppendObject(GetInsertForm($fc));
+        TabEdit::Process($fc);
+        $fc->AppendObject(TabEdit::GetInsertForm($fc));
     } else if ($g_action == 'edit')
     {
         // Process previous edit call (via submit) in case there was some
-        HandleEdit($fc);
-        $fc->AppendObject(GetEditForm($fc));
+        TabEdit::Process($fc);
+        $fc->AppendObject(TabEdit::GetEditForm($fc));
     } else if ($g_action == 'batch')
     {
-        $fc->AppendObject(GetBatchForm($fc));
+        // Process any previous pending batch operation
+        TabBatch::Process($fc);
+        $fc->AppendObject(TabBatch::GetForm($fc));
     }
 }
 

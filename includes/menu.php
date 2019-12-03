@@ -14,9 +14,6 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-require_once("psf/psf.php");
-require_once("config.php");
-
 function GetMenu($parent)
 {
     global $g_action, $g_selected_domain;
