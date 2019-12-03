@@ -344,6 +344,13 @@ function api_call_get_record($source)
     return true;
 }
 
+function api_call_get_version($source)
+{
+    global $api;
+    $api->PrintObj([ 'version' => G_DNSTOOL_VERSION ]);
+    return true;
+}
+
 function register_api($name, $short_desc, $long_desc, $callback, $auth = true, $required_params = [], $optional_params = [], $example = NULL, $post_only = false)
 {
     global $api;
@@ -384,6 +391,7 @@ function is_privileged($backend, $privilege)
 Initialize();
 
 $api = new PsfApiBase_JSON();
+$api->ShowHelpOnNoAction = false;
 $api->ExamplePrefix = "/api.php";
 $api->AuthenticationBackend = new PsfCallbackAuth($api);
 $api->AuthenticationBackend->callback_IsAuthenticated = "is_authenticated";
@@ -432,6 +440,16 @@ register_api('get_record', 'Return single record with specified FQDN', 'Lookup s
              [ new PsfApiParameter("type", PsfApiParameterType::String, "Record type (if not specified, will be A)"),
                new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify, if not specified and record is fully qualified, it's automatically looked up from config file") ],
              '?action=get_record&record=test.example.org');
-$api->Process();
+register_api('get_version', 'Returns version', 'Returns version of this tool.', 'api_call_get_version', false, [], [], '?action=get_version');
+if (!$api->Process())
+{
+    if (isset($_GET['action']) || isset($_POST['action']))
+    {
+        $api->ThrowError('Unknown action', 'This action is unknown. Please refer to help. Open api.php with no parameters to see help in HTML form.');
+    } else
+    {
+        $api->PrintHelpAsHtml();
+    }
+}
 
 ResourceCleanup();
