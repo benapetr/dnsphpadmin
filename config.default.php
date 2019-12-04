@@ -35,7 +35,7 @@ $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_s
 
 // List of record types that can be edited
 // https://en.wikipedia.org/wiki/List_of_DNS_record_types
-$g_editable = [ "A", "AAAA", "CNAME", "DNAME", "NS", "PTR", "SRV", "TXT", "SPF", "MX" ];
+$g_editable = [ 'A', 'AAAA', 'CNAME', 'DNAME', 'DS', 'NS', 'PTR', 'SRV', 'SSHFP', 'TXT', 'SPF', 'MX' ];
 
 // Default TTL for new DNS records
 $g_default_ttl = 3600;
