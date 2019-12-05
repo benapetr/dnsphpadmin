@@ -20,11 +20,11 @@ require_once("includes/common.php");
 require_once("includes/fatal.php");
 require_once("includes/menu.php");
 require_once("includes/modify.php");
+require_once("includes/record_list.php");
 require_once("includes/tab_overview.php");
 require_once("includes/tab_manage.php");
 require_once("includes/tab_edit.php");
 require_once("includes/tab_batch.php");
-require_once("includes/record_list.php");
 require_once("includes/login.php");
 require_once("psf/psf.php");
 
@@ -139,7 +139,7 @@ if (RequireLogin())
 // Bug workaround - the footer seems to take up some space
 $website->AppendHtml("<br><br><br>");
 
-$website->AppendHtmlLine("<footer class='footer'><div class='container'>Created by Petr Bena [petr@bena.rocks] (c) 2018, source code at ".
+$website->AppendHtmlLine("<footer class='footer'><div class='container'>Created by Petr Bena [petr@bena.rocks] (c) 2018 - 2020, source code at ".
                     "<a href='http://github.com/benapetr/dnsphpadmin'>http://github.com/benapetr/dnsphpadmin</a> Version: " . G_DNSTOOL_VERSION . "</div></footer>");
 
 $website->PrintHtml();

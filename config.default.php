@@ -37,6 +37,10 @@ $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_s
 // https://en.wikipedia.org/wiki/List_of_DNS_record_types
 $g_editable = [ 'A', 'AAAA', 'CNAME', 'DNAME', 'DS', 'NS', 'PTR', 'SRV', 'SSHFP', 'TXT', 'SPF', 'MX' ];
 
+// List of record types that are hidden from UI by default, this is not a security feature, it's for user comfort and can be easily disabled in UI
+// API is not affected by this
+$g_hidden_record_types = [ 'NSEC', 'RRSIG' ];
+
 // Default TTL for new DNS records
 $g_default_ttl = 3600;
 
@@ -113,7 +117,7 @@ $g_session_timeout = 3600;
 $g_auth = NULL;
 
 // Application ID for sessions, if you have multiple separate installations of dns php admin, you should create unique strings for each of them
-// to prevent sharing session information between them, this string is also used as prefix for caching keys
+// to prevent sharing session information between them, this string is also used as prefix for caching keys and cookies
 $g_auth_session_name = 'dnsphpadmin';
 
 // Few words about LDAP integration within dns php admin:

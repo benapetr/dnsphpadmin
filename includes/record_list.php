@@ -17,10 +17,14 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 require_once("psf/psf.php");
 require_once("includes/nsupdate.php");
 require_once("audit.php");
-require_once("common.php");
-require_once("common_ui.php");
-require_once("config.php");
 require_once("zones.php");
+
+// If true hidden record types will be shown
+$g_show_hidden_types = false;
+
+// This variable is changed to true if hidden variable types are present in record list, we need to know this later
+// when rendering UI so that we know if "show / hide" button should be even present or not
+$g_hidden_types_present = false;
 
 function GetStatusOfZoneAsNote($domain)
 {
@@ -178,7 +182,7 @@ function GetRecordList($zone)
 
 function GetRecordListTable($parent, $domain)
 {
-    global $g_editable;
+    global $g_editable, $g_show_hidden_types, $g_hidden_record_types, $g_hidden_types_present;
     $table = new BS_Table($parent);
     $table->Condensed = true;
     $table->Headers = [ "Record", "TTL", "Scope", "Type", "Value", "Options" ];
@@ -189,6 +193,12 @@ function GetRecordListTable($parent, $domain)
     $is_editable = Zones::IsEditable($domain) && IsAuthorizedToWrite($domain);
     foreach ($records as $record)
     {
+        if (in_array($record[3], $g_hidden_record_types))
+        {
+            $g_hidden_types_present = true;
+            if (!$g_show_hidden_types)
+                continue;
+        }
         if (!$is_editable || !in_array($record[3], $g_editable))
         {
             $record[] = '';

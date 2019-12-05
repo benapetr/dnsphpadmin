@@ -20,7 +20,27 @@ class TabManage
 {
     public static function GetContents($fc)
     {
-        global $g_domains, $g_selected_domain;
+        global $g_auth_session_name, $g_domains, $g_selected_domain, $g_show_hidden_types, $g_hidden_types_present;
+
+        // Check toggle for hidden
+        if (isset($_GET['hidden_types']))
+        {
+            if ($_GET['hidden_types'] == 'show')
+            {
+                setcookie($g_auth_session_name . '_show_hidden_types', true);
+                $g_show_hidden_types = true;
+            } else
+            {
+                setcookie($g_auth_session_name . '_show_hidden_types', false);
+                $g_show_hidden_types = false;
+            }
+        } else
+        {
+            // Check if there is a cookie for hidden types
+            if (isset($_COOKIE[$g_auth_session_name . '_show_hidden_types']))
+                $g_show_hidden_types = $_COOKIE[$g_auth_session_name . '_show_hidden_types'];
+        }
+
         if ($g_selected_domain == null)
         {
             reset($g_domains);
@@ -30,6 +50,16 @@ class TabManage
         $fc->AppendHeader($g_selected_domain, 2);
         $fc->AppendHtml('<div class="export_csv"><a href="?action=csv&domain=' . $g_selected_domain . '">Export as CSV</a></div>');
         $fc->AppendObject(GetStatusOfZoneAsNote($g_selected_domain));
-        $fc->AppendObject(GetRecordListTable($fc, $g_selected_domain));
+        // First get the record list - this function will fill up g_hidden_types_present variable
+        $record_list = GetRecordListTable(NULL, $g_selected_domain);
+        if ($g_hidden_types_present === true)
+        {
+            // This zone contains some hidden record types, show toggle for user
+            if (!$g_show_hidden_types)
+                $fc->AppendHtml('<div class="hidden_types">This zone contains record types that are hidden by default, click <a href="?action=manage&domain=' . $g_selected_domain . '&hidden_types=show">here</a> to show them</div>');
+            else
+                $fc->AppendHtml('<div class="hidden_types">This zone contains record types that are hidden by default, click <a href="?action=manage&domain=' . $g_selected_domain . '&hidden_types=hide">here</a> to hide them</div>');
+        }
+        $fc->AppendObject($record_list);
     }
 }
