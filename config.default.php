@@ -104,7 +104,7 @@ $g_syslog_targets = [
 $g_syslog_facility = LOG_LOCAL0;
 
 // Syslog ident (program name)
-$g_syslog_ident = 'dnsphpmyadmin';
+$g_syslog_ident = 'dnsphpadmin';
 
 // Optional execution ID used to identify separate executions in logs (debug / audit / error)
 $g_eid = bin2hex(openssl_random_pseudo_bytes(8));
