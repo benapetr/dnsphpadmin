@@ -50,6 +50,7 @@ function nsupdate($input, $tsig_override = NULL, $tsig_override_key = NULL, $zon
     {
         Error("Unable to execute " . $g_nsupdate);
     }
+    Debug("proc_open(" . $g_nsupdate . ', $desc, $pipes, $cwd, $env)');
     Debug("Sending this to nsupdate:\n" . $input);
     fwrite($pipes[0], $input);
     $output = stream_get_contents($pipes[1]);
