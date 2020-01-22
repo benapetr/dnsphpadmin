@@ -70,14 +70,14 @@ function ProcessDelete($well)
 
 function ProcessInsertFromPOST($zone, $record, $value, $type, $ttl)
 {
-    if (empty($record) && empty($zone))
+    if (psf_string_is_null_or_empty($record) && psf_string_is_null_or_empty($zone))
         Error("Both record and zone can't be empty");
 
     $fqdn = $record;
-    if (!empty($zone))
+    if (!psf_string_is_null_or_empty($zone))
     {
         // Make sure we don't add trailing dot
-        if (!empty ($fqdn))
+        if (!psf_string_is_null_or_empty ($fqdn))
             $fqdn .= '.' . $zone;
         else
             $fqdn = $zone;
