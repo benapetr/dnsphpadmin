@@ -144,7 +144,7 @@ $website->AppendHtmlLine("<footer class='footer'><div class='container'>Created 
 
 $website->PrintHtml();
 
-Debug('Generated in ' . psf_get_execution_time() . 'ms');
+Debug('Generated in ' . psf_get_execution_time() . 's');
 if ($g_debug)
 {
     psf_print_debug_as_html();
