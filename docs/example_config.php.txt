@@ -1,0 +1,44 @@
+<?php
+
+$g_domains = [
+     'example.domain' => [ 'transfer_server' => 'localhost', 'update_server' => 'localhost' ],
+     'subzone.example.domain' => [ 'transfer_server' => 'localhost', 'update_server' => 'localhost' ],
+     'example.org' => [ 'transfer_server' => 'ns-prod1.lan.example.org', 'update_server' => 'ns-prod1.lan.example.org' ],
+     'prod.example.org' => [ 'transfer_server' => 'ns-prod1.lan.example.org', 'update_server' => 'ns-prod1.lan.example.org' ],
+     'nonprod.example.org' => [ 'transfer_server' => 'ns-prod1.lan.example.org', 'update_server' => 'ns-prod1.lan.example.org' ],
+     'ad.example.org' => [ 'transfer_server' => 'windows.example.org', 'update_server' => '', read_only => true ]
+];
+
+$g_auth_roles = [ 'devops' => [
+                                   'nonprod.example.org' => 'rw',
+                                   'prod.example.org' => 'r',
+                                   'example.domain' => 'r'
+                              ],
+                  // these are just a placeholder, this role is filled up using code later
+                  'readonly' => [ ],
+                  'reverse_rw_all' => [],
+                  'reverse_ro_all' => []
+                ];
+
+
+///////////////////////////////////////////////
+// hacks
+///////////////////////////////////////////////
+foreach ($g_domains as $key => $value)
+{
+    // hack to load every single zone into 'readonly' and pseudo-root roles
+    $g_auth_roles['readonly'][$key] = 'r';
+    $g_auth_roles['admin'][$key] = 'rw';
+
+    // reverse
+    if (psf_string_endsWith($key, 'in-addr.arpa'))
+    {
+        $g_auth_roles['reverse_rw_all'][$key] = 'rw';
+        $g_auth_roles['reverse_ro_all'][$key] = 'r';
+    }
+}
+
+// Grant access to AD groups
+$g_auth_roles['Security'] = array_merge($g_auth_roles['reverse_ro_in'], $g_auth_roles['readonly']);
+$g_auth_roles['Developers'] = array_merge($g_auth_roles['reverse_rw_in'], $g_auth_roles['readonly'], $g_auth_roles['devops']);
+$g_auth_roles['Operations'] = $g_auth_roles['admin'];
