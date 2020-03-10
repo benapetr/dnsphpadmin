@@ -9,6 +9,26 @@ $g_domains = [
      'ad.example.org' => [ 'transfer_server' => 'windows.example.org', 'update_server' => '', read_only => true ]
 ];
 
+// Audit
+$g_audit = true;
+$g_audit_log = '/var/log/dns/int_audit.log';
+
+$g_audit_events['display'] = true;
+$g_audit_events['get_record'] = true;
+
+$g_auth = "ldap";
+$g_auth_domain_prefix = "CORP\\";
+$g_auth_fetch_domain_groups = true;
+$g_auth_ldap_dn = "OU=CORP,DC=evilcorp,DC=net";
+$g_auth_login_banner = "You can login using your CORP account, for example: michael.smith";
+$g_auth_ldap_url = "ldaps://ldap.evilcorp.net";
+$g_session_timeout = 3600;
+
+// API enable
+$g_api_enabled = true;
+
+// Role based permissions matrix
+
 $g_auth_roles = [ 'devops' => [
                                    'nonprod.example.org' => 'rw',
                                    'prod.example.org' => 'r',
