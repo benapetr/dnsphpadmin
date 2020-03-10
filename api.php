@@ -450,6 +450,9 @@ if (!$api->Process())
     {
         $api->PrintHelpAsHtml();
     }
+} else
+{
+    IncrementStat('api');
 }
 
 ResourceCleanup();

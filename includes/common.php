@@ -53,6 +53,18 @@ function InitializeCaching()
     $g_caching_engine_instance->Initialize();
 }
 
+function IncrementStat($stat)
+{
+    global $g_caching_stats_enabled, $g_caching_engine_instance;
+    if ($g_caching_stats_enabled !== true)
+        return;
+
+    if ($g_caching_engine_instance === NULL)
+        return;
+    
+    $g_caching_engine_instance->IncrementStat($stat);
+}
+
 //! Display warning message
 function Warning($text)
 {

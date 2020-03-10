@@ -67,6 +67,7 @@ function ProcessLogin_Error($reason)
     $g_login_failure_reason = $reason;
     $_SESSION['logged_in'] = false;
     WriteToAuditFile('login_fail', $extra . 'reason=' . $reason);
+    IncrementStat('login_error');
 }
 
 function ProcessTokenLogin()
@@ -85,12 +86,14 @@ function ProcessTokenLogin()
         $_SESSION["token"] = true;
         $g_logged_in = true;
         WriteToAuditFile('login_success');
+        IncrementStat('token_login_success');
         return;
     }
     // Invalid token
     $g_login_failed = true;
     $_SESSION["logged_in"] = false;
     WriteToAuditFile('login_fail', 'token=' . $token . ' reason=invalid token');
+    IncrementStat('token_login_error');
 }
 
 function LDAP_GroupNameFromCN($name)
@@ -225,12 +228,14 @@ function ProcessLogin()
         $_SESSION['logged_in'] = true;
         $g_logged_in = true;
         WriteToAuditFile('login_success');
+        IncrementStat('login_success');
     } else
     {
         // Invalid user / pw
         WriteToAuditFile('login_fail', 'username=' . $login_name . ' reason=invalid username or password');
         $g_login_failed = true;
         $_SESSION["logged_in"] = false;
+        IncrementStat('login_fail');
     }
 }
 

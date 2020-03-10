@@ -38,6 +38,7 @@ function ProcessNSUpdateForDomain($input, $domain)
     $zone_name = NULL;
     if (!array_key_exists("explicit", $domain_info) || $domain_info["explicit"] === true)
         $zone_name = $domain;
+    IncrementStat('nsupdate_call');
     return nsupdate($input, $tsig, $tsig_key, $zone_name);
 }
 
@@ -65,6 +66,7 @@ function ProcessDelete($well)
     $input .= "update delete " . $record . "\nsend\nquit\n";
     ProcessNSUpdateForDomain($input, $g_selected_domain);
     WriteToAuditFile("delete", $record);
+    IncrementStat('delete');
     $well->AppendObject(new BS_Alert("Successfully deleted record " . $record));
 }
 

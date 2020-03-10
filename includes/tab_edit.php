@@ -69,6 +69,7 @@ class TabEdit
             if (strlen($result) > 0)
                 Debug("result: " . $result);
             WriteToAuditFile('create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
+            IncrementStat('create');
             $form->AppendObject(new BS_Alert("Successfully inserted record " . $record . "." . $zone));
         } else if ($_POST["submit"] == "Edit")
         {
@@ -82,7 +83,9 @@ class TabEdit
             if (strlen($result) > 0)
                 Debug("result: " . $result);
             WriteToAuditFile('replace_delete', $_POST["old"], $comment);
+            IncrementStat('replace_delete');
             WriteToAuditFile('replace_create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
+            IncrementStat('replace_create');
             $form->AppendObject(new BS_Alert("Successfully replaced " . $_POST["old"] . " with " . $record . "." . $zone . " " .
                                             $ttl . " " . $type . " " . $value));
         } else
@@ -133,6 +136,7 @@ class TabEdit
             if (strlen($result) > 0)
                 Debug("result: " . $result);
             WriteToAuditFile('create', $arpa . " " . $ttl . " PTR " . $arpa_value, $comment);
+            IncrementStat('create');
         }
     }
 

@@ -68,6 +68,15 @@ class PHPDNS_CachingEngine_Memcache extends PHPDNS_CachingEngine
         $this->memcache->delete($this->getPrefix() . 'soa_' . $zone);
     }
 
+    function IncrementStat($stat)
+    {
+        if ($this->memcache->increment($this->getPrefix() . 'stat_' . $stat) === false)
+        {
+            // This statistic is not in memcache yet
+            $this->memcache->set($this->getPrefix() . 'stat_' . $stat, 1);
+        }
+    }
+
     private function getPrefix()
     {
         global $g_auth_session_name;

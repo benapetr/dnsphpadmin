@@ -17,6 +17,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 require_once("psf/psf.php");
 require_once("includes/nsupdate.php");
 require_once("audit.php");
+require_once("common.php");
 require_once("zones.php");
 
 // If true hidden record types will be shown
@@ -137,6 +138,7 @@ function GetRecordList($zone)
             } else
             {
                 WriteToAuditFile("display", $zone, "(cached)");
+                IncrementStat('display_zone_cached');
                 return $result;
             }
         }
@@ -146,6 +148,7 @@ function GetRecordList($zone)
     }
     
     WriteToAuditFile("display", $zone, "(full transfer)");
+    IncrementStat('display_zone');
     Debug('Running full zone transfer for: ' . $zone);
     $data = get_zone_data($zone);
     $soa = GetSOAFromData($data);

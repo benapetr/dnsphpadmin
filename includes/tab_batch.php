@@ -60,9 +60,11 @@ class TabBatch
             $log = str_replace("\n", "; ", $record);
             $log = str_replace("\r", "", $log);
             WriteToAuditFile("batch", "zone: " . $zone . ": " . $log, $comment);
+            IncrementStat('batch');
         } else
         {
             WriteToAuditFile("batch", "zone: " . $zone . ": " . $batch_file, $comment);
+            IncrementStat('batch');
         }
         $parent->AppendObject(new BS_Alert("Successfully executed batch operation on zone " . $zone));
     }

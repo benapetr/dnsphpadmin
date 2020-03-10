@@ -69,6 +69,15 @@ class PHPDNS_CachingEngine_Memcached extends PHPDNS_CachingEngine
         $this->memcached->delete($this->getPrefix() . 'soa_' . $zone);
     }
 
+    function IncrementStat($stat)
+    {
+        // increment doesn't seem to be able to work if key doesn't exist, so let's first check it does
+        if ($this->memcached->get($this->getPrefix() . 'stat_' . $stat) === false)
+            $this->memcached->set($this->getPrefix() . 'stat_' . $stat, 1);
+        else
+            $this->memcached->increment($this->getPrefix() . 'stat_' . $stat);
+    }
+
     private function getPrefix()
     {
         global $g_auth_session_name;

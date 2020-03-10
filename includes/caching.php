@@ -51,6 +51,11 @@ class PHPDNS_CachingEngine
         
     }
 
+    function IncrementStat($stat)
+    {
+        
+    }
+
     function CacheZone($zone, $soa, $data)
     {
         // nothing to do
