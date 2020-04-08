@@ -68,8 +68,23 @@ if (isset($_GET['login']))
 if (isset($_GET['logout']))
     session_unset();
 
+// Recover unfinished request
+// we must do this before checking POST and GET parameters - because they take precedence over preserved data
+if (isset($_SESSION['preserved_domain']))
+{
+    $g_selected_domain = $_SESSION['preserved_domain'];
+    unset($_SESSION['preserved_domain']);
+}
+
+if (isset($_SESSION['preserved_action']))
+{
+    $g_action = $_SESSION['preserved_action'];
+    unset($_SESSION['preserved_action']);
+}
+
 if (isset($_GET['action']))
     $g_action = $_GET['action'];
+
 if (isset($_GET['domain']))
     $g_selected_domain = $_GET['domain'];
 else if (isset($_POST['zone']))
@@ -78,6 +93,12 @@ else if (isset($_POST['zone']))
 // Check if login is needed
 if (RequireLogin())
 {
+    // If we were trying to run action=manage on some domain, preserve the link as much as we can,
+    // so that user can resume the operation after login
+    if ($g_action === 'manage' || $g_action === 'new' || $g_action === 'batch')
+        $_SESSION['preserved_action'] = $g_action;
+    if ($g_selected_domain !== null)
+        $_SESSION['preserved_domain'] = $g_selected_domain;
     $fc->AppendHeader('Login to ' . G_HEADER);
     if ($g_auth_login_banner !== NULL)
         $fc->AppendObject(new BS_Alert($g_auth_login_banner, 'info'));
