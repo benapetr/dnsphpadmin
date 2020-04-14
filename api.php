@@ -428,7 +428,7 @@ register_api('create_record', 'Create a new DNS record in specified zone', 'Crea
                new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ],
              // Example call
              '?action=create_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
-register_api('delete_record', 'Delete a DNS record in specified zone', 'Deletes a DNS record in specific zone', 'api_call_delete_record', true,
+register_api('delete_record', 'Deletes DNS record(s) in specified zone', 'Deletes DNS record(s) in specific zone. If you don\'t provide value, all records of given type will be deleted.', 'api_call_delete_record', true,
              // Required parameters
              [ new PsfApiParameter("record", PsfApiParameterType::String, "Record name, if you don't provide zone name explicitly, this should be FQDN"),
                new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type") ],
