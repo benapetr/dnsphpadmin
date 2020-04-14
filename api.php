@@ -260,7 +260,7 @@ function api_call_delete_record($source)
     $record = get_required_post_get_parameter('record');
     $ttl = get_required_post_get_parameter('ttl');
     $type = get_required_post_get_parameter('type');
-    $value = get_required_post_get_parameter('value');
+    $value = get_optional_post_get_parameter('value');
     $comment = get_optional_post_get_parameter('comment');
     $merge_record = true;
 
@@ -285,19 +285,24 @@ function api_call_delete_record($source)
         return false;
     }
 
+    if (!psf_string_is_null_or_empty($value))
+        $value = " " . $value;
+    else
+        $value = "";
+
     $n = "server " . $g_domains[$zone]['update_server'] . "\n";
     if ($merge_record)
-        $n .= "update delete " . $record . "." . $zone . " " . $ttl . " " . $type . " " . $value . "\n";
+        $n .= "update delete " . $record . "." . $zone . " " . $ttl . " " . $type . $value . "\n";
     else
-        $n .= "update delete " . $record . " " . $ttl . " " . $type . " " . $value . "\n";
+        $n .= "update delete " . $record . " " . $ttl . " " . $type . $value . "\n";
     $n .= "send\nquit\n";
 
     ProcessNSUpdateForDomain($n, $zone);
 
     if ($merge_record)
-        WriteToAuditFile("delete", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
+        WriteToAuditFile("delete", $record . "." . $zone . " " . $ttl . " " . $type . $value, $comment);
     else
-        WriteToAuditFile("delete", $record . " " . $ttl . " " . $type . " " . $value, $comment);
+        WriteToAuditFile("delete", $record . " " . $ttl . " " . $type . $value, $comment);
 
     print_success();
     return true;
@@ -426,11 +431,10 @@ register_api('create_record', 'Create a new DNS record in specified zone', 'Crea
 register_api('delete_record', 'Delete a DNS record in specified zone', 'Deletes a DNS record in specific zone', 'api_call_delete_record', true,
              // Required parameters
              [ new PsfApiParameter("record", PsfApiParameterType::String, "Record name, if you don't provide zone name explicitly, this should be FQDN"),
-               new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type"),
-               new PsfApiParameter("value", PsfApiParameterType::String, "Value of record") ],
+               new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type") ],
              // Optional parameters
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify, if not specified and record is fully qualified, it's automatically looked up from config file"),
-               new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ],
+               new PsfApiParameter("value", PsfApiParameterType::String, "Value of record"), new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ],
              // Example call
              '?action=delete_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
 register_api('get_zone_for_fqdn', 'Returns zone name for given FQDN', 'Attempts to look up zone name for given FQDN using configuration file of php dns admin using auto-lookup function',
