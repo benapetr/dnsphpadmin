@@ -434,7 +434,8 @@ register_api('delete_record', 'Deletes DNS record(s) in specified zone', 'Delete
                new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type") ],
              // Optional parameters
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify, if not specified and record is fully qualified, it's automatically looked up from config file"),
-               new PsfApiParameter("value", PsfApiParameterType::String, "Value of record"), new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ],
+               new PsfApiParameter("value", PsfApiParameterType::String, "Value of record. If not provided, all records with given type will be removed."),
+               new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ],
              // Example call
              '?action=delete_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
 register_api('get_zone_for_fqdn', 'Returns zone name for given FQDN', 'Attempts to look up zone name for given FQDN using configuration file of php dns admin using auto-lookup function',
