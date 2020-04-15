@@ -17,11 +17,16 @@ It also makes it possible to centralize management of multiple separate DNS serv
 This tool is only a wrapper for Linux commands `dig` and `nsupdate`, it will download all records in a zone via AXFR (zone transfer) and it will change the records via nsupdate commands.
 
 # How to install
-Checkout the repository into any folder which is configured a http root of some web server with PHP installed, (for example into /var/www/dns).
+First of all make sure that dig and nsupdate are available on system. They should be in /usr/bin, if they are somewhere else, change the paths in config.php later
+
+Then, download release tarball into any folder which is configured a http root of some web server with PHP installed, (for example into /var/www/dns) and unpack it.
 
 ```
+cd /tmp
+wget https://github.com/benapetr/dnsphpadmin/releases/download/1.7.0/dnsphpadmin_1.7.0.tar.gz
 cd /var/www/html
-git clone --recursive https://github.com/benapetr/dnsphpadmin
+tar -xf /tmp/dnsphpadmin_1.7.0.tar.gz
+mv dnsphpadmin_1.7.0 dnsphpadmin
 cd dnsphpadmin
 
 # Now copy the default config file
