@@ -27,3 +27,7 @@ body {
   top: 120px;
   right: 20px;
 }
+
+.value {
+  white-space:pre;
+}

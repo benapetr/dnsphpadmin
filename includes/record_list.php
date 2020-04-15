@@ -215,6 +215,7 @@ function GetRecordListTable($parent, $domain)
                         "&old=" . urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
                         '"><span title="Edit" class="glyphicon glyphicon-pencil"></span></a>';
         }
+        $record[4] = '<span class="value">' . $record[4] . '</span>';
         $table->AppendRow($record);
     }
     return $table;
