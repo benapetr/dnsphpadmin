@@ -90,6 +90,8 @@ function raw_zone_to_array($data)
         //               v         v                                         v
         // example.org.		600	IN	TXT	"v=spf1 a mx include:_spf.example.org  ip4:124.6.178.206 ~all"
         //
+        // keep in mind that dig is randomly using tabs as separators and randomly spaces
+        //
         // So there are two easy ways of this mess
         // 1) we use regular expressions and pray a lot (we use this one)
         // 2) we simply walk through out the whole string, that's the correct way, but this is actually CPU intensive,
@@ -99,8 +101,9 @@ function raw_zone_to_array($data)
         if (strlen(str_replace(" ", "", $line)) == 0)
             continue;
 
-        $records[] = preg_split('/\t/', $line, 5, PREG_SPLIT_NO_EMPTY);
+        $records[] = preg_split('/[\t\s]/', $line, 5, PREG_SPLIT_NO_EMPTY);
     }
+    var_dump($records);
     return $records;
 }
 
