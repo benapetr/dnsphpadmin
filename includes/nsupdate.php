@@ -101,7 +101,6 @@ function raw_zone_to_array($data)
 
         $records[] = preg_split('/\t/', $line, 5, PREG_SPLIT_NO_EMPTY);
     }
-    var_dump($records);
     return $records;
 }
 
@@ -110,7 +109,6 @@ function get_zone_data($zone)
     global $g_domains;
     $zone_servers = $g_domains[$zone];
     $data = dig("axfr " . $zone . " @" . $zone_servers["transfer_server"]);
-    var_dump($data);
     return raw_zone_to_array($data);
 }
 
