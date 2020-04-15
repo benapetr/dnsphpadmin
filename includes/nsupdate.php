@@ -103,7 +103,6 @@ function raw_zone_to_array($data)
 
         $records[] = preg_split('/[\t\s]/', $line, 5, PREG_SPLIT_NO_EMPTY);
     }
-    var_dump($records);
     return $records;
 }
 
