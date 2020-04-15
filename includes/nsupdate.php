@@ -82,15 +82,26 @@ function raw_zone_to_array($data)
     {
         if (psf_string_startsWith($line, ";"))
             continue;
-        // Sanitize string, we replace all double tabs with single tabs, then replace all tabs with spaces and then replace
-        // double spaces, so that each item is separated only with single space
-        $line = str_replace("\t", " ", $line);
-        while (psf_string_contains($line, "  "))
-            $line = str_replace("  ", " ", $line);
+        // This is a little bit hard-core, we need to parse output from dig, which is terrible
+        // In past we did some magic by simply replacing all tabs and spaces to split it, but that doesn't work
+        // for some special TXT records
+        // For example:
+        //             2 tabs     tab                                    double space
+        //               v         v                                         v
+        // example.org.		600	IN	TXT	"v=spf1 a mx include:_spf.example.org  ip4:124.6.178.206 ~all"
+        //
+        // So there are two easy ways of this mess
+        // 1) we use regular expressions and pray a lot (we use this one)
+        // 2) we simply walk through out the whole string, that's the correct way, but this is actually CPU intensive,
+        //    so we might want to implement this into some kind of C library I guess
+        
+        // Get rid of empty lines
         if (strlen(str_replace(" ", "", $line)) == 0)
             continue;
-        $records[] = explode(" ", $line, 5);
+
+        $records[] = preg_split('/\t/', $line, 5, PREG_SPLIT_NO_EMPTY);
     }
+    var_dump($records);
     return $records;
 }
 
@@ -99,6 +110,7 @@ function get_zone_data($zone)
     global $g_domains;
     $zone_servers = $g_domains[$zone];
     $data = dig("axfr " . $zone . " @" . $zone_servers["transfer_server"]);
+    var_dump($data);
     return raw_zone_to_array($data);
 }
 
