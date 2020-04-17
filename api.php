@@ -123,7 +123,7 @@ function api_call_is_logged($source)
     global $api, $g_auth_roles_map;
     $logged = is_authenticated($api->AuthenticationBackend);
     $result = [ 'is_logged' => $logged ];
-    if ($logged)
+    if ($logged && isset($_SESSION['user']))
     {
         $result['user'] = $_SESSION['user'];
         if ($g_auth_roles_map !== NULL && array_key_exists($_SESSION['user'], $g_auth_roles_map))
