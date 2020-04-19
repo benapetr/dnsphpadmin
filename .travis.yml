@@ -5,6 +5,7 @@ php:
 
 script:
   - bash psf/tools/lint.sh
+  - php util/unit.php
 
 notifications:
   irc:
