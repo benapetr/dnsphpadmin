@@ -147,7 +147,9 @@ class TabEdit
         // In case we are returning to insert form from previous insert, make default type the one we used before
         if (isset($_POST['type']))
             $default_type = $_POST['type'];
-        if (psf_string_endsWith($g_selected_domain, ".in-addr.arpa"))
+        else if (isset($_GET['type']))
+            $default_type = $_GET['type'];
+        else if (psf_string_endsWith($g_selected_domain, ".in-addr.arpa"))
             $default_type = "PTR";
         
         // Reuse some values from previous POST request
