@@ -87,6 +87,16 @@ function GetSOAFromData($data)
     return $soa;
 }
 
+//! Go through whole zone and check if SOA is present on end
+function CheckIfZoneIsComplete($data)
+{
+    if ($data[0][3] !== 'SOA')
+        return false;
+    if (end($data)[3] !== 'SOA')
+        return false;
+    return true;
+}
+
 function GetRecordList($zone)
 {
     global $g_caching_engine, $g_caching_engine_instance, $g_retry_on_error;
@@ -180,6 +190,10 @@ function GetRecordList($zone)
     {
         $g_caching_engine_instance->CacheZone($zone, $soa, $data);
     }
+
+    if (count($data) > 0 && !CheckIfZoneIsComplete($data))
+        DisplayWarning("Transfer NS for " . $zone . " didn't return full zone, last SOA record is missing, zone data are incomplete");
+
     return $data;
 }
 
