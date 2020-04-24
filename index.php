@@ -16,6 +16,7 @@ define('G_DNSTOOL_ENTRY_POINT', 'index.php');
 require("definitions.php");
 require("config.default.php");
 require("config.php");
+require_once("psf/psf.php");
 require_once("includes/common.php");
 require_once("includes/fatal.php");
 require_once("includes/menu.php");
@@ -26,7 +27,6 @@ require_once("includes/tab_manage.php");
 require_once("includes/tab_edit.php");
 require_once("includes/tab_batch.php");
 require_once("includes/login.php");
-require_once("psf/psf.php");
 
 if ($g_debug === true)
     psf_php_enable_debug();

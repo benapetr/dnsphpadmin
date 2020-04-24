@@ -15,13 +15,13 @@ define('G_DNSTOOL_ENTRY_POINT', 'api.php');
 require("definitions.php");
 require("config.default.php");
 require("config.php");
+require_once("psf/psf.php");
 require_once("includes/common.php");
 require_once("includes/fatal_api.php");
 require_once("includes/record_list.php");
 require_once("includes/modify.php");
 require_once("includes/login.php");
 require_once("includes/zones.php");
-require_once("psf/psf.php");
 
 if ($g_api_enabled !== true)
     die('API subsystem is disabled, change $g_api_enabled to true in your config.php file to enable this' . "\n");
