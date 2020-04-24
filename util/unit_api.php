@@ -27,6 +27,10 @@ $ut->Evaluate("get_version", $version['version'] == G_DNSTOOL_VERSION);
 $logged = api("action=is_logged");
 $ut->Evaluate("is_logged", $logged['is_logged']);
 
+$login = api("action=logout");
+$ut->Evaluate("logout", $login['result'] == 'success');
+
+
 echo ("\n\n\n");
 $ut->PrintResults();
 

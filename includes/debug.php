@@ -14,8 +14,6 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-require_once("psf/psf.php");
-require_once("config.php");
 require_once("logging.php");
 
 function Debug($text)

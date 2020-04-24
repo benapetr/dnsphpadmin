@@ -14,8 +14,6 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-require_once("config.php");
-
 $g_caching_engine_instance = NULL;
 
 //! This is a base class of caching engine and can be used as instance for NULL cachine engine (no caching)

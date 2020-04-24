@@ -14,7 +14,6 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-require_once("config.php");
 require_once("debug.php");
 
 function nsupdate($input, $tsig_override = NULL, $tsig_override_key = NULL, $zone_name = NULL)

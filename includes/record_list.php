@@ -14,8 +14,7 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-require_once("psf/psf.php");
-require_once("includes/nsupdate.php");
+require_once("nsupdate.php");
 require_once("audit.php");
 require_once("common.php");
 require_once("zones.php");
