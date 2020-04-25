@@ -9,6 +9,32 @@ require_once (dirname(__FILE__) . "/../config.default.php");
 require_once (dirname(__FILE__) . "/../includes/record_list.php");
 require_once (dirname(__FILE__) . "/../includes/zones.php");
 
+function CheckZone($data)
+{
+    foreach ($data as $line)
+    {
+        if (count($line) != 5)
+        {
+            echo('Not 4 columns in line of data:\n');
+            var_dump($line);
+            die(10);
+        }
+        if (!is_numeric($line[1]))
+        {
+            echo('TTL is not a number');
+            var_dump($line);
+            die(10);
+        }
+        if ($line[2] != 'IN')
+        {
+            echo('Unknown scope');
+            var_dump($line);
+            die(10);
+        }
+    }
+    return true;
+}
+
 $ut = new UnitTest();
 
 $ut->Evaluate('Check for non-existence of PTR zones (none) in empty list', Zones::HasPTRZones() === false);
@@ -23,6 +49,7 @@ $dz2 = raw_zone_to_array(file_get_contents('testdata/invalid.zone'));
 $ut->Evaluate('Check validness of valid zone testdata/valid.zone1', CheckIfZoneIsComplete($dz1) === true);
 $ut->Evaluate('Check validness of invalid zone testdata/invalid.zone', CheckIfZoneIsComplete($dz2) === false);
 $ut->Evaluate('Check count of records in testdata/valid.zone1', count($dz1) === 389);
+$ut->Evaluate('Parser test', CheckZone($dz1));
 
 echo ("\n");
 $ut->PrintResults();
