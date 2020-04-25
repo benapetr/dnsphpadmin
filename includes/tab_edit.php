@@ -202,7 +202,9 @@ class TabEdit
                 $tl->AddValue($type);
         }
         $form_items[] = $tl;
-        $form_items[] = new BS_TextBox("value", $default_value, NULL, $layout);
+        $value_box = new BS_TextBox("value", $default_value, NULL, $layout);
+        $value_box->Size = 45;
+        $form_items[] = $value_box;
         if ($g_audit)
         {
             $comment = new BS_TextBox("comment", $default_comment, NULL, $layout);
