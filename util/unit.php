@@ -43,8 +43,8 @@ $g_domains['192.in-addr.arpa'] = [ ];
 $ut->Evaluate('Check for non-existence of PTR zones (none) in empty list', Zones::HasPTRZones() === true);
 $ut->Evaluate('Get zone for FQDN', Zones::GetZoneForFQDN('0.0.168.192.in-addr.arpa') == '168.192.in-addr.arpa');
 
-$dz1 = raw_zone_to_array(file_get_contents('testdata/valid.zone1'));
-$dz2 = raw_zone_to_array(file_get_contents('testdata/invalid.zone'));
+$dz1 = raw_zone_to_array(file_get_contents(dirname(__FILE__) . '/testdata/valid.zone1'));
+$dz2 = raw_zone_to_array(file_get_contents(dirname(__FILE__) . '/testdata/invalid.zone'));
 
 $ut->Evaluate('Check validness of valid zone testdata/valid.zone1', CheckIfZoneIsComplete($dz1) === true);
 $ut->Evaluate('Check validness of invalid zone testdata/invalid.zone', CheckIfZoneIsComplete($dz2) === false);
