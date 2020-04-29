@@ -167,6 +167,13 @@ function ProcessLogin()
         return;
     }
 
+    // If user is already logged in, do nothing (probably just hit refresh in browser and re-sent POST data)
+    if (isset($_SESSION['logged_in']))
+    {
+        DisplayWarning('You are already logged in, if you want to login again as someone else, logout first');
+        return;
+    }
+
     // Check if we have the credentials
     if (!isset($_POST["loginUsername"]) || !isset($_POST["loginPassword"]))
     {
