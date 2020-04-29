@@ -168,7 +168,7 @@ function ProcessLogin()
     }
 
     // If user is already logged in, do nothing (probably just hit refresh in browser and re-sent POST data)
-    if (isset($_SESSION['logged_in']))
+    if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true)
     {
         DisplayWarning('You are already logged in, if you want to login again as someone else, logout first');
         return;
