@@ -91,6 +91,8 @@ class TabBatch
                 $dl->AddValue($key, $key);
         }
         $layout->Width = "600px";
+        $layout->AppendRow( [ "This form allows execution of nsupdate commands, so that you can execute multiple nsupdate operations at once<br>" .
+                              "<b>Example:</b><br><pre>update add record.domain.org 3600 A 1.2.3.4\nupdate delete record2.domain.org</pre>" ] );
         $layout->AppendRow( [ "Note: only update statements are allowed, don't put send there, it will be there automatically" ] );
         $layout->AppendRow( [ $dl ] );
         $input = new BS_TextBox("record", NULL, NULL, $layout);
