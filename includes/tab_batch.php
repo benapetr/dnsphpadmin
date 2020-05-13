@@ -42,6 +42,10 @@ class TabBatch
         $input = "server " . $g_domains[$zone]["update_server"] . "\n";
         foreach (explode("\n", $record) as $line)
         {
+            // Ignore empty
+            if (strlen(str_replace(" ", "", $line)) == 0)
+                continue;
+
             if (!psf_string_startsWith($line, "update "))
             {
                 Error("Illegal operation for nsupdate, only update is allowed: " . $line);
