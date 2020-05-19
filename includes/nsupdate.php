@@ -15,6 +15,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
 require_once("debug.php");
+require_once("validator.php");
 
 function nsupdate($input, $tsig_override = NULL, $tsig_override_key = NULL, $zone_name = NULL)
 {
@@ -68,6 +69,8 @@ function nsupdate($input, $tsig_override = NULL, $tsig_override_key = NULL, $zon
 function dig($parameters)
 {
     global $g_dig;
+    if (!ShellEscapeCheck($parameters))
+        die('FATAL: Invalid shell parameters');
     Debug("shell_exec: " . $g_dig . " " . $parameters);
     return shell_exec($g_dig . " " . $parameters);
 }

@@ -21,6 +21,7 @@ require_once("includes/fatal_api.php");
 require_once("includes/record_list.php");
 require_once("includes/modify.php");
 require_once("includes/login.php");
+require_once("includes/validator.php");
 require_once("includes/zones.php");
 
 if ($g_api_enabled !== true)
@@ -323,6 +324,11 @@ function api_call_get_record($source)
 {
     global $api;
     $record = get_required_post_get_parameter('record');
+    if (!IsValidHostName($record))
+    {
+        $api->ThrowError('Invalid hostname', "Hostname $record is not a valid hostname");
+        return false;
+    }
     $type = get_optional_post_get_parameter('type');
     if ($type === NULL)
         $type = 'A';
