@@ -23,6 +23,12 @@ function IsValidHostName($fqdn)
         return false;
     if (psf_string_contains($fqdn, '"'))
         return false;
+    if (psf_string_contains($fqdn, ' '))
+        return false;
+    if (psf_string_contains($fqdn, "\t"))
+        return false;
+    if (psf_string_contains($fqdn, "\n"))
+        return false;
     if (psf_string_startsWith($fqdn, "-"))
         return false;
     return true;
