@@ -51,6 +51,9 @@ $g_dig = '/usr/bin/dig';
 // Path to executable of nsupdate
 $g_nsupdate = '/usr/bin/nsupdate';
 
+// If enabled, it will not be possible to work with garbage hostnames not conforming to standards
+$g_strict_hostname_checks = true;
+
 // If set to value higher than 0, dig will be retried for N times, this is useful on broken networks with heavy packet loss
 $g_retry_on_error = 2;
 

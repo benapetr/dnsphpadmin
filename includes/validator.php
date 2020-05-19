@@ -16,6 +16,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 function IsValidHostName($fqdn)
 {
+    global $g_strict_hostname_checks;
     // Few extra checks to prevent shell escaping
     if (!ShellEscapeCheck($fqdn))
         return false;
@@ -30,6 +31,8 @@ function IsValidHostName($fqdn)
     if (psf_string_contains($fqdn, "\n"))
         return false;
     if (psf_string_startsWith($fqdn, "-"))
+        return false;
+    if ($g_strict_hostname_checks && preg_match('/[^0-9a-zA-Z_\-\.]/', $fqdn))
         return false;
     return true;
 }
