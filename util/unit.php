@@ -7,6 +7,7 @@ define('G_DNSTOOL_ENTRY_POINT', 'unit.php');
 
 require_once (dirname(__FILE__) . "/../config.default.php");
 require_once (dirname(__FILE__) . "/../includes/record_list.php");
+require_once (dirname(__FILE__) . "/../includes/validator.php");
 require_once (dirname(__FILE__) . "/../includes/zones.php");
 
 function CheckZone($data)
@@ -53,6 +54,18 @@ $ut->Evaluate('Check validness of valid zone testdata/valid.zone2', CheckIfZoneI
 $ut->Evaluate('Check count of records in testdata/valid.zone1', count($dz1) === 389);
 $ut->Evaluate('Parser test - zone 1', CheckZone($dz1));
 $ut->Evaluate('Parser test - zone 2', CheckZone($dz3));
+
+$ut->Evaluate('Validator - valid #1', IsValidHostName('insw.cz') === true);
+$ut->Evaluate('Validator - valid #2', IsValidHostName('te-st1.petr.bena.rocks') === true);
+$ut->Evaluate('Validator - valid #3', IsValidHostName('*.petr.bena.rocks') === true);
+$ut->Evaluate('Validator - invalid #1', IsValidHostName('-invalid') === false);
+$ut->Evaluate('Validator - invalid #2', IsValidHostName('---') === false);
+$ut->Evaluate('Validator - invalid #3', IsValidHostName('google domain') === false);
+$ut->Evaluate('Validator - invalid #4', IsValidHostName('google.com;rm -rf /') === false);
+$ut->Evaluate('Validator - invalid #5', IsValidHostName("google.com\ntest") === false);
+$ut->Evaluate('Validator - invalid #6', IsValidHostName("google.com\ttest") === false);
+$ut->Evaluate('Validator - invalid #7', IsValidHostName("'google.com") === false);
+$ut->Evaluate('Validator - invalid #8', IsValidHostName("\"google.com") === false);
 
 echo ("\n");
 $ut->PrintResults();
