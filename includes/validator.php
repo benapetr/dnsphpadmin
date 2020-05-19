@@ -19,6 +19,10 @@ function IsValidHostName($fqdn)
     // Few extra checks to prevent shell escaping
     if (!ShellEscapeCheck($fqdn))
         return false;
+    if (psf_string_contains($fqdn, "'"))
+        return false;
+    if (psf_string_contains($fqdn, '"'))
+        return false;
     if (psf_string_startsWith($fqdn, "-"))
         return false;
     return true;
@@ -26,10 +30,6 @@ function IsValidHostName($fqdn)
 
 function ShellEscapeCheck($string)
 {
-    if (psf_string_contains($string, '"'))
-        return false;
-    if (psf_string_contains($string, "'"))
-        return false;
     if (psf_string_contains($string, ";"))
         return false;
 

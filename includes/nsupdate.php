@@ -69,8 +69,10 @@ function nsupdate($input, $tsig_override = NULL, $tsig_override_key = NULL, $zon
 function dig($parameters)
 {
     global $g_dig;
+    // Replace newlines for security reasons
+    $parameters = str_replace("\n", "", $parameters);
     if (!ShellEscapeCheck($parameters))
-        die('FATAL: Invalid shell parameters');
+        die('FATAL: Invalid shell parameters: ' . $parameters);
     Debug("shell_exec: " . $g_dig . " " . $parameters);
     return shell_exec($g_dig . " " . $parameters);
 }
@@ -128,6 +130,6 @@ function get_records_from_zone($fqdn, $type, $zone)
 {
     global $g_domains;
     $zone_servers = $g_domains[$zone];
-    $data = dig('+nocomments +noauthority +noadditional ' . $type . ' ' . $fqdn . " @" . $zone_servers["transfer_server"]);
+    $data = dig('+nocomments +noauthority +noadditional ' . $type . " '" . $fqdn . "' @" . $zone_servers["transfer_server"]);
     return raw_zone_to_array($data);
 }
