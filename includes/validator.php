@@ -32,7 +32,7 @@ function IsValidHostName($fqdn)
         return false;
     if (psf_string_startsWith($fqdn, "-"))
         return false;
-    if ($g_strict_hostname_checks && preg_match('/[^0-9a-zA-Z_\-\.]/', $fqdn))
+    if ($g_strict_hostname_checks && preg_match('/[^0-9\*a-zA-Z_\-\.]/', $fqdn))
         return false;
     return true;
 }

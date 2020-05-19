@@ -58,6 +58,7 @@ $ut->Evaluate('Parser test - zone 2', CheckZone($dz3));
 $ut->Evaluate('Validator - valid #1', IsValidHostName('insw.cz') === true);
 $ut->Evaluate('Validator - valid #2', IsValidHostName('te-st1.petr.bena.rocks') === true);
 $ut->Evaluate('Validator - valid #3', IsValidHostName('*.petr.bena.rocks') === true);
+$ut->Evaluate('Validator - valid #4', IsValidHostName('_spf.petr.bena.rocks') === true);
 $ut->Evaluate('Validator - invalid #1', IsValidHostName('-invalid') === false);
 $ut->Evaluate('Validator - invalid #2', IsValidHostName('---') === false);
 $ut->Evaluate('Validator - invalid #3', IsValidHostName('google domain') === false);
@@ -66,6 +67,8 @@ $ut->Evaluate('Validator - invalid #5', IsValidHostName("google.com\ntest") === 
 $ut->Evaluate('Validator - invalid #6', IsValidHostName("google.com\ttest") === false);
 $ut->Evaluate('Validator - invalid #7', IsValidHostName("'google.com") === false);
 $ut->Evaluate('Validator - invalid #8', IsValidHostName("\"google.com") === false);
+$ut->Evaluate('Validator - invalid #9', IsValidHostName('$test.org') === false);
+$ut->Evaluate('Validator - invalid #10', IsValidHostName('/x.test.org') === false);
 
 echo ("\n");
 $ut->PrintResults();
