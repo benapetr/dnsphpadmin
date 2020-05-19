@@ -34,6 +34,13 @@ function IsValidHostName($fqdn)
     return true;
 }
 
+function NSupdateEscapeCheck($string)
+{
+    if (psf_string_contains($string, "\n"))
+        return false;
+    return true;
+}
+
 function ShellEscapeCheck($string)
 {
     if (psf_string_contains($string, ";"))

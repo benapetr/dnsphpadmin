@@ -15,6 +15,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
 require_once("common_ui.php");
+require_once("validator.php");
 require_once("modify.php");
 require_once("zones.php");
 
@@ -56,6 +57,9 @@ class TabEdit
         if (!is_numeric($ttl))
             Error('TTL must be a number');
 
+        if (!IsValidHostName($record))
+            Error('Invalid hostname: ' . $record);
+
         $input = "server " . $g_domains[$zone]['update_server'] . "\n";
         $comment = NULL;
         if (isset($_POST["comment"]))
@@ -75,6 +79,8 @@ class TabEdit
         {
             if (!isset($_POST["old"]))
                 Error("Missing old record necessary for update");
+            if (!NSupdateEscapeCheck($_POST["old"]))
+                Error('Invalid data for old record: ' . $_POST["old"]);
             // First delete the existing record
             $input .= "update delete " . $_POST["old"] . "\n";
             $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
