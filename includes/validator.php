@@ -30,6 +30,9 @@ function IsValidHostName($fqdn)
         return false;
     if (psf_string_contains($fqdn, "\n"))
         return false;
+    // security fix + and - are switches used by dig so we need to make sure they aren't first symbol even if strict checking is not enabled
+    if (psf_string_startsWith($fqdn, "+"))
+        return false;
     if (psf_string_startsWith($fqdn, "-"))
         return false;
     if ($g_strict_hostname_checks && preg_match('/[^0-9\*a-zA-Z_\-\.]/', $fqdn))
