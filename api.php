@@ -236,6 +236,13 @@ function api_call_create_record($source)
         return false;
     }
 
+    $record = SanitizeHostname($record);
+    if (!IsValidHostName($record))
+    {
+        $api->ThrowError('Invalid hostname', "Hostname is containing invalid characters");
+        return false;
+    }
+
     $n = "server " . $g_domains[$zone]['update_server'] . "\n";
     if ($merge_record)
         $n .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
@@ -286,6 +293,13 @@ function api_call_delete_record($source)
         return false;
     }
 
+    $record = SanitizeHostname($record);
+    if (!IsValidHostName($record))
+    {
+        $api->ThrowError('Invalid hostname', "Hostname is containing invalid characters");
+        return false;
+    }
+
     if (!psf_string_is_null_or_empty($value))
         $value = " " . $value;
     else
@@ -324,6 +338,7 @@ function api_call_get_record($source)
 {
     global $api;
     $record = get_required_post_get_parameter('record');
+    $record = SanitizeHostname($record);
     if (!IsValidHostName($record))
     {
         $api->ThrowError('Invalid hostname', "Hostname $record is not a valid hostname");
