@@ -57,6 +57,9 @@ class TabEdit
         if (!is_numeric($ttl))
             Error('TTL must be a number');
 
+        // Sanitize input from user
+        $record = SanitizeHostname($record);
+
         if (!IsValidHostName($record))
             Error('Invalid hostname: ' . $record);
 

@@ -40,6 +40,12 @@ function IsValidHostName($fqdn)
     return true;
 }
 
+function SanitizeHostname($hostname)
+{
+    // Right now we do only trim, but maybe in future we will do more, so let's keep it in here
+    return trim($hostname);
+}
+
 function NSupdateEscapeCheck($string)
 {
     if (psf_string_contains($string, "\n"))
