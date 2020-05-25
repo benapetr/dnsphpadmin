@@ -30,12 +30,24 @@ if ($g_api_enabled !== true)
 if ($g_debug === true)
     psf_php_enable_debug();
 
+//! Buffer that contains list of API warnings
+$g_api_warnings = [];
+
 date_default_timezone_set($g_timezone);
 
 function print_result($result)
 {
-    global $api;
-    $api->PrintObj([ 'result' => $result ]);
+    global $api, $g_api_warnings;
+    $json = [ 'result' => $result ];
+    if (!empty($g_api_warnings))
+        $json['warnings'] = $g_api_warnings;
+    $api->PrintObj($json);
+}
+
+function api_warning($text)
+{
+    global $g_api_warnings;
+    $g_api_warnings[] = $text;
 }
 
 function print_success()
