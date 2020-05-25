@@ -21,7 +21,7 @@ $g_warning_container = new BS_FluidContainer();
 //! Provides interface to all notification functions that hold and display errors, warnings, etc.
 class Notifications
 {
-    public static function DisplayError($text)
+    public static function DisplayWarning($text)
     {
         global $g_warning_container;
         $warning_box = new BS_Alert('<b>WARNING:</b> ' . htmlspecialchars($text), 'warning');
@@ -29,7 +29,7 @@ class Notifications
         $g_warning_container->AppendObject($warning_box);
     }
 
-    public static function DisplayWarning($text)
+    public static function DisplayError($text)
     {
         global $g_error_container;
         $fatal_box = new BS_Alert('<b>ERROR:</b> ' . $text, 'danger');
