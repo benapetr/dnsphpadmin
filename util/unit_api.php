@@ -48,6 +48,15 @@ $ut->Evaluate('get_record name', $record[0][0] == 'test1.test.local.');
 $output = api('action=delete_record&record=test1.test.local&ttl=10&type=A&value=10.2.2.8');
 $ut->Evaluate('delete_record test A', $output['result'] == 'success');
 
+$output = api('action=delete_record&record=test.local&ttl=10&type=SOA&value=');
+$ut->Evaluate("delete_record that isn't allowed", isset($output['error']));
+
+$output = api('action=create_record&record=-.test.local&ttl=10&type=A&value=10.2.2.8');
+$ut->Evaluate('create invalid record #1', isset($output['error']));
+
+$output = api('action=create_record&record=$.test.local&ttl=10&type=A&value=10.2.2.8');
+$ut->Evaluate('create invalid record #2', isset($output['error']));
+
 $login = api("action=logout");
 $ut->Evaluate("logout", $login['result'] == 'success');
 
