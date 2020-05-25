@@ -2,6 +2,11 @@
 
 version=`git tag | tail -1`
 
+if [ ! -f 'index.php' ]; then
+    echo "You have to run this from root folder of project"
+    exit 1
+fi
+
 if [ -f "/tmp/dnsphpadmin_$version.tar.gz" ];then
     echo "/tmp/dnsphpadmin_$version.tar.gz already exist"
     exit 1
