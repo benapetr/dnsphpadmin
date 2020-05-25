@@ -20,6 +20,7 @@ require_once("includes/common.php");
 require_once("includes/fatal_api.php");
 require_once("includes/record_list.php");
 require_once("includes/modify.php");
+require_once("includes/notifications.php");
 require_once("includes/login.php");
 require_once("includes/validator.php");
 require_once("includes/zones.php");
@@ -30,17 +31,16 @@ if ($g_api_enabled !== true)
 if ($g_debug === true)
     psf_php_enable_debug();
 
-//! Buffer that contains list of API warnings
-$g_api_warnings = [];
-
 date_default_timezone_set($g_timezone);
 
 function print_result($result)
 {
-    global $api, $g_api_warnings;
+    global $api, $g_api_warnings, $g_api_errors;
     $json = [ 'result' => $result ];
     if (!empty($g_api_warnings))
         $json['warnings'] = $g_api_warnings;
+    if (!empty($g_api_errors))
+        $json['errors'] = $g_api_errors;
     $api->PrintObj($json);
 }
 

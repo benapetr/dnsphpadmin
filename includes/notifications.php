@@ -18,12 +18,22 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 $g_error_container = new BS_FluidContainer();
 $g_warning_container = new BS_FluidContainer();
 
+//! Buffer that contains list of API warnings
+$g_api_warnings = [];
+$g_api_errors = [];
+
 //! Provides interface to all notification functions that hold and display errors, warnings, etc.
 class Notifications
 {
     public static function DisplayWarning($text)
     {
-        global $g_warning_container;
+        global $g_warning_container, $g_api_warnings;
+        if (G_DNSTOOL_ENTRY_POINT === "api.php")
+        {
+            // API have separate container as we don't work with HTML there
+            $g_api_warnings[] = $text;
+            return;
+        }
         $warning_box = new BS_Alert('<b>WARNING:</b> ' . htmlspecialchars($text), 'warning');
         $warning_box->EscapeHTML = false;
         $g_warning_container->AppendObject($warning_box);
@@ -31,7 +41,13 @@ class Notifications
 
     public static function DisplayError($text)
     {
-        global $g_error_container;
+        global $g_error_container, $g_api_errors;
+        if (G_DNSTOOL_ENTRY_POINT === "api.php")
+        {
+            // API have separate container as we don't work with HTML there
+            $g_api_errors[] = $text;
+            return;
+        }
         $fatal_box = new BS_Alert('<b>ERROR:</b> ' . $text, 'danger');
         $fatal_box->EscapeHTML = false;
         $g_error_container->AppendObject($fatal_box);

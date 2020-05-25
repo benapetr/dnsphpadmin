@@ -14,6 +14,8 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
+require_once("notifications.php");
+
 function ShowError($form, $txt)
 {
     $msg = new BS_Alert('FATAL: ' . $txt, 'danger', $form);
@@ -29,15 +31,9 @@ function CheckEmpty($form, $label, $name)
     return true;
 }
 
-//! Insert a warning message to warning message container, right now this works only with UI, it does nothing when used with API calls
 function DisplayWarning($text)
 {
-    if (G_DNSTOOL_ENTRY_POINT === "api.php")
-        return;
-    global $g_warning_container;
-    $warning_box = new BS_Alert('<b>WARNING:</b> ' . htmlspecialchars($text), 'warning');
-    $warning_box->EscapeHTML = false;
-    $g_warning_container->AppendObject($warning_box);
+    Notifications::DisplayWarning($text);
 }
 
 function GetSwitcher($parent)
