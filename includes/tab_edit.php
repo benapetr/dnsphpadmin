@@ -63,40 +63,23 @@ class TabEdit
         if (!IsValidHostName($record))
             Error('Invalid hostname: ' . $record);
 
-        $input = "server " . $g_domains[$zone]['update_server'] . "\n";
         $comment = NULL;
         if (isset($_POST["comment"]))
             $comment = $_POST["comment"];
 
         if ($_POST['submit'] == 'Create')
         {
-            $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
-            $input .= "send\nquit\n";
-            $result = ProcessNSUpdateForDomain($input, $zone);
-            if (strlen($result) > 0)
-                Debug("result: " . $result);
-            WriteToAuditFile('create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
-            IncrementStat('create');
-            $form->AppendObject(new BS_Alert("Successfully inserted record " . $record . "." . $zone));
+            if (DNS_CreateRecord($zone, $record, $value, $type, $ttl, $comment))
+                $form->AppendObject(new BS_Alert("Successfully inserted record " . $record . "." . $zone));
         } else if ($_POST["submit"] == "Edit")
         {
             if (!isset($_POST["old"]))
                 Error("Missing old record necessary for update");
-            if (!NSupdateEscapeCheck($_POST["old"]))
-                Error('Invalid data for old record: ' . $_POST["old"]);
-            // First delete the existing record
-            $input .= "update delete " . $_POST["old"] . "\n";
-            $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
-            $input .= "send\nquit\n";
-            $result = ProcessNSUpdateForDomain($input, $zone);
-            if (strlen($result) > 0)
-                Debug("result: " . $result);
-            WriteToAuditFile('replace_delete', $_POST["old"], $comment);
-            IncrementStat('replace_delete');
-            WriteToAuditFile('replace_create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
-            IncrementStat('replace_create');
-            $form->AppendObject(new BS_Alert("Successfully replaced " . $_POST["old"] . " with " . $record . "." . $zone . " " .
-                                            $ttl . " " . $type . " " . $value));
+            if (DNS_ModifyRecord($zone, $record, $value, $type, $ttl, $comment, $_POST["old"]))
+            {
+                $form->AppendObject(new BS_Alert("Successfully replaced " . $_POST["old"] . " with " . $record . "." . $zone . " " .
+                                                 $ttl . " " . $type . " " . $value));
+            }
         } else
         {
             Error("Unknown modify mode");
@@ -105,47 +88,12 @@ class TabEdit
         // Create PTR if wanted
         if (isset($_POST['ptr']) && $_POST['ptr'] === "true")
         {
-            Debug('PTR record was requested, checking zone name');
             if ($type !== "A")
             {
                 DisplayWarning('PTR record was not created: PTR record can be only created when you are inserting A record, you created ' . $type . ' record instead');
                 return;
             }
-            $ip_parts = explode('.', $value);
-            if (count($ip_parts) != 4)
-            {
-                DisplayWarning('PTR record was not created: record '. $value .' is not a valid IPv4 quad');
-                return;
-            }
-            $arpa = $ip_parts[3] . '.' . $ip_parts[2] . '.' . $ip_parts[1] . '.' . $ip_parts[0] . '.in-addr.arpa';
-            $arpa_zone = Zones::GetZoneForFQDN($arpa);
-            if ($arpa_zone === NULL)
-            {
-                DisplayWarning('PTR record was not created: there is no PTR zone for record '. $value);
-                return;
-            }
-            if (!Zones::IsEditable($arpa_zone))
-            {
-                DisplayWarning('PTR record was not created: zone ' . $arpa_zone . ' is read only');
-                return;
-            }
-            if (!IsAuthorizedToWrite($arpa_zone))
-            {
-                DisplayWarning("PTR record was not created: you don't have write access to zone " . $arpa_zone);
-                return;
-            }
-            Debug('Found PTR useable zone: ' . $arpa_zone);
-            $arpa_value = $record . '.' . $zone . '.';
-
-            // Let's insert this record
-            $input = "server " . $g_domains[$arpa_zone]['update_server'] . "\n";
-            $input .= ProcessInsertFromPOST(NULL, $arpa, $arpa_value, 'PTR', $ttl);
-            $input .= "send\nquit\n";
-            $result = ProcessNSUpdateForDomain($input, $arpa_zone);
-            if (strlen($result) > 0)
-                Debug("result: " . $result);
-            WriteToAuditFile('create', $arpa . " " . $ttl . " PTR " . $arpa_value, $comment);
-            IncrementStat('create');
+            DNS_InsertPTRForARecord($value, $record . '.' . $zone, $ttl, $comment);
         }
     }
 

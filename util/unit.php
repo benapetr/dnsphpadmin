@@ -59,6 +59,8 @@ $ut->Evaluate('Validator - valid #1', IsValidHostName('insw.cz') === true);
 $ut->Evaluate('Validator - valid #2', IsValidHostName('te-st1.petr.bena.rocks') === true);
 $ut->Evaluate('Validator - valid #3', IsValidHostName('*.petr.bena.rocks') === true);
 $ut->Evaluate('Validator - valid #4', IsValidHostName('_spf.petr.bena.rocks') === true);
+$ut->Evaluate('Validator - valid #5', IsValidHostName('wqdcsrv331') === true);
+$ut->Evaluate('Validator - valid #6', IsValidHostName('2.168.192.in-addr.arpa') === true);
 $ut->Evaluate('Validator - invalid #1', IsValidHostName('-invalid') === false);
 $ut->Evaluate('Validator - invalid #2', IsValidHostName('---') === false);
 $ut->Evaluate('Validator - invalid #3', IsValidHostName('google domain') === false);

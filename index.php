@@ -128,7 +128,7 @@ if (RequireLogin())
         $fc->AppendObject(TabOverview::GetSelectForm($fc));
     } else if ($g_action == "manage")
     {
-        ProcessDelete($fc);
+        TabManage::ProcessDelete($fc);
         TabManage::GetContents($fc);
     } else if ($g_action == 'csv')
     {

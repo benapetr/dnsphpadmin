@@ -19,6 +19,7 @@ require_once("audit.php");
 require_once("common.php");
 require_once("debug.php");
 require_once("nsupdate.php");
+require_once("validator.php");
 require_once("zones.php");
 
 //! Wrapper around nsupdate from nsupdate.php that checks if there are custom TSIG overrides for given domain
@@ -42,34 +43,6 @@ function ProcessNSUpdateForDomain($input, $domain)
     return nsupdate($input, $tsig, $tsig_key, $zone_name);
 }
 
-function ProcessDelete($well)
-{
-    global $g_domains, $g_selected_domain;
-    if (!isset($_GET["delete"]))
-        return;
-
-    if (strlen($g_selected_domain) == 0)
-        Error("No domain");
-
-    if (!Zones::IsEditable($g_selected_domain))
-        Error("Domain $g_selected_domain is not writeable");
-
-    if (!IsAuthorizedToWrite($g_selected_domain))
-        Error("You are not authorized to edit $g_selected_domain");
-    
-    $record = $_GET["delete"];
-
-    if (psf_string_contains($record, "\n"))
-        Error("Invalid delete string");
-
-    $input = "server " . $g_domains[$g_selected_domain]["update_server"] . "\n";
-    $input .= "update delete " . $record . "\nsend\nquit\n";
-    ProcessNSUpdateForDomain($input, $g_selected_domain);
-    WriteToAuditFile("delete", $record);
-    IncrementStat('delete');
-    $well->AppendObject(new BS_Alert("Successfully deleted record " . $record));
-}
-
 function ProcessInsertFromPOST($zone, $record, $value, $type, $ttl)
 {
     if (psf_string_is_null_or_empty($record) && psf_string_is_null_or_empty($zone))
@@ -86,4 +59,112 @@ function ProcessInsertFromPOST($zone, $record, $value, $type, $ttl)
     }
 
     return "update add " . $fqdn . " " . $ttl . " " . $type . " " . $value . "\n";
+}
+
+//! Create a new record in given zone, returns false on error - however, some errors may cancel execution
+//! This function may crash the app without returning
+function DNS_CreateRecord($zone, $record, $value, $type, $ttl, $comment)
+{
+    global $g_domains;
+    $input = "server " . $g_domains[$zone]['update_server'] . "\n";
+    $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
+    $input .= "send\nquit\n";
+    $result = ProcessNSUpdateForDomain($input, $zone);
+    if (strlen($result) > 0)
+        Debug("result: " . $result);
+    WriteToAuditFile('create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
+    IncrementStat('create');
+    return true;
+}
+
+//! Replace record - atomic, returns true on success
+function DNS_ModifyRecord($zone, $record, $value, $type, $ttl, $comment, $old)
+{
+    global $g_domains;
+    if (!NSupdateEscapeCheck($old))
+        Error('Invalid data for old record: ' . $old);
+    $input = "server " . $g_domains[$zone]['update_server'] . "\n";
+    // First delete the existing record
+    $input .= "update delete " . $old . "\n";
+    $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
+    $input .= "send\nquit\n";
+    $result = ProcessNSUpdateForDomain($input, $zone);
+    if (strlen($result) > 0)
+        Debug("result: " . $result);
+    WriteToAuditFile('replace_delete', $old, $comment);
+    IncrementStat('replace_delete');
+    WriteToAuditFile('replace_create', $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
+    IncrementStat('replace_create');
+    return true;
+}
+
+function DNS_DeleteRecord($zone, $record)
+{
+    global $g_domains;
+
+    if (strlen($zone) == 0)
+        Error("No domain");
+
+    if (!Zones::IsEditable($zone))
+        Error("Domain $zone is not writeable");
+
+    if (!IsAuthorizedToWrite($zone))
+        Error("You are not authorized to edit $zone");
+
+    if (!NSupdateEscapeCheck($record))
+        Error("Invalid delete string: " . $record);
+
+    $input = "server " . $g_domains[$zone]['update_server'] . "\n";
+    $input .= "update delete " . $record . "\nsend\nquit\n";
+    ProcessNSUpdateForDomain($input, $zone);
+    WriteToAuditFile("delete", $record);
+    IncrementStat('delete');
+    return true;
+}
+
+//! Try to insert a PTR record for given IP, on failure, warning is emitted and false returned, true returned on success
+//! this function is designed as a helper function that is used together with creation of A record, so it's never fatal
+function DNS_InsertPTRForARecord($ip, $fqdn, $ttl, $comment)
+{
+    global $g_domains;
+    Debug('PTR record was requested, checking zone name');
+    $ip_parts = explode('.', $ip);
+    if (count($ip_parts) != 4)
+    {
+        DisplayWarning('PTR record was not created: record '. $ip .' is not a valid IPv4 quad');
+        return false;
+    }
+    $arpa = $ip_parts[3] . '.' . $ip_parts[2] . '.' . $ip_parts[1] . '.' . $ip_parts[0] . '.in-addr.arpa';
+    $arpa_zone = Zones::GetZoneForFQDN($arpa);
+    if ($arpa_zone === NULL)
+    {
+        DisplayWarning('PTR record was not created: there is no PTR zone for record '. $ip);
+        return false;
+    }
+    if (!Zones::IsEditable($arpa_zone))
+    {
+        DisplayWarning("PTR record was not created for $ip: zone " . $arpa_zone . ' is read only');
+        return false;
+    }
+    if (!IsAuthorizedToWrite($arpa_zone))
+    {
+        DisplayWarning("PTR record was not created: you don't have write access to zone " . $arpa_zone);
+        return false;
+    }
+
+    Debug('Found PTR useable zone: ' . $arpa_zone);
+
+    if (!psf_string_endsWith($fqdn, '.'))
+        $fqdn = $fqdn . '.';
+
+    // Let's insert this record
+    $input = "server " . $g_domains[$arpa_zone]['update_server'] . "\n";
+    $input .= ProcessInsertFromPOST(NULL, $arpa, $fqdn, 'PTR', $ttl);
+    $input .= "send\nquit\n";
+    $result = ProcessNSUpdateForDomain($input, $arpa_zone);
+    if (strlen($result) > 0)
+        Debug("result: " . $result);
+    WriteToAuditFile('create', $arpa . " " . $ttl . " PTR " . $fqdn, $comment);
+    IncrementStat('create');
+    return true;
 }

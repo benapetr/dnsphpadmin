@@ -15,9 +15,23 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
 require_once("common_ui.php");
+require_once("modify.php");
 
 class TabManage
 {
+    //! Called from index.php this function is supposed to process deleting if requested in UI
+    public static function ProcessDelete($well)
+    {
+        global $g_domains, $g_selected_domain;
+        if (!isset($_GET["delete"]))
+            return;
+    
+        $record = $_GET["delete"];
+        
+        if (DNS_DeleteRecord($g_selected_domain, $record))
+            $well->AppendObject(new BS_Alert("Successfully deleted record " . $record));
+    }
+
     public static function GetContents($fc)
     {
         global $g_auth_session_name, $g_domains, $g_selected_domain, $g_show_hidden_types, $g_hidden_types_present;
