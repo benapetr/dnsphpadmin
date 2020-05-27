@@ -26,6 +26,10 @@ $g_show_hidden_types = false;
 // when rendering UI so that we know if "show / hide" button should be even present or not
 $g_hidden_types_present = false;
 
+// Counts of visible items
+$g_hidden_records_count = 0;
+$g_total_records_count = 0;
+
 function GetStatusOfZoneAsNote($domain)
 {
     global $g_domains;
@@ -198,7 +202,7 @@ function GetRecordList($zone)
 
 function GetRecordListTable($parent, $domain)
 {
-    global $g_editable, $g_show_hidden_types, $g_hidden_record_types, $g_hidden_types_present;
+    global $g_editable, $g_show_hidden_types, $g_hidden_record_types, $g_hidden_types_present, $g_total_records_count, $g_hidden_records_count;
     $table = new BS_Table($parent);
     $table->Condensed = true;
     $table->Headers = [ "Record", "TTL", "Scope", "Type", "Value", "Options" ];
@@ -209,9 +213,11 @@ function GetRecordListTable($parent, $domain)
     $is_editable = Zones::IsEditable($domain) && IsAuthorizedToWrite($domain);
     foreach ($records as $record)
     {
+        $g_total_records_count++;
         if (in_array($record[3], $g_hidden_record_types))
         {
             $g_hidden_types_present = true;
+            $g_hidden_records_count++;
             if (!$g_show_hidden_types)
                 continue;
         }

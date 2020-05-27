@@ -34,7 +34,7 @@ class TabManage
 
     public static function GetContents($fc)
     {
-        global $g_auth_session_name, $g_domains, $g_selected_domain, $g_show_hidden_types, $g_hidden_types_present;
+        global $g_auth_session_name, $g_domains, $g_selected_domain, $g_total_records_count, $g_hidden_records_count, $g_show_hidden_types, $g_hidden_types_present;
 
         // Check toggle for hidden
         if (isset($_GET['hidden_types']))
@@ -60,12 +60,20 @@ class TabManage
             reset($g_domains);
             $g_selected_domain = key($g_domains);
         }
+        // First get the record list - this function will fill up g_hidden_types_present variable as well as global counters
+        $record_list = GetRecordListTable(NULL, $g_selected_domain);
+        $record_count = "";
+        if ($g_total_records_count > 0)
+        {
+            if ($g_hidden_records_count == 0)
+                $record_count = " ($g_total_records_count records)";
+            else
+                $record_count = " ($g_total_records_count records, $g_hidden_records_count hidden)";
+        }
         $fc->AppendObject(GetSwitcher($fc));
-        $fc->AppendHeader($g_selected_domain, 2);
+        $fc->AppendHeader($g_selected_domain . $record_count, 2);
         $fc->AppendHtml('<div class="export_csv"><a href="?action=csv&domain=' . $g_selected_domain . '">Export as CSV</a></div>');
         $fc->AppendObject(GetStatusOfZoneAsNote($g_selected_domain));
-        // First get the record list - this function will fill up g_hidden_types_present variable
-        $record_list = GetRecordListTable(NULL, $g_selected_domain);
         if ($g_hidden_types_present === true)
         {
             // This zone contains some hidden record types, show toggle for user
