@@ -217,9 +217,11 @@ function GetRecordListTable($parent, $domain)
         if (in_array($record[3], $g_hidden_record_types))
         {
             $g_hidden_types_present = true;
-            $g_hidden_records_count++;
             if (!$g_show_hidden_types)
+            {
+                $g_hidden_records_count++;
                 continue;
+            }
         }
         if (!$is_editable || !in_array($record[3], $g_editable))
         {
