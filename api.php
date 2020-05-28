@@ -17,6 +17,7 @@ require("config.default.php");
 require("config.php");
 require_once("psf/psf.php");
 require_once("includes/common.php");
+require_once("includes/debug.php");
 require_once("includes/fatal_api.php");
 require_once("includes/record_list.php");
 require_once("includes/modify.php");
@@ -225,6 +226,7 @@ function api_call_create_record($source)
     $type = get_required_post_get_parameter('type');
     $value = get_required_post_get_parameter('value');
     $comment = get_optional_post_get_parameter('comment');
+    $ptr = get_optional_post_get_parameter('ptr');
     $merge_record = true;
 
     if ($zone === NULL)
@@ -256,18 +258,32 @@ function api_call_create_record($source)
     }
 
     $n = "server " . $g_domains[$zone]['update_server'] . "\n";
+    $merged_record = "";
     if ($merge_record)
+    {
         $n .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
-    else
+        $merged_record = $record . "." . $zone;
+    } else
+    {
         $n .= ProcessInsertFromPOST("" , $record, $value, $type, $ttl);
+        $merged_record = $record;
+    }
     $n .= "send\nquit\n";
 
     ProcessNSUpdateForDomain($n, $zone);
+    WriteToAuditFile("create", $merged_record . " " . $ttl . " " . $type . " " . $value, $comment);
 
-    if ($merge_record)
-        WriteToAuditFile("create", $record . "." . $zone . " " . $ttl . " " . $type . " " . $value, $comment);
-    else
-        WriteToAuditFile("create", $record . " " . $ttl . " " . $type . " " . $value, $comment);
+    if ($ptr == true)
+    {
+        Debug('PTR record was requested for ' . $merged_record . ' creating one');
+        if ($type != 'A')
+        {
+            api_warning('Requested PTR record was not created: PTR record can be only created when you are inserting A record, you created ' . $type . ' record instead');
+        } else
+        {
+            DNS_InsertPTRForARecord($value, $merged_record, $ttl, $comment);
+        }
+    }
 
     print_success();
     return true;
@@ -458,6 +474,7 @@ register_api('create_record', 'Create a new DNS record in specified zone', 'Crea
                new PsfApiParameter("value", PsfApiParameterType::String, "Value of record") ],
              // Optional parameters
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify, if not specified and record is fully qualified, it's automatically looked up from config file"),
+               new PsfApiParameter("ptr", PsfApiParameterType::Boolean, "Optionally create PTR record, works only when you are adding A records"),
                new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ],
              // Example call
              '?action=create_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
