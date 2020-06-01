@@ -15,6 +15,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
 require_once("common_ui.php");
+require_once("debug.php");
 require_once("validator.php");
 require_once("modify.php");
 require_once("zones.php");
@@ -79,6 +80,24 @@ class TabEdit
             {
                 $form->AppendObject(new BS_Alert("Successfully replaced " . $_POST["old"] . " with " . $record . "." . $zone . " " .
                                                  $ttl . " " . $type . " " . $value));
+            }
+            // Delete PTR if wanted
+            if (isset($_POST['ptr']) && $_POST['ptr'] === "true")
+            {
+                if (isset($_POST["old_type"]) && $_POST["old_type"] == "A")
+                {
+                    // Check if all necessary values are present
+                    if (!isset($_POST["old_value"]) || !isset($_POST["old_record"]))
+                    {
+                        DisplayWarning("PTR record was not deleted, because old_record or old_value was missing");
+                    } else
+                    {
+                        DNS_DeletePTRForARecord($_POST["old_value"], $_POST["old_record"], $comment);
+                    }
+                } else
+                {
+                    Debug("Not removing PTR, original type was " . $_POST["old_type"]);
+                }
             }
         } else
         {
@@ -170,14 +189,29 @@ class TabEdit
             $form_items[] = $comment;
         }
         $layout->AppendRow($form_items);
-        if (!$edit_mode && Zones::HasPTRZones())
-            $form->AppendObject(new BS_CheckBox("ptr", "true", false, NULL, $form, "Create PTR record for this IP (works only with A records)"));
+        if (Zones::HasPTRZones())
+        {
+            if (!$edit_mode)
+                $form->AppendObject(new BS_CheckBox("ptr", "true", false, NULL, $form, "Create PTR record for this IP (works only with A records)"));
+            else
+                $form->AppendObject(new BS_CheckBox("ptr", "true", false, NULL, $form, "Modify underlying PTR records (works only if original, new or both values are A records)"));
+        }
         if (isset($_GET["old"]))
-        $form->AppendObject(new Hidden("old", htmlspecialchars($_GET["old"])));
+            $form->AppendObject(new Hidden("old", htmlspecialchars($_GET["old"])));
+        
         if ($edit_mode)
+        {
+            // Preserve old values, we need to work with them when modifying PTR records
+            $form->AppendObject(new Hidden("old_record", htmlspecialchars($_GET["key"])));
+            $form->AppendObject(new Hidden("old_ttl", htmlspecialchars($default_ttl)));
+            $form->AppendObject(new Hidden("old_type", htmlspecialchars($default_type)));
+            $form->AppendObject(new Hidden("old_value", htmlspecialchars($default_value)));
+        
             $form->AppendObject(new BS_Button("submit", "Edit"));
-        else
+        } else
+        {
             $form->AppendObject(new BS_Button("submit", "Create"));
+        }
         return $form;
     }
 

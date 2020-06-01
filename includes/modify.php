@@ -171,7 +171,7 @@ function DNS_InsertPTRForARecord($ip, $fqdn, $ttl, $comment)
 
 //! Try to delete a PTR record for a given IP, on failure, warning is emitted and false returned, true returned on success
 //! this function is designed as a helper function that is used together with modifications of A record, so it's never fatal
-function DNS_DeletePTRForARecord($ip, $fqdn, $ttl, $comment)
+function DNS_DeletePTRForARecord($ip, $fqdn, $comment)
 {
     global $g_domains;
     Debug('PTR record removal was requested, checking zone name');
@@ -204,16 +204,14 @@ function DNS_DeletePTRForARecord($ip, $fqdn, $ttl, $comment)
     if (!psf_string_endsWith($fqdn, '.'))
         $fqdn = $fqdn . '.';
 
-    //! \bug This code removes only records with same TTL, but same record may exist with different TTL that we also want to remove
-
     // Let's insert this record
     $input = "server " . $g_domains[$arpa_zone]['update_server'] . "\n";
-    $input .= "update delete " . $arpa . " " . $ttl . " PTR " . $fqdn . "\n";
+    $input .= "update delete " . $arpa . " 0 PTR " . $fqdn . "\n";
     $input .= "send\nquit\n";
     $result = ProcessNSUpdateForDomain($input, $arpa_zone);
     if (strlen($result) > 0)
         Debug("result: " . $result);
-    WriteToAuditFile('delete', $arpa . " " . $ttl . " PTR " . $fqdn, $comment);
+    WriteToAuditFile('delete', $arpa . " 0 PTR " . $fqdn, $comment);
     IncrementStat('delete');
     return true;
 }

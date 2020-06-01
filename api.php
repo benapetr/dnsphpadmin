@@ -294,7 +294,7 @@ function api_call_delete_record($source)
     global $api, $g_domains;
     $zone = get_optional_post_get_parameter('zone');
     $record = get_required_post_get_parameter('record');
-    $ttl = get_required_post_get_parameter('ttl');
+    $ttl = 0;
     $type = get_required_post_get_parameter('type');
     $value = get_optional_post_get_parameter('value');
     $comment = get_optional_post_get_parameter('comment');
@@ -313,12 +313,6 @@ function api_call_delete_record($source)
     if (!IsValidRecordType($type))
     {
         $api->ThrowError('Invalid type', "Type $type is not a valid DNS record type");
-        return false;
-    }
-
-    if (!is_numeric($ttl))
-    {
-        $api->ThrowError('Invalid ttl', "TTL must be a number");
         return false;
     }
 
@@ -341,17 +335,17 @@ function api_call_delete_record($source)
     $merged_record = "";
     if ($merge_record)
     {
-        $n .= "update delete " . $record . "." . $zone . " " . $ttl . " " . $type . $value . "\n";
+        $n .= "update delete " . $record . "." . $zone . " 0 " . $type . $value . "\n";
         $merged_record = $record . "." . $zone;
     } else
     {
-        $n .= "update delete " . $record . " " . $ttl . " " . $type . $value . "\n";
+        $n .= "update delete " . $record . " 0 " . $type . $value . "\n";
         $merged_record = $record;
     }
     $n .= "send\nquit\n";
 
     ProcessNSUpdateForDomain($n, $zone);
-    WriteToAuditFile("delete", $merged_record . " " . $ttl . " " . $type . $value, $comment);
+    WriteToAuditFile("delete", $merged_record . " 0 " . $type . $value, $comment);
 
     if ($ptr == true)
     {
@@ -361,7 +355,7 @@ function api_call_delete_record($source)
             api_warning('Requested PTR record was not deleted: PTR record can be only deleted when you are changing A record, you deleted ' . $type . ' record instead');
         } else
         {
-            DNS_DeletePTRForARecord($original_value, $merged_record, $ttl, $comment);
+            DNS_DeletePTRForARecord($original_value, $merged_record, $comment);
         }
     }
 
@@ -499,9 +493,10 @@ register_api('create_record', 'Create a new DNS record in specified zone', 'Crea
 register_api('delete_record', 'Deletes DNS record(s) in specified zone', 'Deletes DNS record(s) in specific zone. If you don\'t provide value, all records of given type will be deleted.', 'api_call_delete_record', true,
              // Required parameters
              [ new PsfApiParameter("record", PsfApiParameterType::String, "Record name, if you don't provide zone name explicitly, this should be FQDN"),
-               new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"), new PsfApiParameter("type", PsfApiParameterType::String, "Record type") ],
+               new PsfApiParameter("type", PsfApiParameterType::String, "Record type") ],
              // Optional parameters
-             [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify, if not specified and record is fully qualified, it's automatically looked up from config file"),
+             [ new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds). Please note that nsupdate ignores TTL in delete requests. This parameter exists only for compatiblity reasons and is silently ignored."),
+               new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify, if not specified and record is fully qualified, it's automatically looked up from config file"),
                new PsfApiParameter("value", PsfApiParameterType::String, "Value of record. If not provided, all records with given type will be removed."),
                new PsfApiParameter("ptr", PsfApiParameterType::Boolean, "Optionally delete PTR record, works only when you are deleting A records"),
                new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ],
