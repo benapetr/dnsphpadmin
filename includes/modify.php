@@ -168,3 +168,52 @@ function DNS_InsertPTRForARecord($ip, $fqdn, $ttl, $comment)
     IncrementStat('create');
     return true;
 }
+
+//! Try to delete a PTR record for a given IP, on failure, warning is emitted and false returned, true returned on success
+//! this function is designed as a helper function that is used together with modifications of A record, so it's never fatal
+function DNS_DeletePTRForARecord($ip, $fqdn, $ttl, $comment)
+{
+    global $g_domains;
+    Debug('PTR record removal was requested, checking zone name');
+    $ip_parts = explode('.', $ip);
+    if (count($ip_parts) != 4)
+    {
+        DisplayWarning('PTR record was not deleted: record '. $ip .' is not a valid IPv4 quad');
+        return false;
+    }
+    $arpa = $ip_parts[3] . '.' . $ip_parts[2] . '.' . $ip_parts[1] . '.' . $ip_parts[0] . '.in-addr.arpa';
+    $arpa_zone = Zones::GetZoneForFQDN($arpa);
+    if ($arpa_zone === NULL)
+    {
+        DisplayWarning('PTR record was not deleted: there is no PTR zone for record '. $ip);
+        return false;
+    }
+    if (!Zones::IsEditable($arpa_zone))
+    {
+        DisplayWarning("PTR record was not deleted for $ip: zone " . $arpa_zone . ' is read only');
+        return false;
+    }
+    if (!IsAuthorizedToWrite($arpa_zone))
+    {
+        DisplayWarning("PTR record was not deleted: you don't have write access to zone " . $arpa_zone);
+        return false;
+    }
+
+    Debug('Found PTR useable zone: ' . $arpa_zone);
+
+    if (!psf_string_endsWith($fqdn, '.'))
+        $fqdn = $fqdn . '.';
+
+    //! \bug This code removes only records with same TTL, but same record may exist with different TTL that we also want to remove
+
+    // Let's insert this record
+    $input = "server " . $g_domains[$arpa_zone]['update_server'] . "\n";
+    $input .= "update delete " . $arpa . " " . $ttl . " PTR " . $fqdn . "\n";
+    $input .= "send\nquit\n";
+    $result = ProcessNSUpdateForDomain($input, $arpa_zone);
+    if (strlen($result) > 0)
+        Debug("result: " . $result);
+    WriteToAuditFile('delete', $arpa . " " . $ttl . " PTR " . $fqdn, $comment);
+    IncrementStat('delete');
+    return true;
+}

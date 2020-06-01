@@ -298,6 +298,7 @@ function api_call_delete_record($source)
     $type = get_required_post_get_parameter('type');
     $value = get_optional_post_get_parameter('value');
     $comment = get_optional_post_get_parameter('comment');
+    $ptr = get_optional_post_get_parameter('ptr');
     $merge_record = true;
 
     if ($zone === NULL)
@@ -328,24 +329,41 @@ function api_call_delete_record($source)
         return false;
     }
 
+    // Value is optional, so in order to make nsupdate call more simple, we prefix it with space
+    $original_value = $value;
     if (!psf_string_is_null_or_empty($value))
         $value = " " . $value;
     else
         $value = "";
 
     $n = "server " . $g_domains[$zone]['update_server'] . "\n";
+
+    $merged_record = "";
     if ($merge_record)
+    {
         $n .= "update delete " . $record . "." . $zone . " " . $ttl . " " . $type . $value . "\n";
-    else
+        $merged_record = $record . "." . $zone;
+    } else
+    {
         $n .= "update delete " . $record . " " . $ttl . " " . $type . $value . "\n";
+        $merged_record = $record;
+    }
     $n .= "send\nquit\n";
 
     ProcessNSUpdateForDomain($n, $zone);
+    WriteToAuditFile("delete", $merged_record . " " . $ttl . " " . $type . $value, $comment);
 
-    if ($merge_record)
-        WriteToAuditFile("delete", $record . "." . $zone . " " . $ttl . " " . $type . $value, $comment);
-    else
-        WriteToAuditFile("delete", $record . " " . $ttl . " " . $type . $value, $comment);
+    if ($ptr == true)
+    {
+        Debug('PTR record deletion was requested for ' . $merged_record . ' creating one');
+        if ($type != 'A')
+        {
+            api_warning('Requested PTR record was not deleted: PTR record can be only deleted when you are changing A record, you deleted ' . $type . ' record instead');
+        } else
+        {
+            DNS_DeletePTRForARecord($original_value, $merged_record, $ttl, $comment);
+        }
+    }
 
     print_success();
     return true;
@@ -485,6 +503,7 @@ register_api('delete_record', 'Deletes DNS record(s) in specified zone', 'Delete
              // Optional parameters
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify, if not specified and record is fully qualified, it's automatically looked up from config file"),
                new PsfApiParameter("value", PsfApiParameterType::String, "Value of record. If not provided, all records with given type will be removed."),
+               new PsfApiParameter("ptr", PsfApiParameterType::Boolean, "Optionally delete PTR record, works only when you are deleting A records"),
                new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ],
              // Example call
              '?action=delete_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
