@@ -75,4 +75,4 @@ $ut->Evaluate('Validator - invalid #10', IsValidHostName('/x.test.org') === fals
 echo ("\n");
 $ut->PrintResults();
 
-$ut->Exit();
+$ut->ExitTest();

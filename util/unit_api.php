@@ -65,4 +65,4 @@ $ut->Evaluate("logout", $login['result'] == 'success');
 echo ("\n\n\n");
 $ut->PrintResults();
 
-$ut->Exit();
+$ut->ExitTest();
