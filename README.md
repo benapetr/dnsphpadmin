@@ -7,10 +7,11 @@ DNS admin panel, designed to operate via nsupdate, for all kinds of RFC complian
 * Different servers for querying zone info (transfer) and for update, useful for load balancing
 * Audit logs
 * Support LDAP / Active Directory authentication
+* Web API
 * Individual user and LDAP group permissions to edit zones via roles (read/write)
 
 # How does it work
-DNS PHP admin is a very simple GUI utility that helps sysadmins manage their DNS records and also provides easy to use interface for end users, which is more idiot friendly than low level command line tools that are typically used to manage BIND9 servers.
+DNS PHP admin is a very simple GUI utility that helps sysadmins manage their DNS records and also provides easy to use interface for end users, which is more user friendly than low level command line tools that are typically used to manage BIND9 servers.
 
 It also makes it possible to centralize management of multiple separate DNS servers, so that you can edit multiple zones on multiple different DNS servers.
 
