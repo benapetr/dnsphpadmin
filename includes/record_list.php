@@ -228,13 +228,21 @@ function GetRecordListTable($parent, $domain)
             $record[] = '';
         } else
         {
-            $record[] = '<a href="index.php?action=manage&domain=' . $domain . '&delete=' .
-                        urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
-                        '" onclick="return confirm(\'Are you sure?\')"><span class="glyphicon glyphicon-trash" title="Delete"></span></a>&nbsp;&nbsp;&nbsp;&nbsp;' .
-                        '<a href="index.php?action=edit&domain=' . $domain . '&key=' .
+            $delete_record = '<a href="index.php?action=manage&domain=' . $domain . '&delete=' .  urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
+                             '" onclick="return confirm(\'Are you sure?\')"><span class="glyphicon glyphicon-trash" title="Delete"></span></a>';
+            $delete_record_with_ptr = '';
+            if ($record[3] == 'A')
+            {
+                // Optional button to delete record together with PTR record
+                $delete_record_with_ptr = '<a href="index.php?action=manage&ptr=true&key=' . urlencode($record[0]) . '&value=' . urlencode($record[4]) . '&type=' . $record[3] . '&domain=' . $domain .
+                                          '&delete=' .  urlencode($record[0] . ' ' . $record[1] . " " . $record[3] . " " . $record[4]) .
+                                          '" onclick="return confirm(\'Are you sure?\')"><span style="color: #ff0000;" class="glyphicon glyphicon-trash" title="Delete together with associated PTR record (if any exist)"></span></a>';
+            }
+            $large_space = '&nbsp;&nbsp;';
+            $record[] = $delete_record . $large_space . '<a href="index.php?action=edit&domain=' . $domain . '&key=' .
                         urlencode($record[0]) . "&ttl=" . $record[1] . "&type=" . $record[3] . "&value=" . urlencode($record[4]) .
                         "&old=" . urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
-                        '"><span title="Edit" class="glyphicon glyphicon-pencil"></span></a>';
+                        '"><span title="Edit" class="glyphicon glyphicon-pencil"></span></a>' . $large_space . $delete_record_with_ptr;
         }
         $record[4] = '<span class="value">' . $record[4] . '</span>';
         $table->AppendRow($record);

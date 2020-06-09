@@ -349,7 +349,7 @@ function api_call_delete_record($source)
 
     if ($ptr == true)
     {
-        Debug('PTR record deletion was requested for ' . $merged_record . ' creating one');
+        Debug('PTR record deletion was requested for ' . $merged_record);
         if ($type != 'A')
         {
             api_warning('Requested PTR record was not deleted: PTR record can be only deleted when you are changing A record, you deleted ' . $type . ' record instead');

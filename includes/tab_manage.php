@@ -14,7 +14,9 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
+require_once("common.php");
 require_once("common_ui.php");
+require_once("debug.php");
 require_once("modify.php");
 
 class TabManage
@@ -30,6 +32,26 @@ class TabManage
         
         if (DNS_DeleteRecord($g_selected_domain, $record))
             $well->AppendObject(new BS_Alert("Successfully deleted record " . $record));
+
+        if ($_GET["ptr"] == true)
+        {
+            Debug('PTR record deletion was requested for ' . $record);
+            if (!isset($_GET['key']) || !isset($_GET['value']) || !isset($_GET['type']))
+            {
+                Warning('PTR record was not removed because either key, value or type was not specified');
+                return;
+            }
+            $key = $_GET['key'];
+            $type = $_GET['type'];
+            $value = $_GET['value'];
+            if ($type != 'A')
+            {
+                Warning('Requested PTR record was not deleted: PTR record can be only deleted when you are changing A record, you deleted ' . $type . ' record instead');
+            } else
+            {
+                DNS_DeletePTRForARecord($value, $key, '');
+            }
+        }
     }
 
     public static function GetContents($fc)
