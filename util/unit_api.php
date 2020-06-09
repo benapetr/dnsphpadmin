@@ -57,6 +57,12 @@ $ut->Evaluate('create invalid record #1', isset($output['error']));
 $output = api('action=create_record&record=$.test.local&ttl=10&type=A&value=10.2.2.8');
 $ut->Evaluate('create invalid record #2', isset($output['error']));
 
+$fqdn = api('action=get_zone_for_fqdn&fqdn=meep.test.local');
+$ut->Evaluate('get zone for FQDN (test.local name)', $fqdn['zone'] == 'test.local');
+
+$fqdn = api('action=get_zone_for_fqdn&fqdn=local');
+$ut->Evaluate('get zone for nonexistent FQDN', $fqdn['error'] != '');
+
 $login = api("action=logout");
 $ut->Evaluate("logout", $login['result'] == 'success');
 
