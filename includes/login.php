@@ -54,7 +54,7 @@ function GetLoginInfo()
     {
         $role_info = ' (' . psf_string_auto_trim(implode (', ', $g_auth_roles_map[$_SESSION['user']]), 80, '...') . ')';
     }
-    return '<div class="login_info"><span class="glyphicon glyphicon-user"></span>' . $_SESSION["user"] . $role_info . ' <a href="?logout">logout</a></div>';
+    return '<div class="login_info"><span class="glyphicon glyphicon-user"></span>' . $_SESSION["user"] . $role_info . ' <a href="?logout"><span class="glyphicon glyphicon-log-out" title="logout"></span></a></div>';
 }
 
 function ProcessLogin_Error($reason)
