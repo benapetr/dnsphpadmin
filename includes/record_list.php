@@ -211,6 +211,7 @@ function GetRecordListTable($parent, $domain)
     $table->SetColumnWidth(5, '80px'); // Options
     $records = GetRecordList($domain);
     $is_editable = Zones::IsEditable($domain) && IsAuthorizedToWrite($domain);
+    $has_ptr = Zones::HasPTRZones();
     foreach ($records as $record)
     {
         $g_total_records_count++;
@@ -231,9 +232,9 @@ function GetRecordListTable($parent, $domain)
             $delete_record = '<a href="index.php?action=manage&domain=' . $domain . '&delete=' .  urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
                              '" onclick="return confirm(\'Are you sure?\')"><span class="glyphicon glyphicon-trash" title="Delete"></span></a>';
             $delete_record_with_ptr = '';
-            if ($record[3] == 'A')
+            if ($has_ptr && $record[3] == 'A')
             {
-                // Optional button to delete record together with PTR record
+                // Optional button to delete record together with PTR record, show only if there are PTR zones in cfg
                 $delete_record_with_ptr = '<a href="index.php?action=manage&ptr=true&key=' . urlencode($record[0]) . '&value=' . urlencode($record[4]) . '&type=' . $record[3] . '&domain=' . $domain .
                                           '&delete=' .  urlencode($record[0] . ' ' . $record[1] . " " . $record[3] . " " . $record[4]) .
                                           '" onclick="return confirm(\'Are you sure?\')"><span style="color: #ff0000;" class="glyphicon glyphicon-trash" title="Delete together with associated PTR record (if any exist)"></span></a>';
