@@ -140,6 +140,7 @@ class TabEdit
         $form->Method = FormMethod::Post;
         $layout = new HtmlTable($form);
         $layout->BorderSize = 0;
+        $layout->ColWidth[4] = '40%';
         $layout->Headers = [ "Record", "Zone", "TTL", "Type", "Value" ];
         if ($g_audit)
             $layout->Headers[] = 'Comment';
