@@ -1,0 +1,41 @@
+---
+- hosts: localhost
+  tasks:
+      - include_vars: vars.yml
+      - uri:
+          url: "{{ dns_tool }}/api.php"
+          validate_certs: no
+          method: POST
+          body_format: form-urlencoded
+          body:
+            action: login
+            loginUsername: "{{ dns_tool_username }}"
+            loginPassword: "{{ dns_tool_password }}"
+        name: 'Login to DNS tool'
+        register: login
+
+      - uri:
+          url: "{{ dns_tool }}/api.php"
+          validate_certs: no
+          method: POST
+          body_format: form-urlencoded
+          body:
+            action: create_record
+            record: "petr.bena.cz.preprod"
+            ttl: 3600
+            type: A
+            value: 1.1.2.2
+          headers:
+            Cookie: "{{ login.set_cookie }}"
+        name: 'Create a new record'
+
+      - uri:
+          url: "{{ dns_tool }}/api.php"
+          validate_certs: no
+          method: POST
+          body_format: form-urlencoded
+          body:
+            action: logout
+          headers:
+            Cookie: "{{ login.set_cookie }}"
+        name: 'Logout from DNS tool'
