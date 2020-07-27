@@ -13,6 +13,7 @@
             loginPassword: "{{ dns_tool_password }}"
         name: 'Login to DNS tool'
         register: login
+        failed_when: "login.json.result != 'success'"
 
       - uri:
           url: "{{ dns_tool }}/api.php"
@@ -27,6 +28,8 @@
           headers:
             Cookie: "{{ login.set_cookie }}"
         name: 'Delete record'
+        register: this
+        failed_when: "this.json.result != 'success'"
 
       - uri:
           url: "{{ dns_tool }}/api.php"
@@ -38,3 +41,5 @@
           headers:
             Cookie: "{{ login.set_cookie }}"
         name: 'Logout from DNS tool'
+        register: this
+        failed_when: "this.json.result != 'success'"

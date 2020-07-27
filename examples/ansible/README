@@ -1,0 +1,4 @@
+This folder contains some example ansible playbooks that modify DNS via API of dns tool using URI module
+
+create_record.yml - very simple implementation of login, record creation and logout
+delete_record.yml - removes the same record, contains extra checks that result is success
