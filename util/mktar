@@ -22,6 +22,7 @@ rm -rf "/tmp/dnsphpadmin_$version/.git"
 rm -f "/tmp/dnsphpadmin_$version/.gitignore"
 rm -f "/tmp/dnsphpadmin_$version/.gitmodules"
 rm -rf "/tmp/dnsphpadmin_$version/util"
+rm -rf "/tmp/dnsphpadmin_$version/examples"
 rm -f "/tmp/dnsphpadmin_$version/.travis.yml"
 
 cd /tmp || exit 1
