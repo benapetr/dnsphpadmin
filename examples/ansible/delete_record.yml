@@ -13,6 +13,8 @@
             loginPassword: "{{ dns_tool_password }}"
         name: 'Login to DNS tool'
         register: login
+        nolog: True
+        delegate_to: localhost
         failed_when: "login.json.result != 'success'"
 
       - uri:
@@ -28,6 +30,7 @@
           headers:
             Cookie: "{{ login.set_cookie }}"
         name: 'Delete record'
+        delegate_to: localhost
         register: this
         failed_when: "this.json.result != 'success'"
 
@@ -41,5 +44,6 @@
           headers:
             Cookie: "{{ login.set_cookie }}"
         name: 'Logout from DNS tool'
+        delegate_to: localhost
         register: this
         failed_when: "this.json.result != 'success'"

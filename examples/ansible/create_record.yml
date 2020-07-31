@@ -12,7 +12,10 @@
             loginUsername: "{{ dns_tool_username }}"
             loginPassword: "{{ dns_tool_password }}"
         name: 'Login to DNS tool'
+        no_log: True
         register: login
+        delegate_to: localhost
+        failed_when: "login.json.result != 'success'"
 
       - uri:
           url: "{{ dns_tool }}/api.php"
@@ -27,6 +30,7 @@
             value: 1.1.2.2
           headers:
             Cookie: "{{ login.set_cookie }}"
+        delegate_to: localhost
         name: 'Create a new record'
 
       - uri:
@@ -38,4 +42,5 @@
             action: logout
           headers:
             Cookie: "{{ login.set_cookie }}"
+        delegate_to: localhost
         name: 'Logout from DNS tool'
