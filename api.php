@@ -343,7 +343,7 @@ function api_call_replace_record($source)
     }
 
     $old = NULL;
-    if ($merge_record)
+    if (!$merge_record)
         $old = $record . ' 0 ' . $type;
     else
         $old = $record . '.' . $zone . ' 0 ' . $type;
