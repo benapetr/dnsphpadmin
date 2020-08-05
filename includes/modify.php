@@ -78,7 +78,7 @@ function DNS_CreateRecord($zone, $record, $value, $type, $ttl, $comment)
 }
 
 //! Replace record - atomic, returns true on success
-function DNS_ModifyRecord($zone, $record, $value, $type, $ttl, $comment, $old)
+function DNS_ModifyRecord($zone, $record, $value, $type, $ttl, $comment, $old, $is_fqdn = false)
 {
     global $g_domains;
     if (!NSupdateEscapeCheck($old))
@@ -86,7 +86,10 @@ function DNS_ModifyRecord($zone, $record, $value, $type, $ttl, $comment, $old)
     $input = "server " . $g_domains[$zone]['update_server'] . "\n";
     // First delete the existing record
     $input .= "update delete " . $old . "\n";
-    $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
+    if ($is_fqdn == false)
+        $input .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
+    else
+        $input .= ProcessInsertFromPOST(NULL, $record, $value, $type, $ttl);
     $input .= "send\nquit\n";
     $result = ProcessNSUpdateForDomain($input, $zone);
     if (strlen($result) > 0)

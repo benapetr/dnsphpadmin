@@ -351,7 +351,7 @@ function api_call_replace_record($source)
     if ($value !== NULL)
         $old .= ' ' . $value;
 
-    DNS_ModifyRecord($zone, $new_record, $new_value, $new_type, $ttl, $comment, $old);
+    DNS_ModifyRecord($zone, $new_record, $new_value, $new_type, $ttl, $comment, $old, !$merge_record);
 
     print_success();
     return true;

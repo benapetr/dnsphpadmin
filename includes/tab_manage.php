@@ -33,7 +33,7 @@ class TabManage
         if (DNS_DeleteRecord($g_selected_domain, $record))
             $well->AppendObject(new BS_Alert("Successfully deleted record " . $record));
 
-        if ($_GET["ptr"] == true)
+        if (isset($_GET["ptr"]) && $_GET["ptr"] == true)
         {
             Debug('PTR record deletion was requested for ' . $record);
             if (!isset($_GET['key']) || !isset($_GET['value']) || !isset($_GET['type']))
