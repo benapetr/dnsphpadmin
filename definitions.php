@@ -13,6 +13,6 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-define('G_DNSTOOL_VERSION', '1.9.0');
+define('G_DNSTOOL_VERSION', '1.10.0');
 define('G_API_ELOGIN', 2);
 define('G_HEADER', 'DNS management tool');
