@@ -217,6 +217,19 @@ function get_zone_for_fqdn_or_throw($fqdn)
     return $zone;
 }
 
+function validate_type_or_throw($type)
+{
+    global $api;
+
+    if (!IsValidRecordType($type))
+    {
+        $api->ThrowError('Invalid type', "Type $type is not a valid DNS record type");
+        return false;
+    }
+
+    return true;
+}
+
 function api_call_create_record($source)
 {
     global $api, $g_domains;
@@ -238,11 +251,8 @@ function api_call_create_record($source)
     if (!check_zone_access($zone))
         return false;
 
-    if (!IsValidRecordType($type))
-    {
-        $api->ThrowError('Invalid type', "Type $type is not a valid DNS record type");
+    if (!validate_type_or_throw($type))
         return false;
-    }
 
     if (!is_numeric($ttl))
     {
@@ -289,6 +299,64 @@ function api_call_create_record($source)
     return true;
 }
 
+function api_call_replace_record($source)
+{
+    global $api, $g_domains;
+    $zone = get_optional_post_get_parameter('zone');
+    $record = get_required_post_get_parameter('record');
+    $ttl = get_required_post_get_parameter('ttl');
+    $type = get_required_post_get_parameter('type');
+    $new_value = get_required_post_get_parameter('new_value');
+    $value = get_optional_post_get_parameter('value');
+    $comment = get_optional_post_get_parameter('comment');
+    $new_record = get_optional_post_get_parameter('new_record');
+    $new_type = get_optional_post_get_parameter('new_type');
+    $ptr = get_optional_post_get_parameter('ptr');
+    $merge_record = true;
+
+    // Auto-fill optional
+    if ($new_type === NULL)
+        $new_type = $type;
+
+    if ($new_record === NULL)
+        $new_record = $record;
+
+    if ($zone === NULL)
+    {
+        $merge_record = false;
+        $zone = get_zone_for_fqdn_or_throw($record);
+    }
+
+    if (!check_zone_access($zone))
+        return false;
+
+    if (!validate_type_or_throw($type))
+        return false;
+
+    if (!validate_type_or_throw($new_type))
+        return false;
+
+    if (!is_numeric($ttl))
+    {
+        $api->ThrowError('Invalid ttl', "TTL must be a number");
+        return false;
+    }
+
+    $old = NULL;
+    if ($merge_record)
+        $old = $record . ' 0 ' . $type;
+    else
+        $old = $record . '.' . $zone . ' 0 ' . $type;
+
+    if ($value !== NULL)
+        $old .= ' ' . $value;
+
+    DNS_ModifyRecord($zone, $new_record, $new_value, $new_type, $ttl, $comment, $old);
+
+    print_success();
+    return true;
+}
+
 function api_call_delete_record($source)
 {
     global $api, $g_domains;
@@ -310,11 +378,8 @@ function api_call_delete_record($source)
     if (!check_zone_access($zone))
         return false;
 
-    if (!IsValidRecordType($type))
-    {
-        $api->ThrowError('Invalid type', "Type $type is not a valid DNS record type");
+    if (!validate_type_or_throw($type))
         return false;
-    }
 
     $record = SanitizeHostname($record);
     if (!IsValidHostName($record))
@@ -478,7 +543,7 @@ register_api("list_zones", "List all existing zones that you have access to", "L
 register_api('list_records', "List all existing records for a specified zone", "List all existing records for a specified zone", "api_call_list_records", true,
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to list records for") ],
              [], '?action=list_records&zone=domain.org');
-register_api('create_record', 'Create a new DNS record in specified zone', 'Creates a new DNS record in specific zone. Please mind that domain name / zone is appended to record name automatically, ' .
+register_api('create_record', 'Creates a new DNS record in specified zone', 'Creates a new DNS record in specific zone. Please mind that domain name / zone is appended to record name automatically, ' .
                                                                            'so if you want to add test.domain.org, name of key is only test.', 'api_call_create_record', true,
              // Required parameters
              [ new PsfApiParameter("record", PsfApiParameterType::String, "Record name, if you don't provide zone name explicitly, this should be FQDN"),
@@ -502,6 +567,22 @@ register_api('delete_record', 'Deletes DNS record(s) in specified zone', 'Delete
                new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ],
              // Example call
              '?action=delete_record&zone=domain.org&record=test&ttl=3600&type=A&value=0.0.0.0');
+register_api('replace_record', 'Removes old and create a new DNS record in single nsupdate transaction', 'Replaces specific record. Both records must be within same zone, but may be of different type. Note that due to nature of nsupdate, if record you want to replace ' .
+                                                                           'doesn\'t exist, it will not fail. So replace_record on non-existent record will still create a new record.', 'api_call_replace_record', true,
+             // Required parameters
+             [ new PsfApiParameter("record", PsfApiParameterType::String, "Name of existing record you want to replace, if you don't provide zone name explicitly, this should be FQDN"),
+               new PsfApiParameter("type", PsfApiParameterType::String, "Type of current record that you want to replace"),
+               new PsfApiParameter("ttl", PsfApiParameterType::Number, "Time to live (seconds)"),
+               new PsfApiParameter("new_value", PsfApiParameterType::String, "Value of new record")],
+             // Optional parameters
+             [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to modify, if not specified and record is fully qualified, it's automatically looked up from config file"),
+               new PsfApiParameter("value", PsfApiParameterType::String, "Value of record. If not provided, all records with given type will be removed and replaced with a single new record"),
+               new PsfApiParameter("new_record", PsfApiParameterType::String, "New record name, if you are not changing name of key, this can be omitted. If you don't provide zone name explicitly, this should be FQDN"),
+               new PsfApiParameter("new_type", PsfApiParameterType::String, "Type of record, if you are not changing type, this can be omitted."),
+               new PsfApiParameter("ptr", PsfApiParameterType::Boolean, "Optionally replace associated PTR record, works only when either new, old or both records are A records"),
+               new PsfApiParameter("comment", PsfApiParameterType::String, "Optional comment for audit logs") ],
+             // Example call
+             '?action=replace_record&record=test.zone.org&ttl=3600&type=A&value=0.0.0.0&new_value=2.2.2.2&ptr=true');
 register_api('get_zone_for_fqdn', 'Returns zone name for given FQDN', 'Attempts to look up zone name for given FQDN using configuration file of php dns admin using auto-lookup function',
              'api_call_get_zone_for_fqdn', false, [ new PsfApiParameter("fqdn", PsfApiParameterType::String, "FQDN") ], [], '?action=get_zone_for_fqdn&fqdn=test.example.org');
 register_api('get_record', 'Return single record with specified FQDN', 'Lookup single record from master server responsible for zone that hosts this record', 'api_call_get_record', true,
