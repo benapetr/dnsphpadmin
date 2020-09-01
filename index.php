@@ -144,11 +144,13 @@ if (RequireLogin())
         // Process previous inserting call (via submit) in case there was some
         TabEdit::Process($fc);
         $fc->AppendObject(TabEdit::GetInsertForm($fc));
+        $fc->AppendObject(TabEdit::GetHelp());
     } else if ($g_action == 'edit')
     {
         // Process previous edit call (via submit) in case there was some
         TabEdit::Process($fc);
         $fc->AppendObject(TabEdit::GetEditForm($fc));
+        $fc->AppendObject(TabEdit::GetHelp());
     } else if ($g_action == 'batch')
     {
         // Process any previous pending batch operation

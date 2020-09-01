@@ -216,6 +216,41 @@ class TabEdit
         return $form;
     }
 
+    public static function GetHelp()
+    {
+        $help = new DivContainer();
+        $help->AppendLine();
+        $help->AppendHtmlLine('<a data-toggle="collapse" href="#collapseHelp">Display help</a>');
+        $c = new DivContainer($help);
+        $c->ClassName = "collapse";
+        $c->ID = "collapseHelp";
+        $c->AppendHeader("Record", 3);
+        $c->AppendHtmlLine('Name of the key you want to add. If you want to create DNS record <code>test.domain.org</code> in zone domain.org, then value of field record will be just <code>test</code>. <b>Do not append zone name to record name, this is done automatically</b>. Record can be also left blank if you want to add a record for zone apex (zone itself), such as MX records.');
+        $c->AppendHeader("Zone", 3);
+        $c->AppendHtmlLine('Name of zone you want to create record in. In case that subzone exist (for example you want to add record <code>subzone.test.domain.org</code> but subzone <code>test.domain.org</code> exists in dropdown menu), you must create the record withing the subzone, not in the parent zone, otherwise it will not be visible in domain name system. If no subzone exists, then you can create a record <code>subzone.test</code> inside of <code>domain.org</code>.');
+        $c->AppendHeader("TTL", 3);
+        $c->AppendHtmlLine('Time to live tells caching name servers for how long can this record be cached for. Too low TTL may lead to performance issues as the request to resolve such record will be forwarded to authoritative name server most of the time. Too long TTL can make it complicated to change the value of record, because caching name servers will hold the cached value for too long. If you are not sure which value to pick, leave the default value.');
+        $c->AppendHeader("Type", 3);
+        $c->AppendHtmlLine('Type of DNS record, following record types are most common:');
+        $record_types = new BS_Table($c);
+        $record_types->Headers = [ 'Type', 'Description' ];
+        $record_types->AppendRow( [ 'A', 'IPv4 record, value of this record is IPv4 address, for example 1.2.3.4' ]);
+        $record_types->AppendRow( [ 'AAAA', 'IPv6 record, value of this record is IPv6 address, for example ::1' ]);
+        $record_types->AppendRow( [ 'TXT', 'Text record, must be max 255 characters in length, otherwise you need to split it to multiple parts within quotes ("), each part max. 255 characters in size' ]);
+        $record_types->AppendRow( [ 'MX', 'Mail server record, value consist of two parts, priority and hostname of mail server, for example: <code>10 mail.domain.org</code>']);
+        $record_types->AppendRow( [ 'NS', 'Delegates a record to another name server. If used on zone apex it defines authoritative name servers for a zone.']);
+        $record_types->AppendRow( [ 'SSHFP', 'SSH fingerprint, used by SSH client when verifying that target server has authentic fingerprint']);
+        $record_types->AppendRow( [ 'CNAME', 'Redirect record to another domain name, this will redirect all record types for given record name and therefore can\'t be used on zone apex']);
+        $record_types->AppendRow( [ 'SOA', 'Start of authority record - this record exists only for apex of zone and denotes existence of a zone, it includes administrative data for zone, this record is returned twice in zone transfer, as first and last record']);
+        $c->AppendHtmlLine('See <a href="https://en.wikipedia.org/wiki/List_of_DNS_record_types" target="_blank">https://en.wikipedia.org/wiki/List_of_DNS_record_types</a> for a more complete and detailed list');
+        $c->AppendHeader("Value", 3);
+        $c->AppendHtmlLine('Value of record, format depends on record type');
+        $c->AppendHeader("Comment", 3);
+        $c->AppendHtmlLine('Optional comment for audit log of DNS tool, this has no effect on DNS server itself. This field is available only if audit subsystem is enabled.');
+        //$c->AppendObject(new BS_List);
+        return $help;
+    }
+
     public static function GetEditForm($parent)
     {
         global $g_selected_domain;
