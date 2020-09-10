@@ -132,6 +132,9 @@ class TabEdit
         if (isset($_POST['comment']))
             $default_comment = $_POST['comment'];
 
+        if (isset($_POST['ttl']))
+            $default_ttl = $_POST['ttl'];
+
         // If ttl is not specified use default one from config file
         if ($default_ttl === NULL)
             $default_ttl = strval($g_default_ttl);
