@@ -41,7 +41,7 @@ function GetSwitcher($parent)
     global $g_selected_domain, $g_domains;
     $switcher = new DivContainer($parent);
     $switcher->AppendHtmlLine("Zone:");
-    $c = new BS_ComboBox("switcher", $switcher);
+    $c = new ComboBox("switcher", $switcher);
     $c->OnChangeCallback = "reload()";
     foreach ($g_domains as $domain => $properties)
     {
