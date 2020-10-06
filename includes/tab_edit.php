@@ -149,7 +149,7 @@ class TabEdit
             $layout->Headers[] = 'Comment';
         $form_items = [];
         $form_items[] = new BS_TextBox("record", $default_key, NULL, $layout);
-        $dl = new ComboBox("zone", $layout);
+        $dl = new BS_ComboBox("zone", $layout);
         if ($edit_mode)
         {
             if ($g_selected_domain === NULL)
@@ -172,7 +172,7 @@ class TabEdit
         }
         $form_items[] = $dl;
         $form_items[] = new BS_TextBox("ttl", $default_ttl, NULL, $layout);
-        $tl = new ComboBox("type", $layout);
+        $tl = new BS_ComboBox("type", $layout);
         $types = $g_editable;
         foreach ($types as $type)
         {

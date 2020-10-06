@@ -80,7 +80,7 @@ class TabBatch
         $form->Method = FormMethod::Post;
         $layout = new HtmlTable($form);
         $layout->BorderSize = 0;
-        $dl = new ComboBox("zone", $layout);
+        $dl = new BS_ComboBox("zone", $layout);
         foreach ($g_domains as $key => $info)
         {
             if (!IsAuthorizedToWrite($key))
