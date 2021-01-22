@@ -230,14 +230,14 @@ function GetRecordListTable($parent, $domain)
         } else
         {
             $delete_record = '<a href="index.php?action=manage&domain=' . $domain . '&delete=' .  urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
-                             '" onclick="return confirm(\'Are you sure?\')"><span class="glyphicon glyphicon-trash" title="Delete"></span></a>';
+                             '" onclick="return confirm(\'Are you sure you want to delete ' . $record[0] . '?\')"><span class="glyphicon glyphicon-trash" title="Delete"></span></a>';
             $delete_record_with_ptr = '';
             if ($has_ptr && $record[3] == 'A')
             {
                 // Optional button to delete record together with PTR record, show only if there are PTR zones in cfg
                 $delete_record_with_ptr = '<a href="index.php?action=manage&ptr=true&key=' . urlencode($record[0]) . '&value=' . urlencode($record[4]) . '&type=' . $record[3] . '&domain=' . $domain .
                                           '&delete=' .  urlencode($record[0] . ' ' . $record[1] . " " . $record[3] . " " . $record[4]) .
-                                          '" onclick="return confirm(\'Are you sure?\')"><span style="color: #ff0000;" class="glyphicon glyphicon-trash" title="Delete together with associated PTR record (if any exist)"></span></a>';
+                                          '" onclick="return confirm(\'Are you sure you want to delete ' . $record[0] . '?\')"><span style="color: #ff0000;" class="glyphicon glyphicon-trash" title="Delete together with associated PTR record (if any exist)"></span></a>';
             }
             $large_space = '&nbsp;&nbsp;';
             $record[] = $delete_record . $large_space . '<a href="index.php?action=edit&domain=' . $domain . '&key=' .
