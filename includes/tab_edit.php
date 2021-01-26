@@ -158,6 +158,8 @@ class TabEdit
             }
             $dl->AddDefaultValue($g_selected_domain, "." . $g_selected_domain);
             $dl->Enabled = false;
+            // we must add a hidden element that preserves the zone because disabled HTML elements do not submit form data
+            $form->AppendObject(new Hidden("zone", $g_selected_domain));
         } else
         {
             foreach ($g_domains as $key => $info)
