@@ -112,7 +112,10 @@ if (RequireLogin())
     $fc->AppendObject(GetLogin());
 } else
 {
-    $fc->AppendHeader(G_HEADER);
+    $header = new DivContainer($fc);
+    $header->ClassName = 'header';
+    $header->AppendHtmlLine('<img src="favicon.png" alt="DNS">');
+    $header->AppendHeader(G_HEADER);
     if ($g_logged_in)
         $fc->AppendHtml(GetLoginInfo());
 
