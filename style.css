@@ -7,6 +7,16 @@ body {
      margin-bottom: 60px; /* Margin bottom by footer height */
 }
 
+.header img {
+  float: left;
+  width: 32px;
+}
+
+.header h1 {
+  position: relative;
+  left: 10px;
+}
+
 .footer {
   position: absolute;
   bottom: 0;
