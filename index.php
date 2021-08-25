@@ -28,6 +28,9 @@ require_once("includes/tab_edit.php");
 require_once("includes/tab_batch.php");
 require_once("includes/login.php");
 
+if ($g_user_config_prefix !== null)
+    include($g_user_config_prefix.GetCurrentUserName().".php");
+
 if ($g_debug === true)
     psf_php_enable_debug();
 
