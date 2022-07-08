@@ -228,3 +228,6 @@ $g_caching_memcached_expiry = 0;
 
 // You can optionally enable in-cache statistics that can be exported for use with monitoring, such as prometheus, to obtain usage metrics
 $g_caching_stats_enabled = false;
+
+// Per-user configuration location
+$g_user_config_prefix = null;
