@@ -28,9 +28,6 @@ require_once("includes/tab_edit.php");
 require_once("includes/tab_batch.php");
 require_once("includes/login.php");
 
-if ($g_user_config_prefix !== null)
-    include($g_user_config_prefix.GetCurrentUserName().".php");
-
 if ($g_debug === true)
     psf_php_enable_debug();
 
@@ -44,6 +41,9 @@ if ($g_use_local_bootstrap)
 
 // Start up the program, initialize all sorts of resources, syslog, session data etc.
 Initialize();
+
+if ($g_user_config_prefix !== null)
+    include($g_user_config_prefix.GetCurrentUserName().".php");
 
 // Save us some coding
 $psf_containers_auto_insert_child = true;
