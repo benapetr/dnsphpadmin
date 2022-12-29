@@ -248,6 +248,10 @@ function GetRecordListTable($parent, $domain)
         $record[4] = '<span class="value">' . $record[4] . '</span>';
         $table->AppendRow($record);
     }
+    if ($is_editable) {
+	$add = '<a href="index.php?action=edit&domain=' . $domain . '"><span title="Add New" class="glyphicon glyphicon-plus"></span></a>';
+	$table->AppendRow(['', '', '', '', '', $add]);
+    }
     return $table;
 }
 
