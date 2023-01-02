@@ -249,7 +249,7 @@ function GetRecordListTable($parent, $domain)
         $table->AppendRow($record);
     }
     if ($is_editable) {
-	$add = '<a href="index.php?action=edit&domain=' . $domain . '"><span title="Add New" class="glyphicon glyphicon-plus"></span></a>';
+	$add = '<a href="index.php?action=new&domain=' . $domain . '"><span title="Add New" class="glyphicon glyphicon-plus"></span></a>';
 	$table->AppendRow(['', '', '', '', '', $add]);
     }
     return $table;
