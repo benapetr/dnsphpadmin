@@ -31,7 +31,8 @@ $g_domains = [ 'example.domain' => [ 'transfer_server' => 'localhost', 'update_s
 //                                      'in_transfer' => false, // if true domain will be marked as "in transfer" which means it's being transfered from one DNS master to another, so the records may not reflect truth
 //                                      'maintenance_note' => 'This domain is being configured now', // maintenance note to display for this domain
 //                                      'tsig' => true,
-//                                      'tsig_key' => 'some_key' ] ];
+//                                      'tsig_key' => 'some_key',
+//                                      'ttl' => 3600 ] ]; // Overrides default global TTL for new records
 
 // List of record types that can be edited
 // https://en.wikipedia.org/wiki/List_of_DNS_record_types
@@ -41,7 +42,7 @@ $g_editable = [ 'A', 'AAAA', 'CNAME', 'DNAME', 'DS', 'NS', 'PTR', 'SRV', 'SSHFP'
 // API is not affected by this
 $g_hidden_record_types = [ 'NSEC', 'RRSIG' ];
 
-// Default TTL for new DNS records
+// Default TTL for new DNS records (can be also specified per zone using ttl key)
 $g_default_ttl = 3600;
 
 // Path to executable of dig, you can also use this to specify some dig options for example:

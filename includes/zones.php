@@ -78,5 +78,23 @@ class Zones
         }
         return false;
     }
+
+    public static function GetDefaultTTL($domain)
+    {
+        global $g_default_ttl, $g_domains;
+
+        if ($domain === NULL)
+            return $g_default_ttl;
+
+        if (!array_key_exists($domain, $g_domains))
+            die("No such zone: $domain");
+
+        $domain_info = $g_domains[$domain];
+
+        if (array_key_exists('ttl', $domain_info))
+            return $domain_info['ttl'];
+
+        return $g_default_ttl;
+    }
 }
 

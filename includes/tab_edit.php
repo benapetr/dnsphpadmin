@@ -118,7 +118,7 @@ class TabEdit
 
     public static function GetInsertForm($parent, $edit_mode = false, $default_key = "", $default_ttl = NULL, $default_type = "A", $default_value = "", $default_comment = "")
     {
-        global $g_audit, $g_selected_domain, $g_domains, $g_editable, $g_default_ttl;
+        global $g_audit, $g_selected_domain, $g_domains, $g_editable;
 
         // In case we are returning to insert form from previous insert, make default type the one we used before
         if (isset($_POST['type']))
@@ -137,7 +137,7 @@ class TabEdit
 
         // If ttl is not specified use default one from config file
         if ($default_ttl === NULL)
-            $default_ttl = strval($g_default_ttl);
+            $default_ttl = strval(Zones::GetDefaultTTL($g_selected_domain));
         
         $form = new Form("index.php?action=new", $parent);
         $form->Method = FormMethod::Post;
