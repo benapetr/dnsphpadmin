@@ -153,7 +153,7 @@ function GetCurrentUserName()
 }
 
 //! Required to handle various non-standard boolean interpretations, mostly for strings from API requests
-function IsTrue($bool): bool
+function IsTrue($bool)
 {
     if ($bool === true)
         return true;
