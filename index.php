@@ -168,7 +168,7 @@ if (RequireLogin())
 // Bug workaround - the footer seems to take up some space
 $website->AppendHtml("<br><br><br>");
 
-$website->AppendHtmlLine("<footer class='footer'><div class='container'>Created by Petr Bena [petr@bena.rocks] (c) 2018 - 2020, source code at ".
+$website->AppendHtmlLine("<footer class='footer'><div class='container'>Created by Petr Bena [petr@bena.rocks] (c) 2018 - 2023, source code at ".
                     "<a href='https://github.com/benapetr/dnsphpadmin'>https://github.com/benapetr/dnsphpadmin</a> Version: " . G_DNSTOOL_VERSION . "</div></footer>");
 
 $website->PrintHtml();
