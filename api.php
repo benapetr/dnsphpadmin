@@ -239,7 +239,7 @@ function api_call_create_record($source)
     $type = get_required_post_get_parameter('type');
     $value = get_required_post_get_parameter('value');
     $comment = get_optional_post_get_parameter('comment');
-    $ptr = get_optional_post_get_parameter('ptr');
+    $ptr = IsTrue(get_optional_post_get_parameter('ptr'));
     $merge_record = true;
 
     if ($zone === NULL)
@@ -268,7 +268,7 @@ function api_call_create_record($source)
     }
 
     $n = "server " . $g_domains[$zone]['update_server'] . "\n";
-    $merged_record = "";
+    $merged_record = NULL;
     if ($merge_record)
     {
         $n .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
@@ -311,7 +311,7 @@ function api_call_replace_record($source)
     $comment = get_optional_post_get_parameter('comment');
     $new_record = get_optional_post_get_parameter('new_record');
     $new_type = get_optional_post_get_parameter('new_type');
-    $ptr = get_optional_post_get_parameter('ptr');
+    $ptr = IsTrue(get_optional_post_get_parameter('ptr'));
     $merge_record = true;
 
     // Auto-fill optional
@@ -343,15 +343,46 @@ function api_call_replace_record($source)
     }
 
     $old = NULL;
+    $old_record = NULL;
+    $merged_record = NULL;
     if (!$merge_record)
+    {
         $old = $record . ' 0 ' . $type;
-    else
+        $old_record = $record;
+        $merged_record = $new_record;
+    } else
+    {
         $old = $record . '.' . $zone . ' 0 ' . $type;
+        $old_record = $record . '.' . $zone;
+        $merged_record = $new_record . '.' . $zone;
+    }
 
     if ($value !== NULL)
         $old .= ' ' . $value;
 
     DNS_ModifyRecord($zone, $new_record, $new_value, $new_type, $ttl, $comment, $old, !$merge_record);
+
+    if ($ptr)
+    {
+        if ($type != 'A' && $new_type != 'A')
+        {
+            api_warning("You requested to modify underlying PTR record, but neither new or old record type is A record, ignoring PTR update request");
+        } else
+        {
+            // PTR update was requested, if old type was A, delete it. If new type is A, create it
+            if ($type == 'A')
+            {
+                if ($value === NULL)
+                    api_warning("Old PTR record was not deleted, because parameter value was not provided - so we don't know what to delete");
+                else
+                    DNS_DeletePTRForARecord($value, $old_record, $comment);
+            }
+            if (($new_type === NULL && $type == 'A') || $new_type == 'A')
+            {
+                DNS_InsertPTRForARecord($value, $merged_record, $ttl, $comment);
+            }
+        }
+    }
 
     print_success();
     return true;

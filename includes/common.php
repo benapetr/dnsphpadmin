@@ -151,3 +151,20 @@ function GetCurrentUserName()
         return "unknown user";
     return $_SERVER['REMOTE_USER'];
 }
+
+//! Required to handle various non-standard boolean interpretations, mostly for strings from API requests
+function IsTrue($bool): bool
+{
+    if ($bool === true)
+        return true;
+    
+    // Check string version
+    if ($bool == "true" || $bool == "t")
+        return true;
+
+    // Check int version
+    if (is_numeric($bool) && $bool != 0)
+        return true;
+    
+    return false;
+}
