@@ -379,7 +379,7 @@ function api_call_replace_record($source)
             }
             if (($new_type === NULL && $type == 'A') || $new_type == 'A')
             {
-                DNS_InsertPTRForARecord($value, $merged_record, $ttl, $comment);
+                DNS_InsertPTRForARecord($new_value, $merged_record, $ttl, $comment);
             }
         }
     }
