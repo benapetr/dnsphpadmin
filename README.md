@@ -38,4 +38,10 @@ vi config.php
 
 Now update `$g_domains` so that it contains information about zones you want to manage. Web server must have nsupdate and dig Linux commands installed in paths that are in config.php and it also needs to have firewall access to perform zone transfer and to perform nsupdate updates.
 
+## Docker image
+There is also a docker image maintained by Eugene Taylashev
+
+* GitHub: https://github.com/eugene-taylashev/docker-dnsphpadmin
+* Docker Hub: https://hub.docker.com/repository/docker/etaylashev/dnsphpadmin
+
 **IMPORTANT:** DNS tool doesn't use any authentication by default, so everyone with access to web server will have access to DNS tool. If this is just a simple setup for 1 or 2 admins who should have unlimited access to everything, you should setup login via htaccess or similar see https://httpd.apache.org/docs/2.4/howto/auth.html for apache. If you have LDAP (active directory is also LDAP), you can configure this tool to use LDAP authentication as well.
