@@ -68,6 +68,11 @@ function GetStatusOfZoneAsNote($domain)
         $is_ok = false;
         $status->Text .= '<span class="glyphicon glyphicon-alert"></span> <b>Maintenance note:</b> ' .$domain_info['maintenance_note'];
     }
+    if (array_key_exists('note', $domain_info))
+    {
+        $is_ok = false;
+        $status->Text .= '<span class="glyphicon glyphicon-info"></span> <b>Note:</b> ' .$domain_info['note'];
+    }
 
     if ($is_ok)
         return NULL;

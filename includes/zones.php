@@ -30,6 +30,9 @@ class Zones
             if (isset($properties['in_transfer']))
                 $result[$domain]['in_transfer'] = $properties['in_transfer'];
 
+            if (isset($properties['note']))
+                $result[$domain]['note'] = $properties['note'];
+
             if (isset($properties['maintenance_note']))
                 $result[$domain]['maintenance_note'] = $properties['maintenance_note'];
 

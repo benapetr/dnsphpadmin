@@ -45,6 +45,10 @@ class TabOverview
             $is_ok = false;
             $status .= '<span class="glyphicon glyphicon-alert" title="' . $domain_info['maintenance_note'] . '"></span>&nbsp;';
         }
+        if (array_key_exists('note', $domain_info))
+        {
+            $status .= '&nbsp;<span class="glyphicon glyphicon-comment" title="' . $domain_info['note'] . '"></span>&nbsp;';
+        }
     
         if ($is_ok)
             return '<span class="glyphicon glyphicon-ok" title="OK"></span>' . $status;
