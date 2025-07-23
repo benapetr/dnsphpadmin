@@ -144,6 +144,7 @@ class TabEdit
         $layout = new HtmlTable($form);
         $layout->BorderSize = 0;
         $layout->ColWidth[4] = '40%';
+        $layout->ClassName = 'table w-100';
         $layout->Headers = [ "Record", "Zone", "TTL", "Type", "Value" ];
         if ($g_audit)
             $layout->Headers[] = 'Comment';

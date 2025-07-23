@@ -35,8 +35,12 @@ date_default_timezone_set($g_timezone);
 
 if ($g_use_local_bootstrap)
 {
-    $psf_bootstrap_js_url = 'bootstrap-3.3.7/dist/js/bootstrap.min.js';
-    $psf_bootstrap_css_url = 'bootstrap-3.3.7/dist/css/bootstrap.min.css';
+    $psf_bootstrap_js_url = 'bootstrap-5.3.7/dist/js/bootstrap.bundle.min.js';
+    $psf_bootstrap_css_url = 'bootstrap-5.3.7/dist/css/bootstrap.min.css';
+} else
+{
+    $psf_bootstrap_js_url = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js';
+    $psf_bootstrap_css_url = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css';
 }
 
 // Start up the program, initialize all sorts of resources, syslog, session data etc.
@@ -53,14 +57,15 @@ $g_selected_domain = null;
 $g_action = null;
 
 $website = new HtmlPage("DNS management");
-$website->ExternalCss[] = 'style.css';
 if (!$g_use_local_jquery)
-    $website->ExternalJs[] = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js";
+    $website->ExternalJs[] = "https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js";
 else
-    $website->ExternalJs[] = "jquery-3.3.1.min.js";
+    $website->ExternalJs[] = "jquery-3.7.1.min.js";
 $website->Style->items["td"]["word-wrap"] = "break-word";
 $website->Style->items["td"]["max-width"] = "280px";
-bootstrap_init($website);
+bootstrap_init($website, 5);
+
+$website->ExternalCss[] = 'style.css';
 
 // Create a bootstrap fluid containers, one for whole website and one for errors, which are dynamically inserted to error container as they are generated
 $fc = new BS_FluidContainer($website);
@@ -168,7 +173,7 @@ if (RequireLogin())
 // Bug workaround - the footer seems to take up some space
 $website->AppendHtml("<br><br><br>");
 
-$website->AppendHtmlLine("<footer class='footer'><div class='container'>Created by Petr Bena [petr@bena.rocks] (c) 2018 - 2023, source code at ".
+$website->AppendHtmlLine("<footer class='footer text-center py-2 small text-muted'><div class='container'>Created by Petr Bena [petr@bena.rocks] (c) 2018 - 2025, source code at ".
                     "<a href='https://github.com/benapetr/dnsphpadmin'>https://github.com/benapetr/dnsphpadmin</a> Version: " . G_DNSTOOL_VERSION . "</div></footer>");
 
 $website->PrintHtml();

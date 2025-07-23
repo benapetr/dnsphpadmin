@@ -59,8 +59,9 @@ class TabOverview
     public static function GetSelectForm($parent)
     {
         global $g_domains;
-        $table = new BS_Table($parent);
+        $table = new HtmlTable($parent);
         $table->Headers = [ "Domain name", "Status", "Update server", "Transfer server" ];
+        $table->ClassName = 'table table-bordered table-hover table-sm';
         $table->SetColumnWidth(1, '80px');
         foreach ($g_domains as $domain => $properties)
         {

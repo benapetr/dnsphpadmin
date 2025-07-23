@@ -5,24 +5,50 @@ html {
 
 body {
      margin-bottom: 60px; /* Margin bottom by footer height */
+     font-size: 0.9rem;
+}
+
+a {
+  text-decoration: none;
+  color: #337ab7;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: #23527c;
+}
+
+.nav-tabs a {
+  text-decoration: none;
+  color: #337ab7;
+}
+
+.nav-tabs a:hover {
+  text-decoration: none;
+  color: #23527c;
 }
 
 .header img {
-  float: left;
-  width: 32px;
+  max-height: 40px;
+  vertical-align: middle;
+  margin-right: 10px;
 }
 
 .header h1 {
-  position: relative;
-  left: 10px;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+  font-size: 24px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .footer {
   position: absolute;
   bottom: 0;
   width: 100%;
-  height: 60px; /* Set the fixed height of the footer here */
-  line-height: 60px; /* Vertically center the text there */
+  height: 30px; /* Set the fixed height of the footer here */
+  line-height: 10px; /* Vertically center the text there */
   background-color: #f5f5f5;
 }
 
