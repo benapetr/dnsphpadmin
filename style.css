@@ -18,9 +18,28 @@ a:hover {
   color: #23527c;
 }
 
+pre {
+  background-color: #f8f9fa; /* Bootstrap 5 light */
+  padding: 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid #dee2e6;
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+code {
+  background-color: #f9f2f4;
+  color: #c7254e;
+  border-radius: 4px;
+  padding: 0.2em 0.4em;
+  font-size: 0.875em;
+  font-family: monospace;
+}
+
 .nav-tabs a {
   text-decoration: none;
   color: #337ab7;
+  font-size: 1rem;
 }
 
 .nav-tabs a:hover {
@@ -56,6 +75,21 @@ a:hover {
   position: absolute;
   top: 20px;
   right: 20px;
+}
+
+.login-page {
+  text-align: center;
+  margin: 20px auto;
+  border: 1px solid #ccc;       /* Light grey border */
+  border-radius: 12px;          /* Rounded corners */
+  padding: 20px;                /* Space inside the border */
+  width: 640px;                 /* Optional: fixed width */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow */
+  background-color: #fff;       /* Optional: white background */
+}
+
+.login-page img {
+  max-height: 160px;
 }
 
 .export_csv {

@@ -256,7 +256,7 @@ function RequireLogin()
         return false;
     
     // We support LDAP at this moment only
-    if ($g_auth != "ldap")
+    if ($g_auth != "ldap" && $g_auth != "file")
         Error("Unsupported authentication mechanism");
     
     // Check if we have the credentials

@@ -107,6 +107,8 @@ if (RequireLogin())
         $_SESSION['preserved_action'] = $g_action;
     if ($g_selected_domain !== null)
         $_SESSION['preserved_domain'] = $g_selected_domain;
+    $fc->ClassName .= 'login-page';
+    $fc->AppendObject(new Image("favicon.png", "DNS"));
     $fc->AppendHeader('Login to ' . G_HEADER);
     if ($g_auth_login_banner !== NULL)
         $fc->AppendObject(new BS_Alert($g_auth_login_banner, 'info'));

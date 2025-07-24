@@ -226,7 +226,7 @@ class TabEdit
     {
         $help = new DivContainer();
         $help->AppendLine();
-        $help->AppendHtmlLine('<a data-toggle="collapse" href="#collapseHelp">Display help</a>');
+        $help->AppendHtmlLine('<a data-bs-toggle="collapse" href="#collapseHelp" role="button" aria-expanded="false" aria-controls="collapseHelp">Display help</a>');
         $c = new DivContainer($help);
         $c->ClassName = "collapse";
         $c->ID = "collapseHelp";
@@ -238,7 +238,8 @@ class TabEdit
         $c->AppendHtmlLine('Time to live tells caching name servers for how long can this record be cached for. Too low TTL may lead to performance issues as the request to resolve such record will be forwarded to authoritative name server most of the time. Too long TTL can make it complicated to change the value of record, because caching name servers will hold the cached value for too long. If you are not sure which value to pick, leave the default value.');
         $c->AppendHeader("Type", 3);
         $c->AppendHtmlLine('Type of DNS record, following record types are most common:');
-        $record_types = new BS_Table($c);
+        $record_types = new HtmlTable($c);
+        $record_types->ClassName = 'table table-bordered table-hover table-sm';
         $record_types->Headers = [ 'Type', 'Description' ];
         $record_types->AppendRow( [ 'A', 'IPv4 record, value of this record is IPv4 address, for example 1.2.3.4' ]);
         $record_types->AppendRow( [ 'AAAA', 'IPv6 record, value of this record is IPv6 address, for example ::1' ]);
