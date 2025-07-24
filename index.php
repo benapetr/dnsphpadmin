@@ -27,7 +27,6 @@ require_once("includes/tab_manage.php");
 require_once("includes/tab_edit.php");
 require_once("includes/tab_batch.php");
 require_once("includes/login.php");
-require_once("includes/settings.php");
 
 if ($g_debug === true)
     psf_php_enable_debug();
@@ -103,8 +102,6 @@ if (isset($_GET['domain']))
     $g_selected_domain = $_GET['domain'];
 else if (isset($_POST['zone']))
     $g_selected_domain = $_POST['zone'];
-
-$website->HtmlTagExtras .= ' data-bs-theme="' . Settings::DarkMode() . '"';
 
 // Check if login is needed
 if (RequireLogin())
