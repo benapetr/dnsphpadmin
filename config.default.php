@@ -194,14 +194,16 @@ $g_auth_disallow_users_with_no_roles = true;
 $g_auth_roles_map = [];
 
 // Use local bootstrap instead of CDN (useful for clients behind firewall)
-// In order for this to work, you need to download bootstrap 3.3.7 so that it's in root folder of htdocs (same level as index.php) example:
-// /bootstrap-3.3.7
+// In order for this to work, you need to download bootstrap 5.3.7 so that it's in root folder of htdocs (same level as index.php) example:
+// /bootstrap-5.3.7/dist/js/bootstrap.bundle.min.js
+// /bootstrap-5.3.7/dist/css/bootstrap.min.css
+// /bootstrap-icons-1.11.3/font/bootstrap-icons.css
 // /index.php
 $g_use_local_bootstrap = false;
 
 // Use local jquery instead of CDN (useful for clients behind firewall)
-// For this to work download compressed jquery 3.3.1 to root folder for example:
-// /jquery-3.3.1.min.js
+// For this to work download compressed jquery 3.7.1 to root folder for example:
+// /jquery-3.7.1.min.js
 $g_use_local_jquery = false;
 
 // Whether API interface is available or not
