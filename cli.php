@@ -30,6 +30,62 @@ function fatal_log($text)
     print("FATAL: $text\n");
 }
 
+/**
+ * Read a password from the terminal without displaying it
+ * 
+ * @param string $prompt The prompt to display to the user
+ * @return string The password entered by the user
+ */
+function read_password($prompt = "Enter password: ")
+{
+    echo $prompt;
+    
+    // Check if we're on Windows or Unix
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        // Windows approach using COM object if available
+        if (class_exists('COM'))
+        {
+            try
+            {
+                $shell = new COM('WScript.Shell');
+                $obj = $shell->Exec('powershell.exe -Command "$password = Read-Host -AsSecureString; $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($password); [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)"');
+                $password = '';
+                while (!$obj->StdOut->AtEndOfStream) {
+                    $password .= $obj->StdOut->ReadLine();
+                }
+                return $password;
+            } catch (Exception $e) {
+                // Fallback method if COM object fails
+            }
+        }
+        
+        // Simple fallback for Windows
+        $password = '';
+        while (($char = fgetc(STDIN)) !== "\r")
+        {
+            if ($char === "\x08")
+            { // Backspace
+                if (strlen($password) > 0)
+                    $password = substr($password, 0, -1);
+            } else
+            {
+                $password .= $char;
+            }
+        }
+        fgets(STDIN); // Consume the following \n
+        echo "\n";
+        return $password;
+    } else
+    {
+        // Unix/Linux approach
+        system('stty -echo');
+        $password = trim(fgets(STDIN));
+        system('stty echo');
+        echo "\n"; // Add a newline since the user's Enter keypress wasn't displayed
+        return $password;
+    }
+}
+
 function print_help()
 {
     global $g_auth;
@@ -66,8 +122,10 @@ function get_users_from_file($file)
     foreach ($lines as $line)
     {
         list($username, $password_hash, $enabled, $roles) = explode(':', $line);
+        // Store lowercase username but display the original
         $users[] = [
             'username' => $username,
+            'username_lower' => strtolower($username),
             'password_hash' => $password_hash,
             'enabled' => ($enabled === 'true'),
             'roles' => explode(',', $roles)
@@ -82,6 +140,25 @@ function add_user_to_file($file, $username, $password)
     {
         fatal_log("Username and password cannot be empty.");
         return false;
+    }
+    
+    // Convert username to lowercase
+    $username = strtolower($username);
+    
+    // Check if user already exists
+    if (file_exists($file))
+    {
+        $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line)
+        {
+            $parts = explode(':', $line);
+            $existing_username = strtolower($parts[0]);
+            if ($existing_username === $username)
+            {
+                fatal_log("User '$username' already exists in database.");
+                return false;
+            }
+        }
     }
 
     $password_hash = password_hash($password, PASSWORD_BCRYPT);
@@ -102,6 +179,9 @@ function delete_user_from_file($file, $username)
         fatal_log("User database file does not exist: $file");
         return false;
     }
+    
+    // Convert username to lowercase for comparison
+    $username = strtolower($username);
 
     $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     $new_lines = [];
@@ -109,7 +189,8 @@ function delete_user_from_file($file, $username)
 
     foreach ($lines as $line)
     {
-        list($current_username) = explode(':', $line);
+        $parts = explode(':', $line);
+        $current_username = strtolower($parts[0]);
         if ($current_username === $username)
         {
             $found = true; // User found, skip this line
@@ -139,6 +220,9 @@ function lock_user($file, $username)
         fatal_log("User database file does not exist: $file");
         return false;
     }
+    
+    // Convert username to lowercase for comparison
+    $username = strtolower($username);
 
     $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     $new_lines = [];
@@ -148,7 +232,8 @@ function lock_user($file, $username)
     foreach ($lines as $line)
     {
         $parts = explode(':', $line);
-        if ($parts[0] === $username)
+        $current_username = strtolower($parts[0]);
+        if ($current_username === $username)
         {
             $found = true;
             // Check if user is already locked
@@ -194,6 +279,9 @@ function unlock_user($file, $username)
         fatal_log("User database file does not exist: $file");
         return false;
     }
+    
+    // Convert username to lowercase for comparison
+    $username = strtolower($username);
 
     $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     $new_lines = [];
@@ -203,7 +291,8 @@ function unlock_user($file, $username)
     foreach ($lines as $line)
     {
         $parts = explode(':', $line);
-        if ($parts[0] === $username)
+        $current_username = strtolower($parts[0]);
+        if ($current_username === $username)
         {
             $found = true;
             // Check if user is already unlocked
@@ -249,6 +338,9 @@ function list_user_roles($file, $username)
         fatal_log("User database file does not exist: $file");
         return false;
     }
+    
+    // Convert username to lowercase for comparison
+    $username = strtolower($username);
 
     $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     $found = false;
@@ -256,7 +348,8 @@ function list_user_roles($file, $username)
     foreach ($lines as $line)
     {
         $parts = explode(':', $line);
-        if ($parts[0] === $username)
+        $current_username = strtolower($parts[0]);
+        if ($current_username === $username)
         {
             $found = true;
             $roles = !empty($parts[3]) ? explode(',', $parts[3]) : [];
@@ -278,6 +371,9 @@ function add_role_to_user($file, $username, $role)
         fatal_log("User database file does not exist: $file");
         return false;
     }
+    
+    // Convert username to lowercase for comparison
+    $username = strtolower($username);
 
     $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     $new_lines = [];
@@ -286,7 +382,8 @@ function add_role_to_user($file, $username, $role)
     foreach ($lines as $line)
     {
         $parts = explode(':', $line);
-        if ($parts[0] === $username)
+        $current_username = strtolower($parts[0]);
+        if ($current_username === $username)
         {
             $found = true;
             $roles = !empty($parts[3]) ? explode(',', $parts[3]) : [];
@@ -327,6 +424,9 @@ function delete_role_from_user($file, $username, $role)
         fatal_log("User database file does not exist: $file");
         return false;
     }
+    
+    // Convert username to lowercase for comparison
+    $username = strtolower($username);
 
     $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     $new_lines = [];
@@ -336,7 +436,8 @@ function delete_role_from_user($file, $username, $role)
     foreach ($lines as $line)
     {
         $parts = explode(':', $line);
-        if ($parts[0] === $username)
+        $current_username = strtolower($parts[0]);
+        if ($current_username === $username)
         {
             $found = true;
             $roles = !empty($parts[3]) ? explode(',', $parts[3]) : [];
@@ -419,14 +520,9 @@ switch ($command)
         }
         $username = $argv[2];
 
-        // Interactive password input
-        if (function_exists('readline'))
-        {
-            $password = readline("Enter password for user '$username': ");
-        } else {
-            print("Enter password for user '$username': ");
-            $password = trim(fgets(STDIN));
-        }
+        // Get password with masking
+        $password = read_password("Enter password for user '$username': ");
+        
         if (empty($password))
         {
             fatal_log("Password cannot be empty.");
