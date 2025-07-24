@@ -33,10 +33,13 @@ if ($g_debug === true)
 
 date_default_timezone_set($g_timezone);
 
+$g_bootstrap_icons = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css';
+
 if ($g_use_local_bootstrap)
 {
     $psf_bootstrap_js_url = 'bootstrap-5.3.7/dist/js/bootstrap.bundle.min.js';
     $psf_bootstrap_css_url = 'bootstrap-5.3.7/dist/css/bootstrap.min.css';
+    $g_bootstrap_icons = 'bootstrap-icons-1.11.3/font/bootstrap-icons.css';
 } else
 {
     $psf_bootstrap_js_url = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js';
@@ -65,6 +68,7 @@ $website->Style->items["td"]["word-wrap"] = "break-word";
 $website->Style->items["td"]["max-width"] = "280px";
 bootstrap_init($website, 5);
 
+$website->ExternalCss[] =   $g_bootstrap_icons;
 $website->ExternalCss[] = 'style.css';
 
 // Create a bootstrap fluid containers, one for whole website and one for errors, which are dynamically inserted to error container as they are generated

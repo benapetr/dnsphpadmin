@@ -46,32 +46,32 @@ function GetStatusOfZoneAsNote($domain)
     if (array_key_exists('in_transfer', $domain_info) && $domain_info['in_transfer'] === true)
     {
         $is_ok = false;
-        $status->Text .= '<span class="glyphicon glyphicon-refresh" title="In transfer"></span> <b>Warning:</b> This domain is being transfered between different master servers<br>';
+        $status->Text .= '<span class="bi bi-arrow-repeat" title="In transfer"></span> <b>Warning:</b> This domain is being transfered between different master servers<br>';
     }
     if (array_key_exists('read_only', $domain_info) && $domain_info['read_only'] === true)
     {
         $is_ok = false;
-        $status->Text .= '<span class="glyphicon glyphicon-floppy-remove" title="Read-Only"></span> <b>Warning:</b> This domain is read only<br>';
+        $status->Text .= '<span class="bi bi-lock" title="Read-Only"></span> <b>Warning:</b> This domain is read only<br>';
     }
     if (!IsAuthorizedToRead($domain))
     {
         $is_ok = false;
-        $status->Text .= '<span class="glyphicon glyphicon-alert"></span> <b>Can\'t read:</b> you are not authorized to read this zone.<br>';
+        $status->Text .= '<span class="bi bi-exclamation-triangle"></span> <b>Can\'t read:</b> you are not authorized to read this zone.<br>';
     }
     if (!IsAuthorizedToWrite($domain))
     {
         $is_ok = false;
-        $status->Text .= '<span class="glyphicon glyphicon-alert"></span> <b>Can\'t write:</b> you are not authorized to write this zone.<br>';
+        $status->Text .= '<span class="bi bi-exclamation-triangle"></span> <b>Can\'t write:</b> you are not authorized to write this zone.<br>';
     }
     if (array_key_exists('maintenance_note', $domain_info))
     {
         $is_ok = false;
-        $status->Text .= '<span class="glyphicon glyphicon-alert"></span> <b>Maintenance note:</b> ' .$domain_info['maintenance_note'];
+        $status->Text .= '<span class="bi bi-exclamation-triangle"></span> <b>Maintenance note:</b> ' .$domain_info['maintenance_note'];
     }
     if (array_key_exists('note', $domain_info))
     {
         $is_ok = false;
-        $status->Text .= '<span class="glyphicon glyphicon-info"></span> <b>Note:</b> ' .$domain_info['note'];
+        $status->Text .= '<span class="bi bi-info-circle"></span> <b>Note:</b> ' .$domain_info['note'];
     }
 
     if ($is_ok)
@@ -235,26 +235,26 @@ function GetRecordListTable($parent, $domain)
         } else
         {
             $delete_record = '<a href="index.php?action=manage&domain=' . $domain . '&delete=' .  urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
-                             '" onclick="return confirm(\'Are you sure you want to delete ' . $record[0] . '?\')"><span class="glyphicon glyphicon-trash" title="Delete"></span></a>';
+                             '" onclick="return confirm(\'Are you sure you want to delete ' . $record[0] . '?\')"><span class="bi bi-trash" title="Delete"></span></a>';
             $delete_record_with_ptr = '';
             if ($has_ptr && $record[3] == 'A')
             {
                 // Optional button to delete record together with PTR record, show only if there are PTR zones in cfg
                 $delete_record_with_ptr = '<a href="index.php?action=manage&ptr=true&key=' . urlencode($record[0]) . '&value=' . urlencode($record[4]) . '&type=' . $record[3] . '&domain=' . $domain .
                                           '&delete=' .  urlencode($record[0] . ' ' . $record[1] . " " . $record[3] . " " . $record[4]) .
-                                          '" onclick="return confirm(\'Are you sure you want to delete ' . $record[0] . '?\')"><span style="color: #ff0000;" class="glyphicon glyphicon-trash" title="Delete together with associated PTR record (if any exist)"></span></a>';
+                                          '" onclick="return confirm(\'Are you sure you want to delete ' . $record[0] . '?\')"><span style="color: #ff0000;" class="bi bi-trash" title="Delete together with associated PTR record (if any exist)"></span></a>';
             }
             $large_space = '&nbsp;&nbsp;';
             $record[] = $delete_record . $large_space . '<a href="index.php?action=edit&domain=' . $domain . '&key=' .
                         urlencode($record[0]) . "&ttl=" . $record[1] . "&type=" . $record[3] . "&value=" . urlencode($record[4]) .
                         "&old=" . urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
-                        '"><span title="Edit" class="glyphicon glyphicon-pencil"></span></a>' . $large_space . $delete_record_with_ptr;
+                        '"><span title="Edit" class="bi bi-pencil"></span></a>' . $large_space . $delete_record_with_ptr;
         }
         $record[4] = '<span class="value">' . $record[4] . '</span>';
         $table->AppendRow($record);
     }
     if ($is_editable) {
-	$add = '<a href="index.php?action=new&domain=' . $domain . '"><span title="Add New" class="glyphicon glyphicon-plus"></span></a>';
+	$add = '<a href="index.php?action=new&domain=' . $domain . '"><span title="Add New" class="bi bi-plus"></span></a>';
 	$table->AppendRow(['', '', '', '', '', $add]);
     }
     return $table;
