@@ -19,6 +19,7 @@ require_once("audit.php");
 require_once("common.php");
 require_once("common_ui.php");
 require_once("config.php");
+require_once("passwd_file.php");
 
 $g_login_failed = false;
 $g_logged_in = false;
@@ -246,7 +247,7 @@ function ProcessLogin_File()
         return;
     }
 
-    $username = strtolower($_POST["loginUsername"]);
+    $username = $_POST["loginUsername"];
     $password = $_POST["loginPassword"];
     
     // Check if this user is allowed to login
@@ -256,42 +257,42 @@ function ProcessLogin_File()
         return;
     }
 
-    // Read the file and check if this user exists
-    $lines = file($g_auth_file_db, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line)
+    $passwd = new PasswdFile($g_auth_file_db);
+    if (!$passwd->Load())
     {
-        list($file_username, $file_password_hash, $enabled, $roles) = explode(':', $line);
-        if ($file_username === $username)
-        {
-            // User found
-            if ($enabled !== 'true')
-            {
-                ProcessLogin_Error("This user is disabled");
-                return;
-            }
-            if (password_verify($password, $file_password_hash))
-            {
-                // Login OK
-                $_SESSION['user'] = $username;
-                $_SESSION['logged_in'] = true;
-                $_SESSION['groups'] = explode(',', $roles);
-                $g_logged_in = true;
-                WriteToAuditFile('login_success');
-                IncrementStat('login_success');
-                // Store roles in global map
-                $g_auth_roles_map[$username] = $_SESSION['groups'];
-                return;
-            } else
-            {
-                // Invalid password
-                ProcessLogin_Error("Invalid password for user '$username'");
-                return;
-            }
-        }
+        ProcessLogin_Error("Unable to load password file $g_auth_file_db");
+        return;
     }
-    
-    // User not found
-    ProcessLogin_Error("Invalid username or password");
+
+    $user = $passwd->GetUser($username);
+
+    if ($user === null)
+    {
+        ProcessLogin_Error("Invalid username or password");
+        return;
+    }
+
+    if (!$user['enabled'])
+    {
+        ProcessLogin_Error("This user is disabled");
+        return;
+    }
+
+    if (!password_verify($password, $user['password_hash']))
+    {
+        ProcessLogin_Error("Invalid password for user '$username'");
+        return;
+    }
+
+    // Login OK
+    $_SESSION['user'] = $username;
+    $_SESSION['logged_in'] = true;
+    $_SESSION['groups'] = explode(',', $roles);
+    $g_logged_in = true;
+    WriteToAuditFile('login_success');
+    IncrementStat('login_success');
+    // Store roles in global map
+    $g_auth_roles_map[$username] = $_SESSION['groups'];
 }
 
 function ProcessLogin()

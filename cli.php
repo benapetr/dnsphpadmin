@@ -19,6 +19,7 @@ require_once("psf/psf.php");
 require_once("includes/common.php");
 require_once("includes/debug.php");
 require_once("includes/login.php");
+require_once("includes/passwd_file.php");
 
 function info_log($text)
 {
@@ -101,6 +102,7 @@ function print_help()
            "  user-list:                  Lists all users.\n" .
            "  user-add username password: Adds a new user.\n" .
            "  user-del username:          Deletes a user.\n" .
+           "  user-passwd username:       Changes a user's password.\n" .
            "  user-lock username:          Locks a user account.\n" .
            "  user-unlock username:        Unlocks a user account.\n" .
            "  user-role-list username:      Lists roles for a user.\n" .
@@ -109,375 +111,24 @@ function print_help()
            "\n");
 }
 
-function get_users_from_file($file)
+function get_passwd()
 {
-    if (!file_exists($file))
+    global $g_auth_file_db;
+
+    if (!file_exists($g_auth_file_db))
     {
-        fatal_log("User database file does not exist: $file");
-        return false;
+        fatal_log("User database file does not exist: " . $g_auth_file_db);
+        exit(1);
     }
 
-    $users = [];
-    $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line)
+    $passwd_file = new PasswdFile($g_auth_file_db);
+    if (!$passwd_file->Load())
     {
-        list($username, $password_hash, $enabled, $roles) = explode(':', $line);
-        // Store lowercase username but display the original
-        $users[] = [
-            'username' => $username,
-            'username_lower' => strtolower($username),
-            'password_hash' => $password_hash,
-            'enabled' => ($enabled === 'true'),
-            'roles' => explode(',', $roles)
-        ];
-    }
-    return $users;
-}
-
-function add_user_to_file($file, $username, $password)
-{
-    if (empty($username) || empty($password))
-    {
-        fatal_log("Username and password cannot be empty.");
-        return false;
+        fatal_log("Failed to read user database.");
+        exit(1);
     }
     
-    // Convert username to lowercase
-    $username = strtolower($username);
-    
-    // Check if user already exists
-    if (file_exists($file))
-    {
-        $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        foreach ($lines as $line)
-        {
-            $parts = explode(':', $line);
-            $existing_username = strtolower($parts[0]);
-            if ($existing_username === $username)
-            {
-                fatal_log("User '$username' already exists in database.");
-                return false;
-            }
-        }
-    }
-
-    $password_hash = password_hash($password, PASSWORD_BCRYPT);
-    $line = "$username:$password_hash:true:\n";
-
-    if (file_put_contents($file, $line, FILE_APPEND | LOCK_EX) === false)
-    {
-        fatal_log("Failed to write to user database file: $file");
-        return false;
-    }
-    return true;
-}
-
-function delete_user_from_file($file, $username)
-{
-    if (!file_exists($file))
-    {
-        fatal_log("User database file does not exist: $file");
-        return false;
-    }
-    
-    // Convert username to lowercase for comparison
-    $username = strtolower($username);
-
-    $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    $new_lines = [];
-    $found = false;
-
-    foreach ($lines as $line)
-    {
-        $parts = explode(':', $line);
-        $current_username = strtolower($parts[0]);
-        if ($current_username === $username)
-        {
-            $found = true; // User found, skip this line
-            continue;
-        }
-        $new_lines[] = $line; // Keep other users
-    }
-
-    if (!$found)
-    {
-        fatal_log("User '$username' not found in database.");
-        return false;
-    }
-
-    if (file_put_contents($file, implode("\n", $new_lines) . "\n") === false)
-    {
-        fatal_log("Failed to write updated user database file: $file");
-        return false;
-    }
-    return true;
-}
-
-function lock_user($file, $username)
-{
-    if (!file_exists($file))
-    {
-        fatal_log("User database file does not exist: $file");
-        return false;
-    }
-    
-    // Convert username to lowercase for comparison
-    $username = strtolower($username);
-
-    $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    $new_lines = [];
-    $found = false;
-    $already_locked = false;
-
-    foreach ($lines as $line)
-    {
-        $parts = explode(':', $line);
-        $current_username = strtolower($parts[0]);
-        if ($current_username === $username)
-        {
-            $found = true;
-            // Check if user is already locked
-            if ($parts[2] === 'false')
-            {
-                $already_locked = true;
-                // No change needed
-            }
-            else
-            {
-                // Replace 'true' with 'false' to lock the account
-                $parts[2] = 'false';
-                $line = implode(':', $parts);
-            }
-        }
-        $new_lines[] = $line;
-    }
-
-    if (!$found)
-    {
-        fatal_log("User '$username' not found in database.");
-        return false;
-    }
-
-    if ($already_locked)
-    {
-        info_log("User '$username' is already locked.");
-        return 'already_locked';
-    }
-
-    if (file_put_contents($file, implode("\n", $new_lines) . "\n") === false)
-    {
-        fatal_log("Failed to write updated user database file: $file");
-        return false;
-    }
-    return true;
-}
-
-function unlock_user($file, $username)
-{
-    if (!file_exists($file))
-    {
-        fatal_log("User database file does not exist: $file");
-        return false;
-    }
-    
-    // Convert username to lowercase for comparison
-    $username = strtolower($username);
-
-    $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    $new_lines = [];
-    $found = false;
-    $already_unlocked = false;
-
-    foreach ($lines as $line)
-    {
-        $parts = explode(':', $line);
-        $current_username = strtolower($parts[0]);
-        if ($current_username === $username)
-        {
-            $found = true;
-            // Check if user is already unlocked
-            if ($parts[2] === 'true')
-            {
-                $already_unlocked = true;
-                // No change needed
-            }
-            else
-            {
-                // Replace 'false' with 'true' to unlock the account
-                $parts[2] = 'true';
-                $line = implode(':', $parts);
-            }
-        }
-        $new_lines[] = $line;
-    }
-
-    if (!$found)
-    {
-        fatal_log("User '$username' not found in database.");
-        return false;
-    }
-
-    if ($already_unlocked)
-    {
-        info_log("User '$username' is already unlocked.");
-        return 'already_unlocked';
-    }
-
-    if (file_put_contents($file, implode("\n", $new_lines) . "\n") === false)
-    {
-        fatal_log("Failed to write updated user database file: $file");
-        return false;
-    }
-    return true;
-}
-
-function list_user_roles($file, $username)
-{
-    if (!file_exists($file))
-    {
-        fatal_log("User database file does not exist: $file");
-        return false;
-    }
-    
-    // Convert username to lowercase for comparison
-    $username = strtolower($username);
-
-    $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    $found = false;
-
-    foreach ($lines as $line)
-    {
-        $parts = explode(':', $line);
-        $current_username = strtolower($parts[0]);
-        if ($current_username === $username)
-        {
-            $found = true;
-            $roles = !empty($parts[3]) ? explode(',', $parts[3]) : [];
-            return $roles;
-        }
-    }
-
-    if (!$found)
-    {
-        fatal_log("User '$username' not found in database.");
-        return false;
-    }
-}
-
-function add_role_to_user($file, $username, $role)
-{
-    if (!file_exists($file))
-    {
-        fatal_log("User database file does not exist: $file");
-        return false;
-    }
-    
-    // Convert username to lowercase for comparison
-    $username = strtolower($username);
-
-    $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    $new_lines = [];
-    $found = false;
-
-    foreach ($lines as $line)
-    {
-        $parts = explode(':', $line);
-        $current_username = strtolower($parts[0]);
-        if ($current_username === $username)
-        {
-            $found = true;
-            $roles = !empty($parts[3]) ? explode(',', $parts[3]) : [];
-            
-            // Check if role already exists
-            if (in_array($role, $roles))
-            {
-                info_log("Role '$role' already assigned to user '$username'.");
-                return true;
-            }
-            
-            // Add the new role
-            $roles[] = $role;
-            $parts[3] = implode(',', $roles);
-            $line = implode(':', $parts);
-        }
-        $new_lines[] = $line;
-    }
-
-    if (!$found)
-    {
-        fatal_log("User '$username' not found in database.");
-        return false;
-    }
-
-    if (file_put_contents($file, implode("\n", $new_lines) . "\n") === false)
-    {
-        fatal_log("Failed to write updated user database file: $file");
-        return false;
-    }
-    return true;
-}
-
-function delete_role_from_user($file, $username, $role)
-{
-    if (!file_exists($file))
-    {
-        fatal_log("User database file does not exist: $file");
-        return false;
-    }
-    
-    // Convert username to lowercase for comparison
-    $username = strtolower($username);
-
-    $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    $new_lines = [];
-    $found = false;
-    $role_found = false;
-
-    foreach ($lines as $line)
-    {
-        $parts = explode(':', $line);
-        $current_username = strtolower($parts[0]);
-        if ($current_username === $username)
-        {
-            $found = true;
-            $roles = !empty($parts[3]) ? explode(',', $parts[3]) : [];
-            
-            // Find and remove the role
-            $key = array_search($role, $roles);
-            if ($key !== false)
-            {
-                unset($roles[$key]);
-                $role_found = true;
-                $parts[3] = implode(',', $roles);
-                $line = implode(':', $parts);
-            }
-            else
-            {
-                fatal_log("Role '$role' not assigned to user '$username'.");
-                return false;
-            }
-        }
-        $new_lines[] = $line;
-    }
-
-    if (!$found)
-    {
-        fatal_log("User '$username' not found in database.");
-        return false;
-    }
-
-    if (!$role_found)
-    {
-        fatal_log("Role '$role' not found for user '$username'.");
-        return false;
-    }
-
-    if (file_put_contents($file, implode("\n", $new_lines) . "\n") === false)
-    {
-        fatal_log("Failed to write updated user database file: $file");
-        return false;
-    }
-    return true;
+    return $passwd_file;
 }
 
 if (php_sapi_name() != "cli")
@@ -500,12 +151,9 @@ switch ($command)
         break;
 
     case 'user-list':
-        $users = get_users_from_file($g_auth_file_db);
-        if ($users === false)
-        {
-            fatal_log("Failed to read user database.");
-            exit(1);
-        }
+        $passwd_file = get_passwd();
+        
+        $users = $passwd_file->GetUsers();
         foreach ($users as $user)
         {
             print("User: " . $user['username'] . " (Enabled: " . ($user['enabled'] ? 'Yes' : 'No') . ", Roles: " . implode(',', $user['roles']) . ")\n");
@@ -528,10 +176,35 @@ switch ($command)
             fatal_log("Password cannot be empty.");
             exit(1);
         }
-        if (add_user_to_file($g_auth_file_db, $username, $password))
+        
+        // Confirm password
+        $confirm_password = read_password("Confirm password: ");
+        if ($password !== $confirm_password)
         {
-            info_log("User '" . $username . "' added successfully.");
-        } else
+            fatal_log("Passwords do not match.");
+            exit(1);
+        }
+        
+        $passwd_file = get_passwd();
+        
+        if ($passwd_file->UserExists($username))
+        {
+            fatal_log("User '$username' already exists in database.");
+            exit(1);
+        }
+        
+        if ($passwd_file->AddUser($username, $password))
+        {
+            if ($passwd_file->Save())
+            {
+                info_log("User '" . $username . "' added successfully.");
+            }
+            else
+            {
+                fatal_log("Failed to save user database.");
+            }
+        }
+        else
         {
             fatal_log("Failed to add user '" . $username . "'.");
         }
@@ -543,13 +216,30 @@ switch ($command)
             fatal_log("Usage: user-del username");
             exit(1);
         }
-        if (delete_user_from_file($g_auth_file_db, $argv[2]))
+        
+        $username = $argv[2];
+        $passwd_file = get_passwd();
+        
+        if (!$passwd_file->UserExists($username))
         {
-            info_log("User '" . $argv[2] . "' deleted successfully.");
+            fatal_log("User '$username' not found in database.");
+            exit(1);
+        }
+        
+        if ($passwd_file->DeleteUser($username))
+        {
+            if ($passwd_file->Save())
+            {
+                info_log("User '" . $username . "' deleted successfully.");
+            }
+            else
+            {
+                fatal_log("Failed to save user database.");
+            }
         }
         else
         {
-            fatal_log("Failed to delete user '" . $argv[2] . "'.");
+            fatal_log("Failed to delete user '" . $username . "'.");
         }
         break;
         
@@ -559,18 +249,35 @@ switch ($command)
             fatal_log("Usage: user-lock username");
             exit(1);
         }
-        $result = lock_user($g_auth_file_db, $argv[2]);
+        
+        $username = $argv[2];
+        $passwd_file = get_passwd();
+        
+        if (!$passwd_file->UserExists($username))
+        {
+            fatal_log("User '$username' not found in database.");
+            exit(1);
+        }
+        
+        $result = $passwd_file->LockUser($username);
         if ($result === true)
         {
-            info_log("User '" . $argv[2] . "' locked successfully.");
+            if ($passwd_file->Save())
+            {
+                info_log("User '" . $username . "' locked successfully.");
+            }
+            else
+            {
+                fatal_log("Failed to save user database.");
+            }
         }
         else if ($result === 'already_locked')
         {
-            // Message already displayed by the function
+            info_log("User '$username' is already locked.");
         }
         else
         {
-            fatal_log("Failed to lock user '" . $argv[2] . "'.");
+            fatal_log("Failed to lock user '" . $username . "'.");
         }
         break;
         
@@ -580,18 +287,35 @@ switch ($command)
             fatal_log("Usage: user-unlock username");
             exit(1);
         }
-        $result = unlock_user($g_auth_file_db, $argv[2]);
+        
+        $username = $argv[2];
+        $passwd_file = get_passwd();
+        
+        if (!$passwd_file->UserExists($username))
+        {
+            fatal_log("User '$username' not found in database.");
+            exit(1);
+        }
+        
+        $result = $passwd_file->UnlockUser($username);
         if ($result === true)
         {
-            info_log("User '" . $argv[2] . "' unlocked successfully.");
+            if ($passwd_file->Save())
+            {
+                info_log("User '" . $username . "' unlocked successfully.");
+            }
+            else
+            {
+                fatal_log("Failed to save user database.");
+            }
         }
         else if ($result === 'already_unlocked')
         {
-            // Message already displayed by the function
+            info_log("User '$username' is already unlocked.");
         }
         else
         {
-            fatal_log("Failed to unlock user '" . $argv[2] . "'.");
+            fatal_log("Failed to unlock user '" . $username . "'.");
         }
         break;
         
@@ -601,17 +325,24 @@ switch ($command)
             fatal_log("Usage: user-role-list username");
             exit(1);
         }
-        $roles = list_user_roles($g_auth_file_db, $argv[2]);
-        if ($roles !== false)
+        
+        $username = $argv[2];
+        $passwd_file = get_passwd();
+        
+        if (!$passwd_file->UserExists($username))
         {
-            if (empty($roles) || (count($roles) === 1 && empty($roles[0])))
-            {
-                info_log("User '" . $argv[2] . "' has no roles assigned.");
-            }
-            else
-            {
-                info_log("Roles for user '" . $argv[2] . "': " . implode(", ", $roles));
-            }
+            fatal_log("User '$username' not found in database.");
+            exit(1);
+        }
+        
+        $roles = $passwd_file->GetUserRoles($username);
+        if (empty($roles) || (count($roles) === 1 && empty($roles[0])))
+        {
+            info_log("User '" . $username . "' has no roles assigned.");
+        }
+        else
+        {
+            info_log("Roles for user '" . $username . "': " . implode(", ", $roles));
         }
         break;
         
@@ -621,13 +352,31 @@ switch ($command)
             fatal_log("Usage: user-role-add username role");
             exit(1);
         }
-        if (add_role_to_user($g_auth_file_db, $argv[2], $argv[3]))
+        
+        $username = $argv[2];
+        $role = $argv[3];
+        $passwd_file = get_passwd();
+        
+        if (!$passwd_file->UserExists($username))
         {
-            info_log("Role '" . $argv[3] . "' added to user '" . $argv[2] . "' successfully.");
+            fatal_log("User '$username' not found in database.");
+            exit(1);
+        }
+        
+        if ($passwd_file->AddRoleToUser($username, $role))
+        {
+            if ($passwd_file->Save())
+            {
+                info_log("Role '" . $role . "' added to user '" . $username . "' successfully.");
+            }
+            else
+            {
+                fatal_log("Failed to save user database.");
+            }
         }
         else
         {
-            fatal_log("Failed to add role '" . $argv[3] . "' to user '" . $argv[2] . "'.");
+            fatal_log("Failed to add role '" . $role . "' to user '" . $username . "'.");
         }
         break;
         
@@ -637,13 +386,80 @@ switch ($command)
             fatal_log("Usage: user-role-del username role");
             exit(1);
         }
-        if (delete_role_from_user($g_auth_file_db, $argv[2], $argv[3]))
+        
+        $username = $argv[2];
+        $role = $argv[3];
+        $passwd_file = get_passwd();
+        
+        if (!$passwd_file->UserExists($username))
         {
-            info_log("Role '" . $argv[3] . "' removed from user '" . $argv[2] . "' successfully.");
+            fatal_log("User '$username' not found in database.");
+            exit(1);
+        }
+        
+        if ($passwd_file->DeleteRoleFromUser($username, $role))
+        {
+            if ($passwd_file->Save())
+            {
+                info_log("Role '" . $role . "' removed from user '" . $username . "' successfully.");
+            }
+            else
+            {
+                fatal_log("Failed to save user database.");
+            }
         }
         else
         {
-            fatal_log("Failed to remove role '" . $argv[3] . "' from user '" . $argv[2] . "'.");
+            fatal_log("Failed to remove role '" . $role . "' from user '" . $username . "'.");
+        }
+        break;
+        
+    case 'user-passwd':
+        if ($argc != 3)
+        {
+            fatal_log("Usage: user-passwd username");
+            exit(1);
+        }
+        
+        $username = $argv[2];
+        $passwd_file = get_passwd();
+        
+        if (!$passwd_file->UserExists($username))
+        {
+            fatal_log("User '$username' not found in database.");
+            exit(1);
+        }
+        
+        // Get new password
+        $new_password = read_password("Enter new password for user '$username': ");
+        if (empty($new_password))
+        {
+            fatal_log("Password cannot be empty.");
+            exit(1);
+        }
+        
+        // Confirm new password
+        $confirm_password = read_password("Confirm new password: ");
+        if ($new_password !== $confirm_password)
+        {
+            fatal_log("Passwords do not match.");
+            exit(1);
+        }
+        
+        if ($passwd_file->ChangePassword($username, $new_password))
+        {
+            if ($passwd_file->Save())
+            {
+                info_log("Password for user '" . $username . "' changed successfully.");
+            }
+            else
+            {
+                fatal_log("Failed to save user database.");
+            }
+        }
+        else
+        {
+            fatal_log("Failed to change password for user '" . $username . "'.");
         }
         break;
 
