@@ -28,6 +28,14 @@ $g_login_failure_reason = "Invalid username or password";
 function RefreshSession()
 {
     global $g_session_timeout, $g_auth_session_name, $g_auth_roles_map;
+
+    $headers = getallheaders();
+    if (isset($headers['Authorization']) && preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches))
+    {
+        $sessionId = $matches[1];
+        session_id($sessionId);
+    }
+
     session_name($g_auth_session_name);
     session_start();
     if (isset($_SESSION["time"]))
