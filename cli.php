@@ -42,7 +42,7 @@ function print_help()
 
     if ($g_auth != "file")
     {
-        print("This CLI tool is only available when using file based authentication to manage user database (g_auth = 'file')");
+        print("This CLI tool is only available when using file based authentication to manage user database (g_auth = 'file')\n");
         exit(1);
     }
 
