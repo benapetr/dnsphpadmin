@@ -246,7 +246,7 @@ function ProcessLogin_File()
         return;
     }
 
-    $username = $_POST["loginUsername"];
+    $username = strtolower($_POST["loginUsername"]);
     $password = $_POST["loginPassword"];
     
     // Check if this user is allowed to login
