@@ -45,3 +45,5 @@ There is also a docker image maintained by Eugene Taylashev
 * Docker Hub: https://hub.docker.com/repository/docker/etaylashev/dnsphpadmin
 
 **IMPORTANT:** DNS tool doesn't use any authentication by default, so everyone with access to web server will have access to DNS tool. If this is just a simple setup for 1 or 2 admins who should have unlimited access to everything, you should setup login via htaccess or similar see https://httpd.apache.org/docs/2.4/howto/auth.html for apache. If you have LDAP (active directory is also LDAP), you can configure this tool to use LDAP authentication as well.
+
+Alternatively since dnsphpadmin 2 there is a "file" auth backend that allows logins via simple passwd-style user database that can be managed using `cli.php` from the CLI.

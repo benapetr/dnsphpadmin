@@ -118,8 +118,13 @@ $g_eid = bin2hex(openssl_random_pseudo_bytes(8));
 $g_session_timeout = 3600;
 
 // Authentication setup - by default, don't provide any authentication mechanism, leave it up to sysadmin
-// Only supported authentication backend right now is LDAP ($g_auth = "ldap";)
+// Only supported authentication backend right now are
+// * LDAP ($g_auth = "ldap";)
+// * File based authentication ($g_auth = "file";) - this is a simple file with usernames and passwords, one per line, in format username:password_hash:enabled(true/false):role1,role2,role3
 $g_auth = NULL;
+
+// Path to file with authentication information, only used if $g_auth = "file"
+$g_auth_file_db = '/etc/dnsphpadmin/passwd';
 
 // Application ID for sessions, if you have multiple separate installations of dns php admin, you should create unique strings for each of them
 // to prevent sharing session information between them, this string is also used as prefix for caching keys and cookies
