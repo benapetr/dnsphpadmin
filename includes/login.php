@@ -287,12 +287,16 @@ function ProcessLogin_File()
     // Login OK
     $_SESSION['user'] = $username;
     $_SESSION['logged_in'] = true;
-    $_SESSION['groups'] = explode(',', $roles);
+    $roles = $user['roles'];
+    if (count($roles) > 0)
+    {
+        // Store roles in global map
+        $g_auth_roles_map[$username] = $roles;
+        $_SESSION['groups'] = $roles; // Also store in session for later use
+    }
     $g_logged_in = true;
     WriteToAuditFile('login_success');
     IncrementStat('login_success');
-    // Store roles in global map
-    $g_auth_roles_map[$username] = $_SESSION['groups'];
 }
 
 function ProcessLogin()

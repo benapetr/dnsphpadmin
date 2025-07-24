@@ -66,7 +66,7 @@ class PasswdFile
                 $username = $parts[0];
                 $password_hash = $parts[1];
                 $enabled = ($parts[2] === 'true');
-                $roles = isset($parts[3]) ? explode(',', $parts[3]) : [];
+                $roles = (!empty($parts[3])) ? explode(',', $parts[3]) : [];
                 
                 // Store both original and lowercase username
                 $this->users[] = [
