@@ -145,7 +145,7 @@ function GetCurrentUserName()
             $trimmed_name = substr($trimmed_name, 0, strrpos($trimmed_name, '_'));
         return $trimmed_name;
     }
-    if ($g_auth === "ldap" && isset($_SESSION["user"]))
+    if (($g_auth === "ldap" || $g_auth === "file") && isset($_SESSION["user"]))
         return $_SESSION["user"];
     if (!isset($_SERVER['REMOTE_USER']))
         return "unknown user";
