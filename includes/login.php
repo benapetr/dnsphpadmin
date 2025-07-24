@@ -28,6 +28,14 @@ $g_login_failure_reason = "Invalid username or password";
 function RefreshSession()
 {
     global $g_session_timeout, $g_auth_session_name, $g_auth_roles_map;
+
+    $headers = getallheaders();
+    if (isset($headers['Authorization']) && preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches))
+    {
+        $sessionId = $matches[1];
+        session_id($sessionId);
+    }
+
     session_name($g_auth_session_name);
     session_start();
     if (isset($_SESSION["time"]))
@@ -54,7 +62,7 @@ function GetLoginInfo()
     {
         $role_info = ' (' . psf_string_auto_trim(implode (', ', $g_auth_roles_map[$_SESSION['user']]), 80, '...') . ')';
     }
-    return '<div class="login_info"><span class="glyphicon glyphicon-user"></span>' . $_SESSION["user"] . $role_info . ' <a href="?logout"><span class="glyphicon glyphicon-log-out" title="logout"></span></a></div>';
+    return '<div class="login_info"><span class="bi bi-person-fill"></span>' . $_SESSION["user"] . $role_info . ' <a href="?logout"><span class="bi bi-box-arrow-right" title="logout"></span></a></div>';
 }
 
 function ProcessLogin_Error($reason)
@@ -155,31 +163,10 @@ function FetchDomainGroups($ldap, $login_name)
     }
 }
 
-function ProcessLogin()
+function ProcessLogin_LDAP()
 {
     global $g_auth, $g_auth_ldap_url, $g_login_failed, $g_auth_allowed_users, $g_auth_fetch_domain_groups, $g_auth_roles_map,
            $g_auth_ldap_dn, $g_auth_domain_prefix, $g_auth_roles, $g_auth_disallow_users_with_no_roles;
-    
-    // We support LDAP at this moment only
-    if ($g_auth != "ldap")
-    {
-        ProcessLogin_Error("Unsupported authentication mechanism");
-        return;
-    }
-
-    // If user is already logged in, do nothing (probably just hit refresh in browser and re-sent POST data)
-    if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true)
-    {
-        DisplayWarning('You are already logged in, if you want to login again as someone else, logout first');
-        return;
-    }
-
-    // Check if we have the credentials
-    if (!isset($_POST["loginUsername"]) || !isset($_POST["loginPassword"]))
-    {
-        ProcessLogin_Error("No credentials provided (loginUsername or loginPassword missing)");
-        return;
-    }
 
     // Security hole - some LDAP servers will allow anonymous bind so empty password = access granted
     // PHP also kind of suck with strlen, so we need to check for multiple return values
@@ -246,6 +233,104 @@ function ProcessLogin()
     }
 }
 
+// This functions uses a custom file based DB located in $g_auth_file_db which is a text file in this format:
+// username:password_hash:enabled(true/false):role1,role2,role3
+function ProcessLogin_File()
+{
+    global $g_auth_file_db, $g_login_failed, $g_auth_allowed_users, $g_auth_roles_map, $g_auth_roles;
+
+    // Check if we have the credentials
+    if (!isset($_POST["loginUsername"]) || !isset($_POST["loginPassword"]))
+    {
+        ProcessLogin_Error("No credentials provided (loginUsername or loginPassword missing)");
+        return;
+    }
+
+    $username = $_POST["loginUsername"];
+    $password = $_POST["loginPassword"];
+    
+    // Check if this user is allowed to login
+    if ($g_auth_allowed_users !== NULL && !in_array($username, $g_auth_allowed_users))
+    {
+        ProcessLogin_Error("This user is not allowed to login to this tool (username not present in config.php)");
+        return;
+    }
+
+    // Read the file and check if this user exists
+    $lines = file($g_auth_file_db, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line)
+    {
+        list($file_username, $file_password_hash, $enabled, $roles) = explode(':', $line);
+        if ($file_username === $username)
+        {
+            // User found
+            if ($enabled !== 'true')
+            {
+                ProcessLogin_Error("This user is disabled");
+                return;
+            }
+            if (password_verify($password, $file_password_hash))
+            {
+                // Login OK
+                $_SESSION['user'] = $username;
+                $_SESSION['logged_in'] = true;
+                $_SESSION['groups'] = explode(',', $roles);
+                $g_logged_in = true;
+                WriteToAuditFile('login_success');
+                IncrementStat('login_success');
+                // Store roles in global map
+                $g_auth_roles_map[$username] = $_SESSION['groups'];
+                return;
+            } else
+            {
+                // Invalid password
+                ProcessLogin_Error("Invalid password for user '$username'");
+                return;
+            }
+        }
+    }
+    
+    // User not found
+    ProcessLogin_Error("Invalid username or password");
+}
+
+function ProcessLogin()
+{
+    global $g_auth, $g_auth_ldap_url, $g_login_failed, $g_auth_allowed_users, $g_auth_fetch_domain_groups, $g_auth_roles_map,
+           $g_auth_ldap_dn, $g_auth_domain_prefix, $g_auth_roles, $g_auth_disallow_users_with_no_roles;
+    
+    // If user is already logged in, do nothing (probably just hit refresh in browser and re-sent POST data)
+    if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true)
+    {
+        DisplayWarning('You are already logged in, if you want to login again as someone else, logout first');
+        return;
+    }
+
+    // Check if we have the credentials
+    if (!isset($_POST["loginUsername"]) || !isset($_POST["loginPassword"]))
+    {
+        ProcessLogin_Error("No credentials provided (loginUsername or loginPassword missing)");
+        return;
+    }
+
+    // LDAP
+    if ($g_auth == "ldap")
+    {
+        ProcessLogin_LDAP();
+        return;
+    }
+
+    // File
+    if ($g_auth == "file")
+    {
+        ProcessLogin_File();
+        return;
+    }
+
+    ProcessLogin_Error("Unsupported authentication mechanism");
+    return;
+}
+
 function RequireLogin()
 {
     global $g_auth, $g_logged_in;
@@ -256,7 +341,7 @@ function RequireLogin()
         return false;
     
     // We support LDAP at this moment only
-    if ($g_auth != "ldap")
+    if ($g_auth != "ldap" && $g_auth != "file")
         Error("Unsupported authentication mechanism");
     
     // Check if we have the credentials

@@ -33,25 +33,25 @@ class TabOverview
         if (array_key_exists('in_transfer', $domain_info) && $domain_info['in_transfer'] === true)
         {
             $is_ok = false;
-            $status .= '<span class="glyphicon glyphicon-refresh" title="In transfer"></span>&nbsp;';
+            $status .= '<span class="bi bi-arrow-repeat" title="In transfer"></span>&nbsp;';
         }
         if (!IsAuthorizedToWrite($domain) || (array_key_exists('read_only', $domain_info) && $domain_info['read_only'] === true))
         {
             $is_ok = false;
-            $status .= '<span class="glyphicon glyphicon-floppy-remove" title="Read-Only"></span>&nbsp;';
+            $status .= '<span class="bi bi-lock" title="Read-Only"></span>&nbsp;';
         }
         if (array_key_exists('maintenance_note', $domain_info))
         {
             $is_ok = false;
-            $status .= '<span class="glyphicon glyphicon-alert" title="' . $domain_info['maintenance_note'] . '"></span>&nbsp;';
+            $status .= '<span class="bi bi-exclamation-triangle" title="' . $domain_info['maintenance_note'] . '"></span>&nbsp;';
         }
         if (array_key_exists('note', $domain_info))
         {
-            $status .= '&nbsp;<span class="glyphicon glyphicon-comment" title="' . $domain_info['note'] . '"></span>&nbsp;';
+            $status .= '&nbsp;<span class="bi bi-chat" title="' . $domain_info['note'] . '"></span>&nbsp;';
         }
     
         if ($is_ok)
-            return '<span class="glyphicon glyphicon-ok" title="OK"></span>' . $status;
+            return '<span class="bi bi-check-circle" title="OK"></span>' . $status;
         return $status;
     }
 
@@ -59,8 +59,9 @@ class TabOverview
     public static function GetSelectForm($parent)
     {
         global $g_domains;
-        $table = new BS_Table($parent);
+        $table = new HtmlTable($parent);
         $table->Headers = [ "Domain name", "Status", "Update server", "Transfer server" ];
+        $table->ClassName = 'table table-bordered table-hover table-sm';
         $table->SetColumnWidth(1, '80px');
         foreach ($g_domains as $domain => $properties)
         {

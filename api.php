@@ -34,15 +34,20 @@ if ($g_debug === true)
 
 date_default_timezone_set($g_timezone);
 
-function print_result($result)
+function print_json($json)
 {
     global $api, $g_api_warnings, $g_api_errors;
-    $json = [ 'result' => $result ];
     if (!empty($g_api_warnings))
         $json['warnings'] = $g_api_warnings;
     if (!empty($g_api_errors))
         $json['errors'] = $g_api_errors;
     $api->PrintObj($json);
+}
+
+function print_result($result)
+{
+    $json = [ 'result' => $result ];
+    print_json($json);
 }
 
 function api_warning($text)
@@ -78,7 +83,8 @@ function api_call_login($source)
         print_login_error($g_login_failure_reason);
         return true;
     }
-    print_success();
+    $result = ['result' => 'success', 'session_id' => session_id()];
+    print_json($result);
     return true;
 }
 
@@ -103,7 +109,8 @@ function api_call_login_token($source)
         print_login_error($g_login_failure_reason);
         return true;
     }
-    print_success();
+    $result = ['result' => 'success', 'session_id' => session_id()];
+    print_json($result);
     return true;
 }
 
@@ -559,14 +566,14 @@ $api->AuthenticationBackend = new PsfCallbackAuth($api);
 $api->AuthenticationBackend->callback_IsAuthenticated = "is_authenticated";
 $api->AuthenticationBackend->callback_IsPrivileged = "is_privileged";
 
-register_api("is_logged", "Returns information whether you are currently logged in, or not", "Returns information whether you are currently logged in or not.",
+register_api("is_logged", "Returns information whether you are currently logged in, or not", "Returns information whether you are currently logged in or not. Every API call that requires login may authenticate using authorization header in format 'Authorization: Bearer <token>'. You will receive this token after successful login.",
              "api_call_is_logged", false, [], [], '?action=is_logged');
-register_api("login", "Logins via username and password", "Login into API via username and password using exactly same login method as index.php. This API can be only accessed via POST method",
+register_api("login", "Logins via username and password", "Login into API via username and password using exactly same login method as index.php. Returns session ID in response, which you can use to authenticate future API calls.",
              "api_call_login", false,
              [ new PsfApiParameter("loginUsername", PsfApiParameterType::String, "Username to login"), new PsfApiParameter("loginPassword", PsfApiParameterType::String, "Password") ],
              [], '?action=login', true);
 register_api("logout", "Logs you out", "Logs you out and clear your session data", "api_call_logout", true, [], [], '?action=logout');
-register_api("login_token", "Logins via token", "Login into API via application token", "api_call_login_token", false,
+register_api("login_token", "Logins via token", "Login into API via application token. Returns session ID in response, which you can use to authenticate future API calls.", "api_call_login_token", false,
              [ new PsfApiParameter("token", PsfApiParameterType::String, "Token that is used to login with") ],
              [], '?action=login_token&token=123ngfshegkernker5', true);
 register_api("list_zones", "List all existing zones that you have access to", "List all existing zones that you have access to.",
