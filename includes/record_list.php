@@ -208,9 +208,10 @@ function GetRecordList($zone)
 function GetRecordListTable($parent, $domain)
 {
     global $g_editable, $g_show_hidden_types, $g_hidden_record_types, $g_hidden_types_present, $g_total_records_count, $g_hidden_records_count;
-    $table = new BS_Table($parent);
+    $table = new HtmlTable($parent);
     $table->Condensed = true;
     $table->Headers = [ "Record", "TTL", "Scope", "Type", "Value", "Options" ];
+    $table->ClassName = 'table table-bordered table-hover table-sm';
     $table->SetColumnWidth(2, '80px'); // Scope
     $table->SetColumnWidth(3, '80px'); // Type
     $table->SetColumnWidth(5, '80px'); // Options

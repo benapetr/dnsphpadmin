@@ -85,7 +85,6 @@ code {
   padding: 20px;                /* Space inside the border */
   width: 640px;                 /* Optional: fixed width */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow */
-  background-color: #fff;       /* Optional: white background */
 }
 
 .login-page img {
@@ -100,4 +99,44 @@ code {
 
 .value {
   white-space:pre-wrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  a {
+    color: #9ecbff;
+  }
+  
+  a:hover {
+    color: #c5e1ff;
+  }
+
+  .nav-tabs a {
+    text-decoration: none;
+    color: #9ecbff;
+    font-size: 1rem;
+  }
+
+  .nav-tabs a:hover {
+    text-decoration: none;
+    color: #c5e1ff;
+  }
+
+  pre {
+    background-color: #1e1e1e;
+    border: 1px solid #3a3b3c;
+    color: #e0e0e0;
+  }
+
+  .footer {
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+  }
+
+  .login-page img {
+    filter: invert(1);
+  }
+
+  .header img {
+    filter: invert(1);
+  }
 }

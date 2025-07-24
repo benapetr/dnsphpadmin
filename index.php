@@ -27,6 +27,7 @@ require_once("includes/tab_manage.php");
 require_once("includes/tab_edit.php");
 require_once("includes/tab_batch.php");
 require_once("includes/login.php");
+require_once("includes/settings.php");
 
 if ($g_debug === true)
     psf_php_enable_debug();
@@ -70,6 +71,7 @@ bootstrap_init($website, 5);
 
 $website->ExternalCss[] =   $g_bootstrap_icons;
 $website->ExternalCss[] = 'style.css';
+$website->ExternalJs[] = 'js/darkmode.js';
 
 // Create a bootstrap fluid containers, one for whole website and one for errors, which are dynamically inserted to error container as they are generated
 $fc = new BS_FluidContainer($website);
@@ -101,6 +103,8 @@ if (isset($_GET['domain']))
     $g_selected_domain = $_GET['domain'];
 else if (isset($_POST['zone']))
     $g_selected_domain = $_POST['zone'];
+
+$website->HtmlTagExtras .= ' data-bs-theme="' . Settings::DarkMode() . '"';
 
 // Check if login is needed
 if (RequireLogin())
