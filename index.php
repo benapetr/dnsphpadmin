@@ -69,8 +69,8 @@ $website->Style->items["td"]["max-width"] = "280px";
 bootstrap_init($website, 5);
 
 $website->ExternalCss[] =   $g_bootstrap_icons;
-$website->ExternalCss[] = 'style.css';
-$website->ExternalJs[] = 'js/darkmode.js';
+$website->ExternalCss[] = 'style.css?v=' . G_DNSTOOL_VERSION;
+$website->ExternalJs[] = 'js/darkmode.js?v=' . G_DNSTOOL_VERSION;
 
 // Create a bootstrap fluid containers, one for whole website and one for errors, which are dynamically inserted to error container as they are generated
 $fc = new BS_FluidContainer($website);
