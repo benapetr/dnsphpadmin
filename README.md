@@ -24,10 +24,10 @@ Then, download release tarball into any folder which is configured a http root o
 
 ```
 cd /tmp
-wget https://github.com/benapetr/dnsphpadmin/releases/download/1.10.0/dnsphpadmin_1.10.0.tar.gz
+wget https://github.com/benapetr/dnsphpadmin/releases/download/2.0.1/dnsphpadmin_2.0.1.tar.gz
 cd /var/www/html
-tar -xf /tmp/dnsphpadmin_1.10.0.tar.gz
-mv dnsphpadmin_1.10.0 dnsphpadmin
+tar -xf /tmp/dnsphpadmin_2.0.1.tar.gz
+mv dnsphpadmin_2.0.1 dnsphpadmin
 cd dnsphpadmin
 
 # Now copy the default config file
