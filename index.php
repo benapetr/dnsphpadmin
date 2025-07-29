@@ -39,7 +39,7 @@ if ($g_use_local_bootstrap)
 {
     $psf_bootstrap_js_url = 'bootstrap-5.3.7/dist/js/bootstrap.bundle.min.js';
     $psf_bootstrap_css_url = 'bootstrap-5.3.7/dist/css/bootstrap.min.css';
-    $g_bootstrap_icons = 'bootstrap-icons-1.11.3/font/bootstrap-icons.css';
+    $g_bootstrap_icons = 'bootstrap-icons-1.13.1/font/bootstrap-icons.css';
 } else
 {
     $psf_bootstrap_js_url = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js';
