@@ -143,6 +143,8 @@ class TabEdit
         $form->Method = FormMethod::Post;
         $layout = new HtmlTable($form);
         $layout->BorderSize = 0;
+        $layout->ColWidth[2] = '68px';
+        $layout->ColWidth[3] = '100px';
         $layout->ColWidth[4] = '40%';
         $layout->ClassName = 'table w-100';
         $layout->Headers = [ "Record", "Zone", "TTL", "Type", "Value" ];

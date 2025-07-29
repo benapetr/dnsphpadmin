@@ -101,6 +101,20 @@ code {
   white-space:pre-wrap;
 }
 
+input.form-control,
+select.form-select,
+textarea.form-control {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.25rem;
+  height: auto;
+}
+
+.table td,
+.table th {
+  padding: 0.25rem 0.25rem;
+  vertical-align: middle;
+}
+
 @media (prefers-color-scheme: dark) {
   a {
     color: #9ecbff;
