@@ -240,3 +240,6 @@ $g_caching_stats_enabled = false;
 
 // Per-user configuration location
 $g_user_config_prefix = null;
+
+// If enabled, footer will be displayed at the bottom of each page
+$g_display_footer = true;
