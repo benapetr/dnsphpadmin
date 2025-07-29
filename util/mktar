@@ -45,4 +45,7 @@ cp -r bootstrap-icons-1.13.1 "/tmp/dnsphpadmin_$version/bootstrap-icons-1.13.1/f
 cd /tmp || exit 1
 tar -zcf "/tmp/dnsphpadmin_$version.tar.gz" "dnsphpadmin_$version"
 rm -rf "/tmp/dnsphpadmin_$version"
+rm -rf "$temp"
+
 echo "/tmp/dnsphpadmin_$version.tar.gz created"
+
