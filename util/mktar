@@ -2,6 +2,9 @@
 
 #version=`git tag | tail -1`
 version=`git for-each-ref --sort=creatordate --format '%(refname) %(creatordate)' refs/tags | tail -1 | sed 's/ .*//' | sed 's/..........//'`
+temp=`mktemp -d`
+
+echo "Temp: $temp"
 
 if [ ! -f 'index.php' ]; then
     echo "You have to run this from root folder of project"
@@ -25,6 +28,19 @@ rm -f "/tmp/dnsphpadmin_$version/.gitmodules"
 rm -rf "/tmp/dnsphpadmin_$version/util"
 rm -rf "/tmp/dnsphpadmin_$version/examples"
 rm -f "/tmp/dnsphpadmin_$version/.travis.yml"
+
+# Download 3rd assets so that we can serve them locally
+cd "$temp" || exit 1
+wget https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js
+wget https://github.com/twbs/bootstrap/releases/download/v5.3.7/bootstrap-5.3.7-dist.zip
+wget https://github.com/twbs/icons/releases/download/v1.13.1/bootstrap-icons-1.13.1.zip
+unzip bootstrap-5.3.7-dist.zip
+unzip bootstrap-icons-1.13.1.zip
+cp jquery.min.js "/tmp/dnsphpadmin_$version/jquery-3.7.1.min.js"
+mkdir "/tmp/dnsphpadmin_$version/bootstrap-5.3.7"
+cp -r bootstrap-5.3.7-dist "/tmp/dnsphpadmin_$version/bootstrap-5.3.7/dist"
+mkdir "/tmp/dnsphpadmin_$version/bootstrap-icons-1.13.1"
+cp -r bootstrap-icons-1.13.1 "/tmp/dnsphpadmin_$version/bootstrap-icons-1.13.1/font"
 
 cd /tmp || exit 1
 tar -zcf "/tmp/dnsphpadmin_$version.tar.gz" "dnsphpadmin_$version"
