@@ -48,7 +48,8 @@ $g_default_ttl = 3600;
 
 // Path to executable of dig, you can also use this to specify some dig options for example:
 // $g_dig = '/usr/bin/dig +tcp +time=10';
-$g_dig = '/usr/bin/dig';
+// Note: +noidnout is necessary if you use IDN symbols in domains, dnsphpadmin expects ASCII output
+$g_dig = '/usr/bin/dig +noidnout';
 
 // Path to executable of nsupdate
 $g_nsupdate = '/usr/bin/nsupdate';
