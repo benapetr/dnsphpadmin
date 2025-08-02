@@ -52,9 +52,8 @@ class IDNConverter
      */
     public static function toUTF8($domain)
     {
-        if (empty($domain)) {
+        if (empty($domain))
             return $domain;
-        }
         
         // If no IDN functions, return unchanged
         if (!self::hasIntlSupport())
@@ -67,10 +66,11 @@ class IDNConverter
         if (strpos($domain, 'xn--') !== false)
         {
             // IDNA_DEFAULT | IDNA_USE_STD3_RULES options
-            $result = idn_to_utf8($domain, 0, INTL_IDNA_VARIANT_UTS46);
+            $result = idn_to_utf8($domain, IDNA_NONTRANSITIONAL_TO_UNICODE, INTL_IDNA_VARIANT_UTS46);
             
             // If conversion fails, return the original string
-            if ($result === false) {
+            if ($result === false)
+            {
                 Debug("Failed to convert IDN domain to UTF-8: $domain");
                 return $domain;
             }
@@ -105,7 +105,7 @@ class IDNConverter
         if (preg_match('/[^\x20-\x7E]/', $domain))
         {
             // IDNA_DEFAULT | IDNA_USE_STD3_RULES options
-            $result = idn_to_ascii($domain, 0, INTL_IDNA_VARIANT_UTS46);
+            $result = idn_to_ascii($domain, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
             
             // If conversion fails, return the original string
             if ($result === false)
@@ -138,7 +138,7 @@ class IDNConverter
             return $fqdn;
         
         // First try to convert the whole FQDN at once (more reliable for complex domains)
-        $result = idn_to_utf8($fqdn, 0, INTL_IDNA_VARIANT_UTS46);
+        $result = idn_to_utf8($fqdn, IDNA_NONTRANSITIONAL_TO_UNICODE, INTL_IDNA_VARIANT_UTS46);
         if ($result !== false)
             return $result;
         
@@ -182,7 +182,7 @@ class IDNConverter
         }
         
         // First try to convert the whole FQDN at once (more reliable for complex domains)
-        $result = idn_to_ascii($fqdn, 0, INTL_IDNA_VARIANT_UTS46);
+        $result = idn_to_ascii($fqdn, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
         if ($result !== false)
             return $result;
         

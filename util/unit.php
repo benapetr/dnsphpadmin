@@ -81,6 +81,8 @@ $ut->Evaluate('Validator - invalid #10', IsValidHostName('/x.test.org') === fals
 // IDN Conversion Tests
 //$ut->BeginTest('IDN Conversion Functions');
 
+$g_enable_idn = true;
+
 // Reset the static variable to force re-evaluation
 $reflection = new ReflectionClass('IDNConverter');
 $property = $reflection->getProperty('has_intl');
