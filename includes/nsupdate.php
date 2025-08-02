@@ -16,6 +16,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 require_once("debug.php");
 require_once("validator.php");
+require_once("idn.php");
 
 function nsupdate($input, $tsig_override = NULL, $tsig_override_key = NULL, $zone_name = NULL)
 {
@@ -31,8 +32,11 @@ function nsupdate($input, $tsig_override = NULL, $tsig_override_key = NULL, $zon
     if ($tsig_override_key !== NULL)
         $tsig_key = $tsig_override_key;
 
-    if ($zone_name !== NULL)
-        $input = 'zone ' . $zone_name . "\n" . $input;
+    // Convert zone name to ASCII if it's in UTF-8 format
+    if ($zone_name !== NULL) {
+        $ascii_zone = IDNConverter::toASCII($zone_name);
+        $input = 'zone ' . $ascii_zone . "\n" . $input;
+    }
 
     if ($using_tsig)
         $input = "key " . $tsig_key . "\n" . $input;

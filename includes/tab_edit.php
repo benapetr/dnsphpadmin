@@ -19,6 +19,7 @@ require_once("debug.php");
 require_once("validator.php");
 require_once("modify.php");
 require_once("zones.php");
+require_once("idn.php");
 
 class TabEdit
 {
@@ -262,7 +263,7 @@ class TabEdit
 
     public static function GetEditForm($parent)
     {
-        global $g_selected_domain;
+        global $g_selected_domain, $g_enable_idn;
         $k = $_GET["key"];
         $suffix = $g_selected_domain;
         if (psf_string_endsWith($k, $suffix))
@@ -271,6 +272,23 @@ class TabEdit
             $k = substr($k, 0, strlen($k) - strlen($suffix) - 1);
         while (psf_string_endsWith($k, "."))
             $k = substr($k, 0, strlen($k) - 1);
+
+        // Convert key and value to UTF-8 for display
+        if ($g_enable_idn)
+        {
+            $k = IDNConverter::fqdnToUTF8($k);
+            $value = $_GET["value"];
+            
+            // Convert domain names in value field for certain record types
+            if (in_array($_GET["type"], array('CNAME', 'NS', 'MX', 'PTR')))
+            {
+                if ($_GET["type"] == 'MX' && preg_match('/^(\d+)\s+(.+)$/', $value, $matches))
+                    $value = $matches[1] . ' ' . IDNConverter::fqdnToUTF8($matches[2]);
+                else
+                    $value = IDNConverter::fqdnToUTF8($value);
+                return self::GetInsertForm($parent, true, $k, $_GET["ttl"], $_GET["type"], $value);
+            }
+        }
 
         return self::GetInsertForm($parent, true, $k, $_GET["ttl"], $_GET["type"], $_GET["value"]);
     }

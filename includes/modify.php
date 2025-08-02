@@ -21,6 +21,7 @@ require_once("debug.php");
 require_once("nsupdate.php");
 require_once("validator.php");
 require_once("zones.php");
+require_once("idn.php");
 
 //! Wrapper around nsupdate from nsupdate.php that checks if there are custom TSIG overrides for given domain
 function ProcessNSUpdateForDomain($input, $domain)
@@ -45,6 +46,8 @@ function ProcessNSUpdateForDomain($input, $domain)
 
 function ProcessInsertFromPOST($zone, $record, $value, $type, $ttl)
 {
+    global $g_enable_idn;
+
     if (psf_string_is_null_or_empty($record) && psf_string_is_null_or_empty($zone))
         Error("Both record and zone can't be empty");
 
@@ -56,6 +59,26 @@ function ProcessInsertFromPOST($zone, $record, $value, $type, $ttl)
             $fqdn .= '.' . $zone;
         else
             $fqdn = $zone;
+    }
+
+    if ($g_enable_idn)
+    {
+        // Convert UTF-8 domain to ASCII for DNS operations
+        $fqdn = IDNConverter::fqdnToASCII($fqdn);
+        
+        // For certain record types, we need to convert domain names in the value field too
+        if (in_array($type, array('CNAME', 'NS', 'MX', 'PTR')))
+        {
+            if ($type == 'MX' && preg_match('/^(\d+)\s+(.+)$/', $value, $matches))
+            {
+                // MX record with priority
+                $value = $matches[1] . ' ' . IDNConverter::fqdnToASCII($matches[2]);
+            } else if ($type != 'TXT')
+            {
+                // Don't convert TXT records as they may contain arbitrary text
+                $value = IDNConverter::fqdnToASCII($value);
+            }
+        }
     }
 
     return "update add " . $fqdn . " " . $ttl . " " . $type . " " . $value . "\n";

@@ -18,6 +18,7 @@ require_once("nsupdate.php");
 require_once("audit.php");
 require_once("common.php");
 require_once("zones.php");
+require_once("idn.php");
 
 // If true hidden record types will be shown
 $g_show_hidden_types = false;
@@ -207,7 +208,7 @@ function GetRecordList($zone)
 
 function GetRecordListTable($parent, $domain)
 {
-    global $g_editable, $g_show_hidden_types, $g_hidden_record_types, $g_hidden_types_present, $g_total_records_count, $g_hidden_records_count;
+    global $g_editable, $g_show_hidden_types, $g_hidden_record_types, $g_hidden_types_present, $g_total_records_count, $g_hidden_records_count, $g_enable_idn;
     $table = new HtmlTable($parent);
     $table->Condensed = true;
     $table->Headers = [ "Record", "TTL", "Scope", "Type", "Value", "Options" ];
@@ -230,25 +231,60 @@ function GetRecordListTable($parent, $domain)
                 continue;
             }
         }
+        
+        // Convert record name to UTF-8 for display
+        if ($g_enable_idn)
+        {
+            $record[0] = IDNConverter::fqdnToUTF8($record[0]);
+            // Also convert any domain names in the value field for certain record types
+            if (in_array($record[3], array('CNAME', 'NS', 'MX', 'PTR')))
+            {
+                // For MX records, we need to preserve the priority number
+                if ($record[3] == 'MX' && preg_match('/^(\d+)\s+(.+)$/', $record[4], $matches))
+                    $record[4] = $matches[1] . ' ' . IDNConverter::fqdnToUTF8($matches[2]);
+                else
+                    $record[4] = IDNConverter::fqdnToUTF8($record[4]);
+
+            }
+        }
+        
         if (!$is_editable || !in_array($record[3], $g_editable))
         {
             $record[] = '';
         } else
         {
-            $delete_record = '<a href="index.php?action=manage&domain=' . $domain . '&delete=' .  urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
+            // We need to use the original ASCII version in the URLs
+            $ascii_record0 = $record[0];
+            $ascii_record4 = $record[4];
+            if ($g_enable_idn)
+            {
+                $ascii_record0 = IDNConverter::fqdnToASCII($record[0]);
+                if (in_array($record[3], array('CNAME', 'NS', 'MX', 'PTR')))
+                {
+                    if ($record[3] == 'MX' && preg_match('/^(\d+)\s+(.+)$/', $record[4], $matches))
+                        $ascii_record4 = $matches[1] . ' ' . IDNConverter::fqdnToASCII($matches[2]);
+                    else
+                        $ascii_record4 = IDNConverter::fqdnToASCII($record[4]);
+                } else
+                {
+                    $ascii_record4 = $record[4];
+                }
+            }
+            
+            $delete_record = '<a href="index.php?action=manage&domain=' . $domain . '&delete=' .  urlencode($ascii_record0 . " " . $record[1] . " " . $record[3] . " " . $ascii_record4) .
                              '" onclick="return confirm(\'Are you sure you want to delete ' . $record[0] . '?\')"><span class="bi bi-trash" title="Delete"></span></a>';
             $delete_record_with_ptr = '';
             if ($has_ptr && $record[3] == 'A')
             {
                 // Optional button to delete record together with PTR record, show only if there are PTR zones in cfg
-                $delete_record_with_ptr = '<a href="index.php?action=manage&ptr=true&key=' . urlencode($record[0]) . '&value=' . urlencode($record[4]) . '&type=' . $record[3] . '&domain=' . $domain .
-                                          '&delete=' .  urlencode($record[0] . ' ' . $record[1] . " " . $record[3] . " " . $record[4]) .
+                $delete_record_with_ptr = '<a href="index.php?action=manage&ptr=true&key=' . urlencode($ascii_record0) . '&value=' . urlencode($ascii_record4) . '&type=' . $record[3] . '&domain=' . $domain .
+                                          '&delete=' .  urlencode($ascii_record0 . ' ' . $record[1] . " " . $record[3] . " " . $ascii_record4) .
                                           '" onclick="return confirm(\'Are you sure you want to delete ' . $record[0] . '?\')"><span style="color: #ff0000;" class="bi bi-trash" title="Delete together with associated PTR record (if any exist)"></span></a>';
             }
             $large_space = '&nbsp;&nbsp;';
             $record[] = $delete_record . $large_space . '<a href="index.php?action=edit&domain=' . $domain . '&key=' .
-                        urlencode($record[0]) . "&ttl=" . $record[1] . "&type=" . $record[3] . "&value=" . urlencode($record[4]) .
-                        "&old=" . urlencode($record[0] . " " . $record[1] . " " . $record[3] . " " . $record[4]) .
+                        urlencode($ascii_record0) . "&ttl=" . $record[1] . "&type=" . $record[3] . "&value=" . urlencode($ascii_record4) .
+                        "&old=" . urlencode($ascii_record0 . " " . $record[1] . " " . $record[3] . " " . $ascii_record4) .
                         '"><span title="Edit" class="bi bi-pencil"></span></a>' . $large_space . $delete_record_with_ptr;
         }
         $record[4] = '<span class="value">' . $record[4] . '</span>';

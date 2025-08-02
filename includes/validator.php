@@ -16,7 +16,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 
 function IsValidHostName($fqdn)
 {
-    global $g_strict_hostname_checks;
+    global $g_strict_hostname_checks, $g_enable_idn;
     // Few extra checks to prevent shell escaping
     if (!ShellEscapeCheck($fqdn))
         return false;
@@ -35,15 +35,42 @@ function IsValidHostName($fqdn)
         return false;
     if (psf_string_startsWith($fqdn, "-"))
         return false;
-    if ($g_strict_hostname_checks && preg_match('/[^0-9\*a-zA-Z_\-\.]/', $fqdn))
-        return false;
+    
+    // If strict hostname checks are enabled, we need to convert UTF-8 to ASCII first
+    if ($g_strict_hostname_checks)
+    {
+        // Check if this is UTF-8
+        if (preg_match('/[^\x20-\x7E]/', $fqdn))
+        {
+            if ($g_enable_idn)
+            {
+                // Convert to ASCII first and then check
+                $ascii_fqdn = IDNConverter::fqdnToASCII($fqdn);
+                return preg_match('/[^0-9\*a-zA-Z_\-\.]/', $ascii_fqdn) ? false : true;
+            }
+        }
+        // If no UTF-8 characters or converter not available, do the normal check
+        if (preg_match('/[^0-9\*a-zA-Z_\-\.]/', $fqdn))
+            return false;
+    }
     return true;
 }
 
 function SanitizeHostname($hostname)
 {
-    // Right now we do only trim, but maybe in future we will do more, so let's keep it in here
-    return trim($hostname);
+    global $g_enable_idn;
+    // First trim whitespace
+    $hostname = trim($hostname);
+    
+    // Convert UTF-8 hostname to ASCII punycode for DNS operations
+    // This is needed because nsupdate doesn't support IDN/UTF-8 directly
+    if ($g_enable_idn)
+    {
+        $ascii_hostname = IDNConverter::fqdnToASCII($hostname);
+        return $ascii_hostname;
+    }
+    
+    return $hostname;
 }
 
 function NSupdateEscapeCheck($string)
