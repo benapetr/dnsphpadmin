@@ -168,7 +168,10 @@ switch ($command)
         $users = $passwd_file->GetUsers();
         foreach ($users as $user)
         {
-            print("User: " . $user['username'] . " (Enabled: " . ($user['enabled'] ? 'Yes' : 'No') . ", Roles: " . implode(',', $user['roles']) . ")\n");
+            $roles = "No roles";
+            if (!empty($user['roles']))
+                $roles = implode(',', $user['roles']);
+            print("User: " . $user['username'] . " (Enabled: " . ($user['enabled'] ? 'Yes' : 'No') . ", Roles: ${roles})\n");
         }
         break;
 
