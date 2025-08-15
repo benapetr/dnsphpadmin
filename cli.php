@@ -42,7 +42,8 @@ function read_password($prompt = "Enter password: ")
     echo $prompt;
     
     // Check if we're on Windows or Unix
-    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
+    {
         // Windows approach using COM object if available
         if (class_exists('COM'))
         {
@@ -111,14 +112,25 @@ function print_help()
            "\n");
 }
 
-function get_passwd()
+function get_passwd($create = false)
 {
     global $g_auth_file_db;
 
     if (!file_exists($g_auth_file_db))
     {
-        fatal_log("User database file does not exist: " . $g_auth_file_db);
-        exit(1);
+        if ($create)
+        {
+            // Attempt to create an empty file
+            if (false === @touch($g_auth_file_db))
+            {
+                fatal_log("Failed to create user database file: " . $g_auth_file_db);
+                exit(1);
+            }
+        } else
+        {
+            fatal_log("User database file does not exist: " . $g_auth_file_db);
+            exit(1);
+        }
     }
 
     $passwd_file = new PasswdFile($g_auth_file_db);
@@ -185,7 +197,7 @@ switch ($command)
             exit(1);
         }
         
-        $passwd_file = get_passwd();
+        $passwd_file = get_passwd(true);
         
         if ($passwd_file->UserExists($username))
         {
