@@ -10,6 +10,7 @@ require_once (dirname(__FILE__) . "/../includes/record_list.php");
 require_once (dirname(__FILE__) . "/../includes/validator.php");
 require_once (dirname(__FILE__) . "/../includes/zones.php");
 require_once (dirname(__FILE__) . "/../includes/idn.php");
+require_once (dirname(__FILE__) . "/../includes/modify.php");
 require_once (dirname(__FILE__) . "/testdata/idn_test_domains.php");
 
 function CheckZone($data)
@@ -77,6 +78,31 @@ $ut->Evaluate('Validator - invalid #7', IsValidHostName("'google.com") === false
 $ut->Evaluate('Validator - invalid #8', IsValidHostName("\"google.com") === false);
 $ut->Evaluate('Validator - invalid #9', IsValidHostName('$test.org') === false);
 $ut->Evaluate('Validator - invalid #10', IsValidHostName('/x.test.org') === false);
+
+$g_auto_split_long_txt = true;
+$long_txt = str_repeat('a', 256);
+$quoted_long_txt = '"' . $long_txt . '"';
+$split_long_txt = '"' . str_repeat('a', 255) . '" "a"';
+
+$ut->Evaluate('TXT auto-split helper splits unquoted 256-char TXT',
+    SplitLongTXTValue($long_txt) === $split_long_txt);
+$ut->Evaluate('TXT auto-split helper splits quoted 256-char TXT',
+    SplitLongTXTValue($quoted_long_txt) === $split_long_txt);
+$ut->Evaluate('TXT auto-split helper keeps pre-split TXT unchanged',
+    SplitLongTXTValue($split_long_txt) === $split_long_txt);
+$ut->Evaluate('TXT insert command auto-splits long TXT by default',
+    ProcessInsertFromPOST('example.com', 'mail', $long_txt, 'TXT', 3600) ===
+        'update add mail.example.com 3600 TXT ' . $split_long_txt . "\n");
+
+$g_auto_split_long_txt = false;
+$ut->Evaluate('TXT insert command keeps long TXT unchanged when auto-split is disabled',
+    ProcessInsertFromPOST('example.com', 'mail', $long_txt, 'TXT', 3600) ===
+        'update add mail.example.com 3600 TXT ' . $long_txt . "\n");
+
+$g_auto_split_long_txt = true;
+$ut->Evaluate('Non-TXT records are not modified by TXT auto-split feature',
+    ProcessInsertFromPOST('example.com', 'mail', $long_txt, 'SPF', 3600) ===
+        'update add mail.example.com 3600 SPF ' . $long_txt . "\n");
 
 // IDN Conversion Tests
 //$ut->BeginTest('IDN Conversion Functions');

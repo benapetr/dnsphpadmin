@@ -44,9 +44,35 @@ function ProcessNSUpdateForDomain($input, $domain)
     return nsupdate($input, $tsig, $tsig_key, $zone_name);
 }
 
+function SplitLongTXTValue($value)
+{
+    $trimmed = trim($value);
+    if ($trimmed === '')
+        return $value;
+
+    // Keep already split quoted TXT strings unchanged.
+    if (preg_match('/^"(?:[^"\\\\]|\\\\.)*"(?:\s+"(?:[^"\\\\]|\\\\.)*")+$/', $trimmed))
+        return $value;
+
+    $text = $trimmed;
+    if (preg_match('/^"(.*)"$/s', $trimmed, $matches))
+        $text = $matches[1];
+    else if (strpos($trimmed, '"') !== false)
+        return $value;
+
+    if (strlen($text) <= 255)
+        return $value;
+
+    $chunks = str_split($text, 255);
+    foreach ($chunks as &$chunk)
+        $chunk = '"' . $chunk . '"';
+    unset($chunk);
+    return implode(' ', $chunks);
+}
+
 function ProcessInsertFromPOST($zone, $record, $value, $type, $ttl)
 {
-    global $g_enable_idn;
+    global $g_enable_idn, $g_auto_split_long_txt;
 
     if (psf_string_is_null_or_empty($record) && psf_string_is_null_or_empty($zone))
         Error("Both record and zone can't be empty");
@@ -80,6 +106,9 @@ function ProcessInsertFromPOST($zone, $record, $value, $type, $ttl)
             }
         }
     }
+
+    if ($type == 'TXT' && $g_auto_split_long_txt)
+        $value = SplitLongTXTValue($value);
 
     return "update add " . $fqdn . " " . $ttl . " " . $type . " " . $value . "\n";
 }

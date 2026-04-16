@@ -246,7 +246,7 @@ class TabEdit
         $record_types->Headers = [ 'Type', 'Description' ];
         $record_types->AppendRow( [ 'A', 'IPv4 record, value of this record is IPv4 address, for example 1.2.3.4' ]);
         $record_types->AppendRow( [ 'AAAA', 'IPv6 record, value of this record is IPv6 address, for example ::1' ]);
-        $record_types->AppendRow( [ 'TXT', 'Text record, must be max 255 characters in length, otherwise you need to split it to multiple parts within quotes ("), each part max. 255 characters in size' ]);
+        $record_types->AppendRow( [ 'TXT', 'Text record. Long values are automatically split into multiple quoted 255-character parts by default; this can be disabled via <code>$g_auto_split_long_txt</code>.' ]);
         $record_types->AppendRow( [ 'MX', 'Mail server record, value consist of two parts, priority and hostname of mail server, for example: <code>10 mail.domain.org</code>']);
         $record_types->AppendRow( [ 'NS', 'Delegates a record to another name server. If used on zone apex it defines authoritative name servers for a zone.']);
         $record_types->AppendRow( [ 'SSHFP', 'SSH fingerprint, used by SSH client when verifying that target server has authentic fingerprint']);

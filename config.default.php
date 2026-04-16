@@ -62,6 +62,9 @@ $g_strict_hostname_checks = true;
 // WARNING - this is experimental feature
 $g_enable_idn = false;
 
+// Automatically split long TXT records into multiple quoted 255-byte chunks before sending them to nsupdate
+$g_auto_split_long_txt = true;
+
 // If set to value higher than 0, dig will be retried for N times, this is useful on broken networks with heavy packet loss
 $g_retry_on_error = 2;
 
