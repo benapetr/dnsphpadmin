@@ -81,6 +81,22 @@ function dig($parameters)
     return shell_exec($g_dig . " " . $parameters);
 }
 
+function dig_args($parameters)
+{
+    global $g_dig;
+    $escaped_parameters = [];
+    foreach ($parameters as $parameter)
+    {
+        if (!ShellEscapeCheck($parameter))
+            die('FATAL: Invalid shell parameter: ' . $parameter);
+        $escaped_parameters[] = escapeshellarg($parameter);
+    }
+
+    $command = $g_dig . " " . implode(" ", $escaped_parameters);
+    Debug("shell_exec: " . $command);
+    return shell_exec($command);
+}
+
 // Convert standard DNS list of records as returned by transfer to PHP array
 function raw_zone_to_array($data)
 {
@@ -118,7 +134,7 @@ function get_zone_data($zone)
 {
     global $g_domains;
     $zone_servers = $g_domains[$zone];
-    $data = dig("axfr " . $zone . " @" . $zone_servers["transfer_server"]);
+    $data = dig_args(["axfr", $zone, "@" . $zone_servers["transfer_server"]]);
     return raw_zone_to_array($data);
 }
 
@@ -126,7 +142,7 @@ function get_zone_soa($zone)
 {
     global $g_domains;
     $zone_servers = $g_domains[$zone];
-    $data = dig("SOA " . $zone . " @" . $zone_servers["transfer_server"]);
+    $data = dig_args(["SOA", $zone, "@" . $zone_servers["transfer_server"]]);
     return raw_zone_to_array($data);
 }
 
@@ -134,6 +150,6 @@ function get_records_from_zone($fqdn, $type, $zone)
 {
     global $g_domains;
     $zone_servers = $g_domains[$zone];
-    $data = dig('+nocomments +noauthority +noadditional ' . $type . " '" . $fqdn . "' @" . $zone_servers["transfer_server"]);
+    $data = dig_args(["+nocomments", "+noauthority", "+noadditional", $type, $fqdn, "@" . $zone_servers["transfer_server"]]);
     return raw_zone_to_array($data);
 }

@@ -78,6 +78,32 @@ $ut->Evaluate('Validator - invalid #7', IsValidHostName("'google.com") === false
 $ut->Evaluate('Validator - invalid #8', IsValidHostName("\"google.com") === false);
 $ut->Evaluate('Validator - invalid #9', IsValidHostName('$test.org') === false);
 $ut->Evaluate('Validator - invalid #10', IsValidHostName('/x.test.org') === false);
+$ut->Evaluate('Shell escape check allows zone transfer dig parameters',
+    ShellEscapeCheck('axfr example.com @localhost') === true);
+$ut->Evaluate('Shell escape check allows record lookup dig parameters',
+    ShellEscapeCheck('+nocomments +noauthority +noadditional A test.example.com @localhost') === true);
+
+$dangerous_shell_parameters = [
+    'axfr example.com; id @localhost',
+    'axfr example.com && id @localhost',
+    'axfr example.com | id @localhost',
+    'axfr example.com `id` @localhost',
+    'axfr example.com $(id) @localhost',
+    'axfr example.com > /tmp/out @localhost',
+    'axfr example.com < /etc/passwd @localhost',
+    'axfr example.com {id} @localhost',
+    "axfr example.com\nid @localhost",
+    "axfr example.com\rid @localhost",
+    "axfr 'example.com' @localhost",
+    'axfr "example.com" @localhost',
+    'axfr example.com \\ @localhost',
+];
+
+foreach ($dangerous_shell_parameters as $index => $parameters)
+{
+    $ut->Evaluate('Shell escape check blocks dangerous dig parameters #' . ($index + 1),
+        ShellEscapeCheck($parameters) === false);
+}
 
 $g_auto_split_long_txt = true;
 $long_txt = str_repeat('a', 256);
