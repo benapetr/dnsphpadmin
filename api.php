@@ -503,6 +503,9 @@ function api_call_get_record($source)
         $zone = get_zone_for_fqdn_or_throw($record);
     } else
     {
+        if (!array_key_exists($zone, $g_domains))
+            $api->ThrowError('No such zone',  'This zone is not in configuration file');
+
         $record .= '.' . $zone;
     }
     if (!IsAuthorizedToRead($zone))

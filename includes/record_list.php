@@ -108,7 +108,10 @@ function CheckIfZoneIsComplete($data)
 
 function GetRecordList($zone)
 {
-    global $g_caching_engine, $g_caching_engine_instance, $g_retry_on_error;
+    global $g_domains, $g_caching_engine, $g_caching_engine_instance, $g_retry_on_error;
+    if (!array_key_exists($zone, $g_domains))
+        Error("No such zone: " . $zone);
+
     if (!IsAuthorizedToRead($zone))
         return array();
 

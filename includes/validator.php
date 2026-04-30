@@ -84,7 +84,7 @@ function NSupdateEscapeCheck($string)
 
 function ShellEscapeCheck($string)
 {
-    if (psf_string_contains($string, ";"))
+    if (preg_match('/[;&|`$<>(){}\\\\\'"\r\n]/', $string))
         return false;
 
     return true;
