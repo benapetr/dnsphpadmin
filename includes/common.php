@@ -85,8 +85,13 @@ function IsValidRecordType($type)
 function LoginRequired()
 {
     global $g_auth;
-    if ($g_auth === NULL || $g_auth !== 'ldap')
+    if ($g_auth === NULL)
         return false;
+
+    if ($g_auth === 'ldap' || $g_auth === 'file')
+        return true;
+
+    Error("Unsupported authentication mechanism");
     return true;
 }
 

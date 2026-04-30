@@ -248,6 +248,16 @@ function GetRecordListTable($parent, $domain)
             }
         }
         
+        $display_record0 = htmlspecialchars($record[0], ENT_QUOTES, 'UTF-8');
+        $display_record1 = htmlspecialchars($record[1], ENT_QUOTES, 'UTF-8');
+        $display_record2 = htmlspecialchars($record[2], ENT_QUOTES, 'UTF-8');
+        $display_record3 = htmlspecialchars($record[3], ENT_QUOTES, 'UTF-8');
+        $display_record4 = htmlspecialchars($record[4], ENT_QUOTES, 'UTF-8');
+        $display_domain = htmlspecialchars($domain, ENT_QUOTES, 'UTF-8');
+        $delete_confirmation = json_encode('Are you sure you want to delete ' . $record[0] . '?',
+                                           JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP);
+        $delete_confirmation = htmlspecialchars($delete_confirmation, ENT_QUOTES, 'UTF-8');
+
         if (!$is_editable || !in_array($record[3], $g_editable))
         {
             $record[] = '';
@@ -271,23 +281,27 @@ function GetRecordListTable($parent, $domain)
                 }
             }
             
-            $delete_record = '<a href="index.php?action=manage&domain=' . $domain . '&delete=' .  urlencode($ascii_record0 . " " . $record[1] . " " . $record[3] . " " . $ascii_record4) .
-                             '" onclick="return confirm(\'Are you sure you want to delete ' . $record[0] . '?\')"><span class="bi bi-trash" title="Delete"></span></a>';
+            $delete_record = '<a href="index.php?action=manage&domain=' . $display_domain . '&delete=' .  urlencode($ascii_record0 . " " . $record[1] . " " . $record[3] . " " . $ascii_record4) .
+                             '" onclick="return confirm(' . $delete_confirmation . ')"><span class="bi bi-trash" title="Delete"></span></a>';
             $delete_record_with_ptr = '';
             if ($has_ptr && $record[3] == 'A')
             {
                 // Optional button to delete record together with PTR record, show only if there are PTR zones in cfg
-                $delete_record_with_ptr = '<a href="index.php?action=manage&ptr=true&key=' . urlencode($ascii_record0) . '&value=' . urlencode($ascii_record4) . '&type=' . $record[3] . '&domain=' . $domain .
+                $delete_record_with_ptr = '<a href="index.php?action=manage&ptr=true&key=' . urlencode($ascii_record0) . '&value=' . urlencode($ascii_record4) . '&type=' . $record[3] . '&domain=' . $display_domain .
                                           '&delete=' .  urlencode($ascii_record0 . ' ' . $record[1] . " " . $record[3] . " " . $ascii_record4) .
-                                          '" onclick="return confirm(\'Are you sure you want to delete ' . $record[0] . '?\')"><span style="color: #ff0000;" class="bi bi-trash" title="Delete together with associated PTR record (if any exist)"></span></a>';
+                                          '" onclick="return confirm(' . $delete_confirmation . ')"><span style="color: #ff0000;" class="bi bi-trash" title="Delete together with associated PTR record (if any exist)"></span></a>';
             }
             $large_space = '&nbsp;&nbsp;';
-            $record[] = $delete_record . $large_space . '<a href="index.php?action=edit&domain=' . $domain . '&key=' .
+            $record[] = $delete_record . $large_space . '<a href="index.php?action=edit&domain=' . $display_domain . '&key=' .
                         urlencode($ascii_record0) . "&ttl=" . $record[1] . "&type=" . $record[3] . "&value=" . urlencode($ascii_record4) .
                         "&old=" . urlencode($ascii_record0 . " " . $record[1] . " " . $record[3] . " " . $ascii_record4) .
                         '"><span title="Edit" class="bi bi-pencil"></span></a>' . $large_space . $delete_record_with_ptr;
         }
-        $record[4] = '<span class="value">' . $record[4] . '</span>';
+        $record[0] = $display_record0;
+        $record[1] = $display_record1;
+        $record[2] = $display_record2;
+        $record[3] = $display_record3;
+        $record[4] = '<span class="value">' . $display_record4 . '</span>';
         $table->AppendRow($record);
     }
     if ($is_editable) {
