@@ -110,6 +110,15 @@ function ProcessInsertFromPOST($zone, $record, $value, $type, $ttl)
     if ($type == 'TXT' && $g_auto_split_long_txt)
         $value = SplitLongTXTValue($value);
 
+    if (!NSupdateEscapeCheck($fqdn))
+        Error('Invalid data for record name: ' . $fqdn);
+    if (!NSupdateEscapeCheck($ttl))
+        Error('Invalid data for TTL: ' . $ttl);
+    if (!NSupdateEscapeCheck($type))
+        Error('Invalid data for record type: ' . $type);
+    if (!NSupdateEscapeCheck($value))
+        Error('Invalid data for record value');
+
     return "update add " . $fqdn . " " . $ttl . " " . $type . " " . $value . "\n";
 }
 

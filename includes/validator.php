@@ -77,6 +77,8 @@ function NSupdateEscapeCheck($string)
 {
     if (psf_string_contains($string, "\n"))
         return false;
+    if (psf_string_contains($string, "\r"))
+        return false;
     return true;
 }
 
