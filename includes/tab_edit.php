@@ -29,6 +29,7 @@ class TabEdit
         global $g_domains;
         if (!isset($_POST["submit"]))
             return;
+        CheckCSRFToken();
         
         $zone = $_POST["zone"];
 
@@ -142,6 +143,7 @@ class TabEdit
         
         $form = new Form("index.php?action=new", $parent);
         $form->Method = FormMethod::Post;
+        $form->AppendObject(new Hidden("csrf_token", GetCSRFToken()));
         $layout = new HtmlTable($form);
         $layout->BorderSize = 0;
         $layout->ColWidth[2] = '68px';

@@ -24,6 +24,7 @@ class TabBatch
         global $g_domains;
         if (!isset($_POST["submit"]))
             return;
+        CheckCSRFToken();
         
         $zone = $_POST["zone"];
         if (!CheckEmpty($parent, $zone, "Zone"))
@@ -78,6 +79,7 @@ class TabBatch
         global $g_audit, $g_selected_domain, $g_domains, $g_editable;
         $form = new Form("index.php?action=batch", $parent);
         $form->Method = FormMethod::Post;
+        $form->AppendObject(new Hidden("csrf_token", GetCSRFToken()));
         $layout = new HtmlTable($form);
         $layout->BorderSize = 0;
         $dl = new BS_ComboBox("zone", $layout);

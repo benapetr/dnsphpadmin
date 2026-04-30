@@ -55,6 +55,20 @@ function RefreshSession()
     }
 }
 
+function GetCSRFToken()
+{
+    if (!isset($_SESSION['csrf_token']))
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+
+    return $_SESSION['csrf_token'];
+}
+
+function CheckCSRFToken()
+{
+    if (!isset($_POST['csrf_token']) || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token']))
+        Error('Invalid CSRF token');
+}
+
 function GetLoginInfo()
 {
     global $g_auth_roles_map;
@@ -63,7 +77,10 @@ function GetLoginInfo()
     {
         $role_info = ' (' . psf_string_auto_trim(implode (', ', $g_auth_roles_map[$_SESSION['user']]), 80, '...') . ')';
     }
-    return '<div class="login_info"><span class="bi bi-person-fill"></span>' . $_SESSION["user"] . $role_info . ' <a href="?logout"><span class="bi bi-box-arrow-right" title="logout"></span></a></div>';
+    $csrf_token = htmlspecialchars(GetCSRFToken(), ENT_QUOTES, 'UTF-8');
+    return '<div class="login_info"><span class="bi bi-person-fill"></span>' . htmlspecialchars($_SESSION["user"], ENT_QUOTES, 'UTF-8') . htmlspecialchars($role_info, ENT_QUOTES, 'UTF-8') .
+           ' <form method="post" action="index.php" class="inline-form"><input type="hidden" name="csrf_token" value="' . $csrf_token . '">' .
+           '<button type="submit" name="logout" value="1" class="icon-button"><span class="bi bi-box-arrow-right" title="logout"></span></button></form></div>';
 }
 
 function ProcessLogin_Error($reason)

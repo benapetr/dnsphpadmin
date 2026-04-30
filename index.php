@@ -71,6 +71,7 @@ bootstrap_init($website, 5);
 $website->ExternalCss[] =   $g_bootstrap_icons;
 $website->ExternalCss[] = 'style.css?v=' . G_DNSTOOL_VERSION;
 $website->ExternalJs[] = 'js/darkmode.js?v=' . G_DNSTOOL_VERSION;
+$website->ExternalJs[] = 'js/manage.js?v=' . G_DNSTOOL_VERSION;
 
 // Create a bootstrap fluid containers, one for whole website and one for errors, which are dynamically inserted to error container as they are generated
 $fc = new BS_FluidContainer($website);
@@ -78,8 +79,11 @@ $fc = new BS_FluidContainer($website);
 if (isset($_GET['login']))
     ProcessLogin();
 
-if (isset($_GET['logout']))
+if (isset($_POST['logout']))
+{
+    CheckCSRFToken();
     session_unset();
+}
 
 // Recover unfinished request
 // we must do this before checking POST and GET parameters - because they take precedence over preserved data
@@ -196,4 +200,3 @@ if ($g_debug)
 
 // Close open FD's etc
 ResourceCleanup();
-

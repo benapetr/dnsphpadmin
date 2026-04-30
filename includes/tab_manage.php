@@ -25,25 +25,26 @@ class TabManage
     public static function ProcessDelete($well)
     {
         global $g_domains, $g_selected_domain;
-        if (!isset($_GET["delete"]))
+        if (!isset($_POST["delete"]))
             return;
+        CheckCSRFToken();
     
-        $record = $_GET["delete"];
+        $record = $_POST["delete"];
         
         if (DNS_DeleteRecord($g_selected_domain, $record))
             $well->AppendObject(new BS_Alert("Successfully deleted record " . $record));
 
-        if (isset($_GET["ptr"]) && $_GET["ptr"] == true)
+        if (isset($_POST["ptr"]) && $_POST["ptr"] == true)
         {
             Debug('PTR record deletion was requested for ' . $record);
-            if (!isset($_GET['key']) || !isset($_GET['value']) || !isset($_GET['type']))
+            if (!isset($_POST['key']) || !isset($_POST['value']) || !isset($_POST['type']))
             {
                 Warning('PTR record was not removed because either key, value or type was not specified');
                 return;
             }
-            $key = $_GET['key'];
-            $type = $_GET['type'];
-            $value = $_GET['value'];
+            $key = $_POST['key'];
+            $type = $_POST['type'];
+            $value = $_POST['value'];
             if ($type != 'A')
             {
                 Warning('Requested PTR record was not deleted: PTR record can be only deleted when you are changing A record, you deleted ' . $type . ' record instead');
@@ -96,6 +97,16 @@ class TabManage
         $fc->AppendHeader($g_selected_domain . $record_count, 2);
         $fc->AppendHtml('<div class="export_csv"><a href="?action=csv&domain=' . $g_selected_domain . '">Export as CSV</a></div>');
         $fc->AppendObject(GetStatusOfZoneAsNote($g_selected_domain));
+        $csrf_token = htmlspecialchars(GetCSRFToken(), ENT_QUOTES, 'UTF-8');
+        $domain = htmlspecialchars($g_selected_domain, ENT_QUOTES, 'UTF-8');
+        $fc->AppendHtmlLine('<form id="deleteRecordForm" method="post" action="index.php?action=manage&domain=' . $domain . '">' .
+                            '<input type="hidden" name="csrf_token" value="' . $csrf_token . '">' .
+                            '<input type="hidden" name="delete" value="">' .
+                            '<input type="hidden" name="ptr" value="">' .
+                            '<input type="hidden" name="key" value="">' .
+                            '<input type="hidden" name="value" value="">' .
+                            '<input type="hidden" name="type" value="">' .
+                            '</form>');
         if ($g_hidden_types_present === true)
         {
             // This zone contains some hidden record types, show toggle for user
