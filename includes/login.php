@@ -117,6 +117,18 @@ function LDAP_GroupNameFromCN($name)
     return substr($name, 0, strpos($name, ','));
 }
 
+function LDAP_EscapeFilterValue($value)
+{
+    if (function_exists('ldap_escape'))
+        return ldap_escape($value, '', LDAP_ESCAPE_FILTER);
+
+    return str_replace(
+        ['\\', '*', '(', ')', "\x00"],
+        ['\\5c', '\\2a', '\\28', '\\29', '\\00'],
+        $value
+    );
+}
+
 function FetchDomainGroups($ldap, $login_name)
 {
     global $g_auth_domain_prefix, $g_auth_ldap_dn, $g_auth_roles_map, $g_auth_roles;
@@ -126,6 +138,7 @@ function FetchDomainGroups($ldap, $login_name)
         $ldap_user_search_string = substr($ldap_user_search_string, strlen($g_auth_domain_prefix));
     
     // Read groups and insert them to list of roles this user is member of
+    $ldap_user_search_string = LDAP_EscapeFilterValue($ldap_user_search_string);
     $ldap_groups = ldap_search($ldap, $g_auth_ldap_dn, "(samaccountname=$ldap_user_search_string)", array("memberof", "primarygroupid"));
     if ($ldap_groups === false)
     {
