@@ -38,6 +38,12 @@ function RefreshSession()
     }
 
     session_name($g_auth_session_name);
+    session_set_cookie_params([
+                                  'lifetime' => 0,
+                                  'path' => '/',
+                                  'httponly' => true,
+                                  'samesite' => 'Lax'
+                              ]);
     session_start();
     if (isset($_SESSION["time"]))
     {
@@ -107,6 +113,7 @@ function ProcessTokenLogin()
     $token = $_POST['token'];
     if (in_array($token, $g_api_tokens))
     {
+        session_regenerate_id(true);
         $_SESSION["user"] = $token;
         $_SESSION["logged_in"] = true;
         $_SESSION["token"] = true;
@@ -249,6 +256,7 @@ function ProcessLogin_LDAP()
                 return;
             }
         }
+        session_regenerate_id(true);
         $_SESSION['user'] = $login_name;
         $_SESSION['logged_in'] = true;
         $g_logged_in = true;
@@ -315,6 +323,7 @@ function ProcessLogin_File()
     }
 
     // Login OK
+    session_regenerate_id(true);
     $_SESSION['user'] = $username;
     $_SESSION['logged_in'] = true;
     $roles = $user['roles'];
