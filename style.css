@@ -109,6 +109,10 @@ code {
   right: 20px;
 }
 
+.bulk_actions {
+  margin-top: 0.5rem;
+}
+
 .value {
   white-space:pre-wrap;
 }

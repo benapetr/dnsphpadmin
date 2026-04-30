@@ -214,11 +214,12 @@ function GetRecordListTable($parent, $domain)
     global $g_editable, $g_show_hidden_types, $g_hidden_record_types, $g_hidden_types_present, $g_total_records_count, $g_hidden_records_count, $g_enable_idn;
     $table = new HtmlTable($parent);
     $table->Condensed = true;
-    $table->Headers = [ "Record", "TTL", "Scope", "Type", "Value", "Options" ];
+    $table->Headers = [ "", "Record", "TTL", "Scope", "Type", "Value", "Options" ];
     $table->ClassName = 'table table-bordered table-hover table-sm';
-    $table->SetColumnWidth(2, '80px'); // Scope
-    $table->SetColumnWidth(3, '80px'); // Type
-    $table->SetColumnWidth(5, '80px'); // Options
+    $table->SetColumnWidth(0, '28px'); // Select
+    $table->SetColumnWidth(3, '80px'); // Scope
+    $table->SetColumnWidth(4, '80px'); // Type
+    $table->SetColumnWidth(6, '80px'); // Options
     $records = GetRecordList($domain);
     $is_editable = Zones::IsEditable($domain) && IsAuthorizedToWrite($domain);
     $has_ptr = Zones::HasPTRZones();
@@ -261,6 +262,7 @@ function GetRecordListTable($parent, $domain)
 
         if (!$is_editable || !in_array($record[3], $g_editable))
         {
+            $select_record = '';
             $record[] = '';
         } else
         {
@@ -283,6 +285,7 @@ function GetRecordListTable($parent, $domain)
             }
             
             $delete_value = $ascii_record0 . " " . $record[1] . " " . $record[3] . " " . $ascii_record4;
+            $select_record = '<input type="checkbox" class="record-select" value="' . htmlspecialchars($delete_value, ENT_QUOTES, 'UTF-8') . '">';
             $delete_record = '<a href="#" data-confirm="' . $delete_confirmation . '" data-delete="' . htmlspecialchars($delete_value, ENT_QUOTES, 'UTF-8') .
                              '" onclick="return submitDeleteRecord(this)"><span class="bi bi-trash" title="Delete"></span></a>';
             $delete_record_with_ptr = '';
@@ -290,10 +293,7 @@ function GetRecordListTable($parent, $domain)
             {
                 // Optional button to delete record together with PTR record, show only if there are PTR zones in cfg
                 $delete_record_with_ptr = '<a href="#" data-confirm="' . $delete_confirmation . '" data-delete="' . htmlspecialchars($delete_value, ENT_QUOTES, 'UTF-8') .
-                                          '" data-ptr="true" data-key="' . htmlspecialchars($ascii_record0, ENT_QUOTES, 'UTF-8') .
-                                          '" data-value="' . htmlspecialchars($ascii_record4, ENT_QUOTES, 'UTF-8') .
-                                          '" data-type="' . htmlspecialchars($record[3], ENT_QUOTES, 'UTF-8') .
-                                          '" onclick="return submitDeleteRecord(this)"><span style="color: #ff0000;" class="bi bi-trash" title="Delete together with associated PTR record (if any exist)"></span></a>';
+                                          '" data-ptr="true" onclick="return submitDeleteRecord(this)"><span style="color: #ff0000;" class="bi bi-trash" title="Delete together with associated PTR record (if any exist)"></span></a>';
             }
             $large_space = '&nbsp;&nbsp;';
             $record[] = $delete_record . $large_space . '<a href="index.php?action=edit&domain=' . $display_domain . '&key=' .
@@ -306,11 +306,12 @@ function GetRecordListTable($parent, $domain)
         $record[2] = $display_record2;
         $record[3] = $display_record3;
         $record[4] = '<span class="value">' . $display_record4 . '</span>';
+        array_unshift($record, $select_record);
         $table->AppendRow($record);
     }
     if ($is_editable) {
 	$add = '<a href="index.php?action=new&domain=' . $domain . '"><span title="Add New" class="bi bi-plus"></span></a>';
-	$table->AppendRow(['', '', '', '', '', $add]);
+	$table->AppendRow(['', '', '', '', '', '', $add]);
     }
     return $table;
 }

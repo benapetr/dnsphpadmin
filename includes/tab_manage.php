@@ -28,29 +28,39 @@ class TabManage
         if (!isset($_POST["delete"]))
             return;
         CheckCSRFToken();
-    
-        $record = $_POST["delete"];
-        
-        if (DNS_DeleteRecord($g_selected_domain, $record))
-            $well->AppendObject(new BS_Alert("Successfully deleted record " . $record));
+
+        $records = $_POST["delete"];
+        if (!is_array($records))
+            $records = [ $records ];
+
+        $deleted = 0;
+        foreach ($records as $record)
+        {
+            if (DNS_DeleteRecord($g_selected_domain, $record))
+                $deleted++;
+        }
+
+        if ($deleted == 1)
+            $well->AppendObject(new BS_Alert("Successfully deleted record " . $records[0]));
+        else if ($deleted > 1)
+            $well->AppendObject(new BS_Alert("Successfully deleted $deleted records"));
 
         if (isset($_POST["ptr"]) && $_POST["ptr"] == true)
         {
-            Debug('PTR record deletion was requested for ' . $record);
-            if (!isset($_POST['key']) || !isset($_POST['value']) || !isset($_POST['type']))
+            foreach ($records as $record)
             {
-                Warning('PTR record was not removed because either key, value or type was not specified');
-                return;
-            }
-            $key = $_POST['key'];
-            $type = $_POST['type'];
-            $value = $_POST['value'];
-            if ($type != 'A')
-            {
-                Warning('Requested PTR record was not deleted: PTR record can be only deleted when you are changing A record, you deleted ' . $type . ' record instead');
-            } else
-            {
-                DNS_DeletePTRForARecord($value, $key, '');
+                $parts = preg_split('/\s+/', trim($record), 4);
+                if (count($parts) < 4)
+                {
+                    Warning('PTR record was not removed because record details were incomplete');
+                    continue;
+                }
+                if ($parts[2] != 'A')
+                {
+                    Debug('Not deleting PTR for non-A record: ' . $record);
+                    continue;
+                }
+                DNS_DeletePTRForARecord($parts[3], $parts[0], '');
             }
         }
     }
@@ -101,11 +111,7 @@ class TabManage
         $domain = htmlspecialchars($g_selected_domain, ENT_QUOTES, 'UTF-8');
         $fc->AppendHtmlLine('<form id="deleteRecordForm" method="post" action="index.php?action=manage&domain=' . $domain . '">' .
                             '<input type="hidden" name="csrf_token" value="' . $csrf_token . '">' .
-                            '<input type="hidden" name="delete" value="">' .
                             '<input type="hidden" name="ptr" value="">' .
-                            '<input type="hidden" name="key" value="">' .
-                            '<input type="hidden" name="value" value="">' .
-                            '<input type="hidden" name="type" value="">' .
                             '</form>');
         if ($g_hidden_types_present === true)
         {
@@ -116,5 +122,8 @@ class TabManage
                 $fc->AppendHtml('<div class="hidden_types">This zone contains record types that are hidden by default, click <a href="?action=manage&domain=' . $g_selected_domain . '&hidden_types=hide">here</a> to hide them</div>');
         }
         $fc->AppendObject($record_list);
+        if (Zones::IsEditable($g_selected_domain) && IsAuthorizedToWrite($g_selected_domain))
+            $fc->AppendHtmlLine('<div class="bulk_actions"><button type="button" class="btn btn-sm btn-danger" onclick="return submitSelectedRecords(false)">Delete selected</button> ' .
+                                '<button type="button" class="btn btn-sm btn-danger" onclick="return submitSelectedRecords(true)">Delete selected records and their PTR records</button></div>');
     }
 }
