@@ -19,10 +19,9 @@ require_once("psf/psf.php");
 require_once("includes/common.php");
 require_once("includes/debug.php");
 require_once("includes/fatal_api.php");
-require_once("includes/record_list.php");
-require_once("includes/modify.php");
+require_once("includes/records.php");
+require_once("includes/dns.php");
 require_once("includes/notifications.php");
-require_once("includes/login.php");
 require_once("includes/validator.php");
 require_once("includes/zones.php");
 
@@ -77,7 +76,7 @@ function print_login_error($reason)
 function api_call_login($source)
 {
     global $api, $g_login_failed, $g_login_failure_reason;
-    ProcessLogin();
+    Auth::ProcessLogin();
     if ($g_login_failed)
     {
         print_login_error($g_login_failure_reason);
@@ -103,7 +102,7 @@ function api_call_login_token($source)
         $api->ThrowError('No token', 'You need to provide a token');
         return true;
     }
-    ProcessTokenLogin();
+    Auth::ProcessTokenLogin();
     if ($g_login_failed)
     {
         print_login_error($g_login_failure_reason);
@@ -135,7 +134,7 @@ function api_call_list_records($source)
     if (!array_key_exists($zone, $g_domains))
         $api->ThrowError('No such zone',  'This zone is not in configuration file');
     
-    $api->PrintObj(GetRecordList($zone));
+    $api->PrintObj(Records::GetRecordList($zone));
     return true;
 }
 
@@ -169,7 +168,7 @@ function check_zone_access($zone)
         return false;
     }
 
-    if (!IsAuthorizedToWrite($zone))
+    if (!Auth::IsAuthorizedToWrite($zone))
     {
         $api->ThrowError('Permission denied', "You are not authorized to edit $zone");
         return false;
@@ -228,7 +227,7 @@ function validate_type_or_throw($type)
 {
     global $api;
 
-    if (!IsValidRecordType($type))
+    if (!Common::IsValidRecordType($type))
     {
         $api->ThrowError('Invalid type', "Type $type is not a valid DNS record type");
         return false;
@@ -246,7 +245,7 @@ function api_call_create_record($source)
     $type = get_required_post_get_parameter('type');
     $value = get_required_post_get_parameter('value');
     $comment = get_optional_post_get_parameter('comment');
-    $ptr = IsTrue(get_optional_post_get_parameter('ptr'));
+    $ptr = Common::IsTrue(get_optional_post_get_parameter('ptr'));
     $merge_record = true;
 
     if ($zone === NULL)
@@ -267,8 +266,8 @@ function api_call_create_record($source)
         return false;
     }
 
-    $record = SanitizeHostname($record);
-    if (!IsValidHostName($record))
+    $record = Validator::SanitizeHostname($record);
+    if (!Validator::IsValidHostName($record))
     {
         $api->ThrowError('Invalid hostname', "Hostname is containing invalid characters");
         return false;
@@ -278,17 +277,17 @@ function api_call_create_record($source)
     $merged_record = NULL;
     if ($merge_record)
     {
-        $n .= ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
+        $n .= DNS::ProcessInsertFromPOST($zone, $record, $value, $type, $ttl);
         $merged_record = $record . "." . $zone;
     } else
     {
-        $n .= ProcessInsertFromPOST("" , $record, $value, $type, $ttl);
+        $n .= DNS::ProcessInsertFromPOST("" , $record, $value, $type, $ttl);
         $merged_record = $record;
     }
     $n .= "send\nquit\n";
 
-    ProcessNSUpdateForDomain($n, $zone);
-    WriteToAuditFile("create", $merged_record . " " . $ttl . " " . $type . " " . $value, $comment);
+    DNS::ProcessNSUpdateForDomain($n, $zone);
+    Audit::Write("create", $merged_record . " " . $ttl . " " . $type . " " . $value, $comment);
 
     if ($ptr == true)
     {
@@ -298,7 +297,7 @@ function api_call_create_record($source)
             api_warning('Requested PTR record was not created: PTR record can be only created when you are inserting A record, you created ' . $type . ' record instead');
         } else
         {
-            DNS_InsertPTRForARecord($value, $merged_record, $ttl, $comment);
+            DNS::InsertPTRForARecord($value, $merged_record, $ttl, $comment);
         }
     }
 
@@ -318,7 +317,7 @@ function api_call_replace_record($source)
     $comment = get_optional_post_get_parameter('comment');
     $new_record = get_optional_post_get_parameter('new_record');
     $new_type = get_optional_post_get_parameter('new_type');
-    $ptr = IsTrue(get_optional_post_get_parameter('ptr'));
+    $ptr = Common::IsTrue(get_optional_post_get_parameter('ptr'));
     $merge_record = true;
 
     // Auto-fill optional
@@ -367,7 +366,7 @@ function api_call_replace_record($source)
     if ($value !== NULL)
         $old .= ' ' . $value;
 
-    DNS_ModifyRecord($zone, $new_record, $new_value, $new_type, $ttl, $comment, $old, !$merge_record);
+    DNS::ModifyRecord($zone, $new_record, $new_value, $new_type, $ttl, $comment, $old, !$merge_record);
 
     if ($ptr)
     {
@@ -382,11 +381,11 @@ function api_call_replace_record($source)
                 if ($value === NULL)
                     api_warning("Old PTR record was not deleted, because parameter value was not provided - so we don't know what to delete");
                 else
-                    DNS_DeletePTRForARecord($value, $old_record, $comment);
+                    DNS::DeletePTRForARecord($value, $old_record, $comment);
             }
             if (($new_type === NULL && $type == 'A') || $new_type == 'A')
             {
-                DNS_InsertPTRForARecord($new_value, $merged_record, $ttl, $comment);
+                DNS::InsertPTRForARecord($new_value, $merged_record, $ttl, $comment);
             }
         }
     }
@@ -419,8 +418,8 @@ function api_call_delete_record($source)
     if (!validate_type_or_throw($type))
         return false;
 
-    $record = SanitizeHostname($record);
-    if (!IsValidHostName($record))
+    $record = Validator::SanitizeHostname($record);
+    if (!Validator::IsValidHostName($record))
     {
         $api->ThrowError('Invalid hostname', "Hostname is containing invalid characters");
         return false;
@@ -447,8 +446,8 @@ function api_call_delete_record($source)
     }
     $n .= "send\nquit\n";
 
-    ProcessNSUpdateForDomain($n, $zone);
-    WriteToAuditFile("delete", $merged_record . " 0 " . $type . $value, $comment);
+    DNS::ProcessNSUpdateForDomain($n, $zone);
+    Audit::Write("delete", $merged_record . " 0 " . $type . $value, $comment);
 
     if ($ptr == true)
     {
@@ -458,7 +457,7 @@ function api_call_delete_record($source)
             api_warning('Requested PTR record was not deleted: PTR record can be only deleted when you are changing A record, you deleted ' . $type . ' record instead');
         } else
         {
-            DNS_DeletePTRForARecord($original_value, $merged_record, $comment);
+            DNS::DeletePTRForARecord($original_value, $merged_record, $comment);
         }
     }
 
@@ -481,8 +480,8 @@ function api_call_get_record($source)
 {
     global $api;
     $record = get_required_post_get_parameter('record');
-    $record = SanitizeHostname($record);
-    if (!IsValidHostName($record))
+    $record = Validator::SanitizeHostname($record);
+    if (!Validator::IsValidHostName($record))
     {
         $api->ThrowError('Invalid hostname', "Hostname $record is not a valid hostname");
         return false;
@@ -491,7 +490,7 @@ function api_call_get_record($source)
     if ($type === NULL)
         $type = 'A';
     
-    if (!IsValidRecordType($type))
+    if (!Common::IsValidRecordType($type))
     {
         $api->ThrowError('Invalid type', "Type $type is not a valid DNS record type");
         return false;
@@ -508,10 +507,10 @@ function api_call_get_record($source)
 
         $record .= '.' . $zone;
     }
-    if (!IsAuthorizedToRead($zone))
+    if (!Auth::IsAuthorizedToRead($zone))
         $api->ThrowError('Permission denied', "You don't have access to read data from this zone");
     
-    WriteToAuditFile("get_record", $record . ' ('. $zone .')');
+    Audit::Write("get_record", $record . ' ('. $zone .')');
     $api->PrintObj(get_records_from_zone($record, $type, $zone));
     return true;
 }
@@ -537,7 +536,7 @@ function register_api($name, $short_desc, $long_desc, $callback, $auth = true, $
 function is_authenticated($backend)
 {
     global $api, $g_login_failed, $g_login_failure_reason;
-    $require_login = RequireLogin();
+    $require_login = Auth::RequireLogin();
     
     if (!$require_login)
         return true;
@@ -545,7 +544,7 @@ function is_authenticated($backend)
         return false;
 
     // User is not logged in, but provided a token, let's validate it
-    ProcessTokenLogin();
+    Auth::ProcessTokenLogin();
     if ($g_login_failed)
     {
         $api->ThrowError('Login failed', $g_login_failure_reason);
@@ -560,7 +559,7 @@ function is_privileged($backend, $privilege)
 }
 
 // Start up the program, initialize all sorts of resources, syslog, session data etc.
-Initialize();
+Common::Initialize();
 
 $api = new PsfApiBase_JSON();
 $api->ShowHelpOnNoAction = false;
@@ -643,7 +642,7 @@ if (!$api->Process())
     }
 } else
 {
-    IncrementStat('api');
+    Common::IncrementStat('api');
 }
 
-ResourceCleanup();
+Common::ResourceCleanup();

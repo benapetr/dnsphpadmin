@@ -20,13 +20,12 @@ require_once("psf/psf.php");
 require_once("includes/common.php");
 require_once("includes/fatal.php");
 require_once("includes/menu.php");
-require_once("includes/modify.php");
-require_once("includes/record_list.php");
+require_once("includes/dns.php");
+require_once("includes/records.php");
 require_once("includes/tab_overview.php");
 require_once("includes/tab_manage.php");
 require_once("includes/tab_edit.php");
 require_once("includes/tab_batch.php");
-require_once("includes/login.php");
 
 if ($g_debug === true)
     psf_php_enable_debug();
@@ -47,10 +46,10 @@ if ($g_use_local_bootstrap)
 }
 
 // Start up the program, initialize all sorts of resources, syslog, session data etc.
-Initialize();
+Common::Initialize();
 
 if ($g_user_config_prefix !== null)
-    include($g_user_config_prefix.GetCurrentUserName().".php");
+    include($g_user_config_prefix . Auth::GetCurrentUserName() . ".php");
 
 // Save us some coding
 $psf_containers_auto_insert_child = true;
@@ -77,11 +76,11 @@ $website->ExternalJs[] = 'js/manage.js?v=' . G_DNSTOOL_VERSION;
 $fc = new BS_FluidContainer($website);
 
 if (isset($_GET['login']))
-    ProcessLogin();
+    Auth::ProcessLogin();
 
 if (isset($_POST['logout']))
 {
-    CheckCSRFToken();
+    Auth::CheckCSRFToken();
     session_unset();
 }
 
@@ -108,7 +107,7 @@ else if (isset($_POST['zone']))
     $g_selected_domain = $_POST['zone'];
 
 // Check if login is needed
-if (RequireLogin())
+if (Auth::RequireLogin())
 {
     // If we were trying to run action=manage on some domain, preserve the link as much as we can,
     // so that user can resume the operation after login
@@ -128,7 +127,7 @@ if (RequireLogin())
 
     if ($g_login_failed)
         $fc->AppendObject(new BS_Alert($g_login_failure_reason, 'danger'));
-    $fc->AppendObject(GetLogin());
+    $fc->AppendObject(Auth::GetLogin());
 } else
 {
     $header = new DivContainer($fc);
@@ -136,13 +135,13 @@ if (RequireLogin())
     $header->AppendObject(new Image("favicon.png", "DNS"));
     $header->AppendHeader(G_HEADER);
     if ($g_logged_in)
-        $fc->AppendHtml(GetLoginInfo());
+        $fc->AppendHtml(Auth::GetLoginInfo());
 
     // Display warnings if there are any
     $fc->AppendObject($g_warning_container);
     $fc->AppendObject($g_error_container);
 
-    $fc->AppendObject(GetMenu($fc));
+    $fc->AppendObject(Menu::Get($fc));
 
     if ($g_action === null)
     {
@@ -155,7 +154,7 @@ if (RequireLogin())
     } else if ($g_action == 'csv')
     {
         // Export the current zone as CSV (if user can actually read it)
-        $table = GetRecordListTablePlainFormat($fc, $g_selected_domain);
+        $table = Records::GetRecordListTablePlainFormat($fc, $g_selected_domain);
         header('Content-Type: application/csv');
         header('Content-Disposition: attachment; filename=' . $g_selected_domain . '.csv');
         header('Pragma: no-cache');
@@ -199,4 +198,4 @@ if ($g_debug)
 }
 
 // Close open FD's etc
-ResourceCleanup();
+Common::ResourceCleanup();

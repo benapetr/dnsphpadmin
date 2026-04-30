@@ -14,78 +14,81 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-function IsValidHostName($fqdn)
+class Validator
 {
-    global $g_strict_hostname_checks, $g_enable_idn;
-    // Few extra checks to prevent shell escaping
-    if (!ShellEscapeCheck($fqdn))
-        return false;
-    if (psf_string_contains($fqdn, "'"))
-        return false;
-    if (psf_string_contains($fqdn, '"'))
-        return false;
-    if (psf_string_contains($fqdn, ' '))
-        return false;
-    if (psf_string_contains($fqdn, "\t"))
-        return false;
-    if (psf_string_contains($fqdn, "\n"))
-        return false;
-    // security fix + and - are switches used by dig so we need to make sure they aren't first symbol even if strict checking is not enabled
-    if (psf_string_startsWith($fqdn, "+"))
-        return false;
-    if (psf_string_startsWith($fqdn, "-"))
-        return false;
-    
-    // If strict hostname checks are enabled, we need to convert UTF-8 to ASCII first
-    if ($g_strict_hostname_checks)
+    public static function IsValidHostName($fqdn)
     {
-        // Check if this is UTF-8
-        if (preg_match('/[^\x20-\x7E]/', $fqdn))
-        {
-            if ($g_enable_idn)
-            {
-                // Convert to ASCII first and then check
-                $ascii_fqdn = IDNConverter::fqdnToASCII($fqdn);
-                return preg_match('/[^0-9\*a-zA-Z_\-\.]/', $ascii_fqdn) ? false : true;
-            }
-        }
-        // If no UTF-8 characters or converter not available, do the normal check
-        if (preg_match('/[^0-9\*a-zA-Z_\-\.]/', $fqdn))
+        global $g_strict_hostname_checks, $g_enable_idn;
+        // Few extra checks to prevent shell escaping
+        if (!self::ShellEscapeCheck($fqdn))
             return false;
-    }
-    return true;
-}
+        if (psf_string_contains($fqdn, "'"))
+            return false;
+        if (psf_string_contains($fqdn, '"'))
+            return false;
+        if (psf_string_contains($fqdn, ' '))
+            return false;
+        if (psf_string_contains($fqdn, "\t"))
+            return false;
+        if (psf_string_contains($fqdn, "\n"))
+            return false;
+        // security fix + and - are switches used by dig so we need to make sure they aren't first symbol even if strict checking is not enabled
+        if (psf_string_startsWith($fqdn, "+"))
+            return false;
+        if (psf_string_startsWith($fqdn, "-"))
+            return false;
 
-function SanitizeHostname($hostname)
-{
-    global $g_enable_idn;
-    // First trim whitespace
-    $hostname = trim($hostname);
-    
-    // Convert UTF-8 hostname to ASCII punycode for DNS operations
-    // This is needed because nsupdate doesn't support IDN/UTF-8 directly
-    if ($g_enable_idn)
+        // If strict hostname checks are enabled, we need to convert UTF-8 to ASCII first
+        if ($g_strict_hostname_checks)
+        {
+            // Check if this is UTF-8
+            if (preg_match('/[^\x20-\x7E]/', $fqdn))
+            {
+                if ($g_enable_idn)
+                {
+                    // Convert to ASCII first and then check
+                    $ascii_fqdn = IDNConverter::fqdnToASCII($fqdn);
+                    return preg_match('/[^0-9\*a-zA-Z_\-\.]/', $ascii_fqdn) ? false : true;
+                }
+            }
+            // If no UTF-8 characters or converter not available, do the normal check
+            if (preg_match('/[^0-9\*a-zA-Z_\-\.]/', $fqdn))
+                return false;
+        }
+        return true;
+    }
+
+    public static function SanitizeHostname($hostname)
     {
-        $ascii_hostname = IDNConverter::fqdnToASCII($hostname);
-        return $ascii_hostname;
+        global $g_enable_idn;
+        // First trim whitespace
+        $hostname = trim($hostname);
+
+        // Convert UTF-8 hostname to ASCII punycode for DNS operations
+        // This is needed because nsupdate doesn't support IDN/UTF-8 directly
+        if ($g_enable_idn)
+        {
+            $ascii_hostname = IDNConverter::fqdnToASCII($hostname);
+            return $ascii_hostname;
+        }
+
+        return $hostname;
     }
-    
-    return $hostname;
-}
 
-function NSupdateEscapeCheck($string)
-{
-    if (psf_string_contains($string, "\n"))
-        return false;
-    if (psf_string_contains($string, "\r"))
-        return false;
-    return true;
-}
+    public static function NSupdateEscapeCheck($string)
+    {
+        if (psf_string_contains($string, "\n"))
+            return false;
+        if (psf_string_contains($string, "\r"))
+            return false;
+        return true;
+    }
 
-function ShellEscapeCheck($string)
-{
-    if (preg_match('/[;&|`$<>(){}\\\\\'"\r\n]/', $string))
-        return false;
+    public static function ShellEscapeCheck($string)
+    {
+        if (preg_match('/[;&|`$<>(){}\\\\\'"\r\n]/', $string))
+            return false;
 
-    return true;
+        return true;
+    }
 }

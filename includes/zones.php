@@ -14,6 +14,8 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
+require_once("auth.php");
+
 // Namespace for all sorts of zone (domain) operations
 class Zones
 {
@@ -23,7 +25,7 @@ class Zones
         $result = [];
         foreach ($g_domains as $domain => $properties)
         {
-            if (!IsAuthorizedToRead($domain))
+            if (!Auth::IsAuthorizedToRead($domain))
                 continue;
             $result[$domain] = [ 'domain' => $domain, 'update_server' =>  $properties['update_server'], 'transfer_server' => $properties['transfer_server'] ];
 
@@ -100,4 +102,3 @@ class Zones
         return $g_default_ttl;
     }
 }
-

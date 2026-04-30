@@ -17,7 +17,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 require_once("common.php");
 require_once("common_ui.php");
 require_once("debug.php");
-require_once("modify.php");
+require_once("dns.php");
 
 class TabManage
 {
@@ -27,7 +27,7 @@ class TabManage
         global $g_domains, $g_selected_domain;
         if (!isset($_POST["delete"]))
             return;
-        CheckCSRFToken();
+        Auth::CheckCSRFToken();
 
         $records = $_POST["delete"];
         if (!is_array($records))
@@ -36,7 +36,7 @@ class TabManage
         $deleted = 0;
         foreach ($records as $record)
         {
-            if (DNS_DeleteRecord($g_selected_domain, $record))
+            if (DNS::DeleteRecord($g_selected_domain, $record))
                 $deleted++;
         }
 
@@ -52,7 +52,7 @@ class TabManage
                 $parts = preg_split('/\s+/', trim($record), 4);
                 if (count($parts) < 4)
                 {
-                    Warning('PTR record was not removed because record details were incomplete');
+                    Common::Warning('PTR record was not removed because record details were incomplete');
                     continue;
                 }
                 if ($parts[2] != 'A')
@@ -60,7 +60,7 @@ class TabManage
                     Debug('Not deleting PTR for non-A record: ' . $record);
                     continue;
                 }
-                DNS_DeletePTRForARecord($parts[3], $parts[0], '');
+                DNS::DeletePTRForARecord($parts[3], $parts[0], '');
             }
         }
     }
@@ -94,7 +94,7 @@ class TabManage
             $g_selected_domain = key($g_domains);
         }
         // First get the record list - this function will fill up g_hidden_types_present variable as well as global counters
-        $record_list = GetRecordListTable(NULL, $g_selected_domain);
+        $record_list = Records::GetRecordListTable(NULL, $g_selected_domain);
         $record_count = "";
         if ($g_total_records_count > 0)
         {
@@ -103,11 +103,11 @@ class TabManage
             else
                 $record_count = " ($g_total_records_count records, $g_hidden_records_count hidden)";
         }
-        $fc->AppendObject(GetSwitcher($fc));
+        $fc->AppendObject(CommonUI::GetSwitcher($fc));
         $fc->AppendHeader($g_selected_domain . $record_count, 2);
         $fc->AppendHtml('<div class="export_csv"><a href="?action=csv&domain=' . $g_selected_domain . '">Export as CSV</a></div>');
-        $fc->AppendObject(GetStatusOfZoneAsNote($g_selected_domain));
-        $csrf_token = htmlspecialchars(GetCSRFToken(), ENT_QUOTES, 'UTF-8');
+        $fc->AppendObject(Records::GetStatusOfZoneAsNote($g_selected_domain));
+        $csrf_token = htmlspecialchars(Auth::GetCSRFToken(), ENT_QUOTES, 'UTF-8');
         $domain = htmlspecialchars($g_selected_domain, ENT_QUOTES, 'UTF-8');
         $fc->AppendHtmlLine('<form id="deleteRecordForm" method="post" action="index.php?action=manage&domain=' . $domain . '">' .
                             '<input type="hidden" name="csrf_token" value="' . $csrf_token . '">' .
@@ -122,7 +122,7 @@ class TabManage
                 $fc->AppendHtml('<div class="hidden_types">This zone contains record types that are hidden by default, click <a href="?action=manage&domain=' . $g_selected_domain . '&hidden_types=hide">here</a> to hide them</div>');
         }
         $fc->AppendObject($record_list);
-        if (Zones::IsEditable($g_selected_domain) && IsAuthorizedToWrite($g_selected_domain))
+        if (Zones::IsEditable($g_selected_domain) && Auth::IsAuthorizedToWrite($g_selected_domain))
             $fc->AppendHtmlLine('<div class="bulk_actions"><button type="button" class="btn btn-sm btn-danger" onclick="return submitSelectedRecords(false)">Delete selected</button> ' .
                                 '<button type="button" class="btn btn-sm btn-danger" onclick="return submitSelectedRecords(true)">Delete selected records and their PTR records</button></div>');
     }

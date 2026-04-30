@@ -14,51 +14,54 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-function OpenSyslog()
+class Logging
 {
-    global $g_syslog, $g_syslog_facility, $g_syslog_ident;
-    if (!$g_syslog)
-        return;
-    openlog($g_syslog_ident, LOG_PID, $g_syslog_facility);
-}
-
-function WriteToSyslog($text, $priority = LOG_INFO)
-{
-    syslog($priority, $text);
-}
-
-function CloseSyslog()
-{
-    global $g_syslog;
-    if (!$g_syslog)
-        return;
-    closelog();
-}
-
-function WriteToErrorLog($text)
-{
-    global $g_error_log, $g_eid, $g_syslog_targets, $g_syslog;
-    if ($g_error_log === NULL && $g_syslog !== true)
-        return;
-
-    // Remove newlines
-    $text = trim(preg_replace('/\s+/', ' ', $text));
-    
-    // Prepare line of data to write to both syslog and file log
-    $raw_line = 'entry point: ' . G_DNSTOOL_ENTRY_POINT . ' eid: ' . $g_eid . " ip: " . $_SERVER['REMOTE_ADDR'] . " ERROR: " . $text;
-
-    if ($g_syslog && $g_syslog_targets['error'] === true)
+    public static function OpenSyslog()
     {
-        WriteToSyslog($raw_line, LOG_ERR);
+        global $g_syslog, $g_syslog_facility, $g_syslog_ident;
+        if (!$g_syslog)
+            return;
+        openlog($g_syslog_ident, LOG_PID, $g_syslog_facility);
     }
 
-    if ($g_error_log !== NULL)
+    public static function WriteToSyslog($text, $priority = LOG_INFO)
     {
-        // Prepare audit log line
-        $log_line = date('m/d/Y h:i:s a', time()) . ' ' . $raw_line . "\n";
+        syslog($priority, $text);
+    }
 
-        $result = file_put_contents($g_error_log, $log_line, FILE_APPEND | LOCK_EX);
-        if ($result === false)
-            throw new Exception('Unable to write to error log file: ' . $g_error_log);
+    public static function CloseSyslog()
+    {
+        global $g_syslog;
+        if (!$g_syslog)
+            return;
+        closelog();
+    }
+
+    public static function WriteToErrorLog($text)
+    {
+        global $g_error_log, $g_eid, $g_syslog_targets, $g_syslog;
+        if ($g_error_log === NULL && $g_syslog !== true)
+            return;
+
+        // Remove newlines
+        $text = trim(preg_replace('/\s+/', ' ', $text));
+
+        // Prepare line of data to write to both syslog and file log
+        $raw_line = 'entry point: ' . G_DNSTOOL_ENTRY_POINT . ' eid: ' . $g_eid . " ip: " . $_SERVER['REMOTE_ADDR'] . " ERROR: " . $text;
+
+        if ($g_syslog && $g_syslog_targets['error'] === true)
+        {
+            self::WriteToSyslog($raw_line, LOG_ERR);
+        }
+
+        if ($g_error_log !== NULL)
+        {
+            // Prepare audit log line
+            $log_line = date('m/d/Y h:i:s a', time()) . ' ' . $raw_line . "\n";
+
+            $result = file_put_contents($g_error_log, $log_line, FILE_APPEND | LOCK_EX);
+            if ($result === false)
+                throw new Exception('Unable to write to error log file: ' . $g_error_log);
+        }
     }
 }

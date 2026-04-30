@@ -14,41 +14,44 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-function GetMenu($parent)
+class Menu
 {
-    global $g_action, $g_selected_domain;
-    $domain = "";
-    if ($g_selected_domain !== null)
-        $domain = "&domain=" . $g_selected_domain;
-
-    $overview_active = '';
-    $manage_active = '';
-    $new_active = '';
-    $batch_active = '';
-
-    switch ($g_action)
+    public static function Get($parent)
     {
-        case "manage":
-            $manage_active = ' active';
-            break;
-        case "new":
-        case "edit":
-            $new_active = ' active';
-            break;
-        case "batch":
-            $batch_active = ' active';
-            break;
-        default:
-            $overview_active = ' active';
-            break;
-    }
+        global $g_action, $g_selected_domain;
+        $domain = "";
+        if ($g_selected_domain !== null)
+            $domain = "&domain=" . $g_selected_domain;
 
-    $menu_items = [
-                    "<a class='nav-link${overview_active}' role='tab' href='index.php'>Zone overview</a>",
-                    "<a class='nav-link${manage_active}' role='tab' href='index.php?action=manage" . $domain . "'>Manage zone</a>",
-                    "<a class='nav-link${new_active}' role='tab' href='index.php?action=new" . $domain. "'>New / edit record</a>",
-                    "<a class='nav-link${batch_active}' role='tab' href='index.php?action=batch" . $domain. "'>Batch operations</a>"
-                  ];
-    $menu = new BS_Tabs($menu_items, $parent);
-    return $menu;
+        $overview_active = '';
+        $manage_active = '';
+        $new_active = '';
+        $batch_active = '';
+
+        switch ($g_action)
+        {
+            case "manage":
+                $manage_active = ' active';
+                break;
+            case "new":
+            case "edit":
+                $new_active = ' active';
+                break;
+            case "batch":
+                $batch_active = ' active';
+                break;
+            default:
+                $overview_active = ' active';
+                break;
+        }
+
+        $menu_items = [
+                        "<a class='nav-link{$overview_active}' role='tab' href='index.php'>Zone overview</a>",
+                        "<a class='nav-link{$manage_active}' role='tab' href='index.php?action=manage" . $domain . "'>Manage zone</a>",
+                        "<a class='nav-link{$new_active}' role='tab' href='index.php?action=new" . $domain. "'>New / edit record</a>",
+                        "<a class='nav-link{$batch_active}' role='tab' href='index.php?action=batch" . $domain. "'>Batch operations</a>"
+                      ];
+        $menu = new BS_Tabs($menu_items, $parent);
+        return $menu;
+    }
 }

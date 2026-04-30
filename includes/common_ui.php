@@ -15,48 +15,72 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
 require_once("notifications.php");
+require_once("auth.php");
+
+class CommonUI
+{
+    public static function ShowError($form, $txt)
+    {
+        $msg = new BS_Alert('FATAL: ' . $txt, 'danger', $form);
+    }
+
+    public static function CheckEmpty($form, $label, $name)
+    {
+        if ($label === NULL || strlen($label) == 0)
+        {
+            self::ShowError($form, $name . " must not be empty");
+            return false;
+        }
+        return true;
+    }
+
+    public static function DisplayWarning($text)
+    {
+        Notifications::DisplayWarning($text);
+    }
+
+    public static function GetSwitcher($parent)
+    {
+        global $g_selected_domain, $g_domains;
+        $switcher = new DivContainer($parent);
+        $switcher->AppendHtmlLine("Zone:");
+        $c = new ComboBox("switcher", $switcher);
+        $c->OnChangeCallback = "reload()";
+        foreach ($g_domains as $domain => $properties)
+        {
+            if (!Auth::IsAuthorizedToRead($domain))
+                continue;
+            if ($g_selected_domain == $domain)
+                $c->AddDefaultValue($domain);
+            else
+                $c->AddValue($domain);
+        }
+        $js = new Script("", $parent);
+        $js->Source = "function reload()\n" .
+                      "{" .
+                          'var switcher = document.getElementsByName("switcher");' .
+                          'window.open("index.php?action=manage&domain=" + switcher[0].value, "_self");' .
+                      "}\n";
+        return $switcher;
+    }
+}
 
 function ShowError($form, $txt)
 {
-    $msg = new BS_Alert('FATAL: ' . $txt, 'danger', $form);
+    return CommonUI::ShowError($form, $txt);
 }
 
 function CheckEmpty($form, $label, $name)
 {
-    if ($label === NULL || strlen($label) == 0)
-    {
-        ShowError($form, $name . " must not be empty");
-        return false;
-    }
-    return true;
+    return CommonUI::CheckEmpty($form, $label, $name);
 }
 
 function DisplayWarning($text)
 {
-    Notifications::DisplayWarning($text);
+    return CommonUI::DisplayWarning($text);
 }
 
 function GetSwitcher($parent)
 {
-    global $g_selected_domain, $g_domains;
-    $switcher = new DivContainer($parent);
-    $switcher->AppendHtmlLine("Zone:");
-    $c = new ComboBox("switcher", $switcher);
-    $c->OnChangeCallback = "reload()";
-    foreach ($g_domains as $domain => $properties)
-    {
-        if (!IsAuthorizedToRead($domain))
-            continue;
-        if ($g_selected_domain == $domain)
-            $c->AddDefaultValue($domain);
-        else
-            $c->AddValue($domain);
-    }
-    $js = new Script("", $parent);
-    $js->Source = "function reload()\n" .
-                  "{" .
-                      'var switcher = document.getElementsByName("switcher");' .
-                      'window.open("index.php?action=manage&domain=" + switcher[0].value, "_self");' .
-                  "}\n";
-    return $switcher;
+    return CommonUI::GetSwitcher($parent);
 }

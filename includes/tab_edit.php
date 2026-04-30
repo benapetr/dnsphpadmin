@@ -17,7 +17,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 require_once("common_ui.php");
 require_once("debug.php");
 require_once("validator.php");
-require_once("modify.php");
+require_once("dns.php");
 require_once("zones.php");
 require_once("idn.php");
 
@@ -29,41 +29,41 @@ class TabEdit
         global $g_domains;
         if (!isset($_POST["submit"]))
             return;
-        CheckCSRFToken();
+        Auth::CheckCSRFToken();
         
         $zone = $_POST["zone"];
 
         if (!Zones::IsEditable($zone))
             Error("Domain $zone is not writeable");
 
-        if (!IsAuthorizedToWrite($zone))
+        if (!Auth::IsAuthorizedToWrite($zone))
             Error("You are not authorized to edit $zone");
 
-        if (!CheckEmpty($form, $zone, "Zone"))
+        if (!CommonUI::CheckEmpty($form, $zone, "Zone"))
             return;
         $record = $_POST["record"];
         if ($record === NULL)
             $record = "";
         $ttl = $_POST["ttl"];
-        if (!CheckEmpty($form, $ttl, "ttl"))
+        if (!CommonUI::CheckEmpty($form, $ttl, "ttl"))
             return;
         $value = $_POST["value"];
-        if (!CheckEmpty($form, $value, "Value"))
+        if (!CommonUI::CheckEmpty($form, $value, "Value"))
             return;
         $type = $_POST["type"];
-        if (!CheckEmpty($form, $type, "Type"))
+        if (!CommonUI::CheckEmpty($form, $type, "Type"))
             return;
 
-        if (!IsValidRecordType($type))
+        if (!Common::IsValidRecordType($type))
             Error("Type $type is not a valid DNS record type");
 
         if (!is_numeric($ttl))
             Error('TTL must be a number');
 
         // Sanitize input from user
-        $record = SanitizeHostname($record);
+        $record = Validator::SanitizeHostname($record);
 
-        if (!IsValidHostName($record))
+        if (!Validator::IsValidHostName($record))
             Error('Invalid hostname: ' . $record);
 
         $comment = NULL;
@@ -72,13 +72,13 @@ class TabEdit
 
         if ($_POST['submit'] == 'Create')
         {
-            if (DNS_CreateRecord($zone, $record, $value, $type, $ttl, $comment))
+            if (DNS::CreateRecord($zone, $record, $value, $type, $ttl, $comment))
                 $form->AppendObject(new BS_Alert("Successfully inserted record " . $record . "." . $zone));
         } else if ($_POST["submit"] == "Edit")
         {
             if (!isset($_POST["old"]))
                 Error("Missing old record necessary for update");
-            if (DNS_ModifyRecord($zone, $record, $value, $type, $ttl, $comment, $_POST["old"]))
+            if (DNS::ModifyRecord($zone, $record, $value, $type, $ttl, $comment, $_POST["old"]))
             {
                 $form->AppendObject(new BS_Alert("Successfully replaced " . $_POST["old"] . " with " . $record . "." . $zone . " " .
                                                  $ttl . " " . $type . " " . $value));
@@ -91,10 +91,10 @@ class TabEdit
                     // Check if all necessary values are present
                     if (!isset($_POST["old_value"]) || !isset($_POST["old_record"]))
                     {
-                        DisplayWarning("PTR record was not deleted, because old_record or old_value was missing");
+                        CommonUI::DisplayWarning("PTR record was not deleted, because old_record or old_value was missing");
                     } else
                     {
-                        DNS_DeletePTRForARecord($_POST["old_value"], $_POST["old_record"], $comment);
+                        DNS::DeletePTRForARecord($_POST["old_value"], $_POST["old_record"], $comment);
                     }
                 } else
                 {
@@ -111,10 +111,10 @@ class TabEdit
         {
             if ($type !== "A")
             {
-                DisplayWarning('PTR record was not created: PTR record can be only created when you are inserting A record, you created ' . $type . ' record instead');
+                CommonUI::DisplayWarning('PTR record was not created: PTR record can be only created when you are inserting A record, you created ' . $type . ' record instead');
                 return;
             }
-            DNS_InsertPTRForARecord($value, $record . '.' . $zone, $ttl, $comment);
+            DNS::InsertPTRForARecord($value, $record . '.' . $zone, $ttl, $comment);
         }
     }
 
@@ -143,7 +143,7 @@ class TabEdit
         
         $form = new Form("index.php?action=new", $parent);
         $form->Method = FormMethod::Post;
-        $form->AppendObject(new Hidden("csrf_token", GetCSRFToken()));
+        $form->AppendObject(new Hidden("csrf_token", Auth::GetCSRFToken()));
         $layout = new HtmlTable($form);
         $layout->BorderSize = 0;
         $layout->ColWidth[2] = '68px';
@@ -170,7 +170,7 @@ class TabEdit
         {
             foreach ($g_domains as $key => $info)
             {
-                if (!IsAuthorizedToWrite($key))
+                if (!Auth::IsAuthorizedToWrite($key))
                     continue;
                 if ($g_selected_domain == $key)
                     $dl->AddDefaultValue($key, "." . $key);

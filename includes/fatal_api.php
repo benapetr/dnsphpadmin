@@ -21,7 +21,7 @@ require_once("logging.php");
 function Error($msg, $fatal = true)
 {
     global $api, $g_debug;
-    WriteToErrorLog($msg);
+    Logging::WriteToErrorLog($msg);
     $api->ThrowError('ERROR: ' . $msg, $msg);
     die(1);
 }

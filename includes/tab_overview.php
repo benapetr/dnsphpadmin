@@ -35,7 +35,7 @@ class TabOverview
             $is_ok = false;
             $status .= '<span class="bi bi-arrow-repeat" title="In transfer"></span>&nbsp;';
         }
-        if (!IsAuthorizedToWrite($domain) || (array_key_exists('read_only', $domain_info) && $domain_info['read_only'] === true))
+        if (!Auth::IsAuthorizedToWrite($domain) || (array_key_exists('read_only', $domain_info) && $domain_info['read_only'] === true))
         {
             $is_ok = false;
             $status .= '<span class="bi bi-lock" title="Read-Only"></span>&nbsp;';
@@ -65,7 +65,7 @@ class TabOverview
         $table->SetColumnWidth(1, '80px');
         foreach ($g_domains as $domain => $properties)
         {
-            if (!IsAuthorizedToRead($domain))
+            if (!Auth::IsAuthorizedToRead($domain))
                 continue;
             $table->AppendRow([ '<a href="?action=manage&domain=' . $domain . '">' . $domain . '</a>', self::getStatusOfZone($domain), $properties["update_server"], $properties["transfer_server"] ]);
         }

@@ -75,7 +75,7 @@ function dig($parameters)
     global $g_dig;
     // Replace newlines for security reasons
     $parameters = str_replace("\n", "", $parameters);
-    if (!ShellEscapeCheck($parameters))
+    if (!Validator::ShellEscapeCheck($parameters))
         die('FATAL: Invalid shell parameters: ' . $parameters);
     Debug("shell_exec: " . $g_dig . " " . $parameters);
     return shell_exec($g_dig . " " . $parameters);
@@ -87,7 +87,7 @@ function dig_args($parameters)
     $escaped_parameters = [];
     foreach ($parameters as $parameter)
     {
-        if (!ShellEscapeCheck($parameter))
+        if (!Validator::ShellEscapeCheck($parameter))
             die('FATAL: Invalid shell parameter: ' . $parameter);
         $escaped_parameters[] = escapeshellarg($parameter);
     }

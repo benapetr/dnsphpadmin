@@ -18,7 +18,6 @@ require("config.php");
 require_once("psf/psf.php");
 require_once("includes/common.php");
 require_once("includes/debug.php");
-require_once("includes/login.php");
 require_once("includes/passwd_file.php");
 
 function info_log($text)

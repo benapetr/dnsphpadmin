@@ -6,11 +6,11 @@ require (dirname(__FILE__) . "/../psf/includes/unit_test/ut.php");
 define('G_DNSTOOL_ENTRY_POINT', 'unit.php');
 
 require_once (dirname(__FILE__) . "/../config.default.php");
-require_once (dirname(__FILE__) . "/../includes/record_list.php");
+require_once (dirname(__FILE__) . "/../includes/records.php");
 require_once (dirname(__FILE__) . "/../includes/validator.php");
 require_once (dirname(__FILE__) . "/../includes/zones.php");
 require_once (dirname(__FILE__) . "/../includes/idn.php");
-require_once (dirname(__FILE__) . "/../includes/modify.php");
+require_once (dirname(__FILE__) . "/../includes/dns.php");
 require_once (dirname(__FILE__) . "/testdata/idn_test_domains.php");
 
 function CheckZone($data)
@@ -55,33 +55,33 @@ $dz1 = raw_zone_to_array(file_get_contents(dirname(__FILE__) . '/testdata/valid.
 $dz2 = raw_zone_to_array(file_get_contents(dirname(__FILE__) . '/testdata/invalid.zone'));
 $dz3 = raw_zone_to_array(file_get_contents(dirname(__FILE__) . '/testdata/valid.zone2'));
 
-$ut->Evaluate('Check validness of valid zone testdata/valid.zone1', CheckIfZoneIsComplete($dz1) === true);
-$ut->Evaluate('Check validness of invalid zone testdata/invalid.zone', CheckIfZoneIsComplete($dz2) === false);
-$ut->Evaluate('Check validness of valid zone testdata/valid.zone2', CheckIfZoneIsComplete($dz3) === true);
+$ut->Evaluate('Check validness of valid zone testdata/valid.zone1', Records::CheckIfZoneIsComplete($dz1) === true);
+$ut->Evaluate('Check validness of invalid zone testdata/invalid.zone', Records::CheckIfZoneIsComplete($dz2) === false);
+$ut->Evaluate('Check validness of valid zone testdata/valid.zone2', Records::CheckIfZoneIsComplete($dz3) === true);
 $ut->Evaluate('Check count of records in testdata/valid.zone1', count($dz1) === 389);
 $ut->Evaluate('Parser test - zone 1', CheckZone($dz1));
 $ut->Evaluate('Parser test - zone 2', CheckZone($dz3));
 
-$ut->Evaluate('Validator - valid #1', IsValidHostName('insw.cz') === true);
-$ut->Evaluate('Validator - valid #2', IsValidHostName('te-st1.petr.bena.rocks') === true);
-$ut->Evaluate('Validator - valid #3', IsValidHostName('*.petr.bena.rocks') === true);
-$ut->Evaluate('Validator - valid #4', IsValidHostName('_spf.petr.bena.rocks') === true);
-$ut->Evaluate('Validator - valid #5', IsValidHostName('wqdcsrv331') === true);
-$ut->Evaluate('Validator - valid #6', IsValidHostName('2.168.192.in-addr.arpa') === true);
-$ut->Evaluate('Validator - invalid #1', IsValidHostName('-invalid') === false);
-$ut->Evaluate('Validator - invalid #2', IsValidHostName('---') === false);
-$ut->Evaluate('Validator - invalid #3', IsValidHostName('google domain') === false);
-$ut->Evaluate('Validator - invalid #4', IsValidHostName('google.com;rm -rf /') === false);
-$ut->Evaluate('Validator - invalid #5', IsValidHostName("google.com\ntest") === false);
-$ut->Evaluate('Validator - invalid #6', IsValidHostName("google.com\ttest") === false);
-$ut->Evaluate('Validator - invalid #7', IsValidHostName("'google.com") === false);
-$ut->Evaluate('Validator - invalid #8', IsValidHostName("\"google.com") === false);
-$ut->Evaluate('Validator - invalid #9', IsValidHostName('$test.org') === false);
-$ut->Evaluate('Validator - invalid #10', IsValidHostName('/x.test.org') === false);
+$ut->Evaluate('Validator - valid #1', Validator::IsValidHostName('insw.cz') === true);
+$ut->Evaluate('Validator - valid #2', Validator::IsValidHostName('te-st1.petr.bena.rocks') === true);
+$ut->Evaluate('Validator - valid #3', Validator::IsValidHostName('*.petr.bena.rocks') === true);
+$ut->Evaluate('Validator - valid #4', Validator::IsValidHostName('_spf.petr.bena.rocks') === true);
+$ut->Evaluate('Validator - valid #5', Validator::IsValidHostName('wqdcsrv331') === true);
+$ut->Evaluate('Validator - valid #6', Validator::IsValidHostName('2.168.192.in-addr.arpa') === true);
+$ut->Evaluate('Validator - invalid #1', Validator::IsValidHostName('-invalid') === false);
+$ut->Evaluate('Validator - invalid #2', Validator::IsValidHostName('---') === false);
+$ut->Evaluate('Validator - invalid #3', Validator::IsValidHostName('google domain') === false);
+$ut->Evaluate('Validator - invalid #4', Validator::IsValidHostName('google.com;rm -rf /') === false);
+$ut->Evaluate('Validator - invalid #5', Validator::IsValidHostName("google.com\ntest") === false);
+$ut->Evaluate('Validator - invalid #6', Validator::IsValidHostName("google.com\ttest") === false);
+$ut->Evaluate('Validator - invalid #7', Validator::IsValidHostName("'google.com") === false);
+$ut->Evaluate('Validator - invalid #8', Validator::IsValidHostName("\"google.com") === false);
+$ut->Evaluate('Validator - invalid #9', Validator::IsValidHostName('$test.org') === false);
+$ut->Evaluate('Validator - invalid #10', Validator::IsValidHostName('/x.test.org') === false);
 $ut->Evaluate('Shell escape check allows zone transfer dig parameters',
-    ShellEscapeCheck('axfr example.com @localhost') === true);
+    Validator::ShellEscapeCheck('axfr example.com @localhost') === true);
 $ut->Evaluate('Shell escape check allows record lookup dig parameters',
-    ShellEscapeCheck('+nocomments +noauthority +noadditional A test.example.com @localhost') === true);
+    Validator::ShellEscapeCheck('+nocomments +noauthority +noadditional A test.example.com @localhost') === true);
 
 $dangerous_shell_parameters = [
     'axfr example.com; id @localhost',
@@ -102,7 +102,7 @@ $dangerous_shell_parameters = [
 foreach ($dangerous_shell_parameters as $index => $parameters)
 {
     $ut->Evaluate('Shell escape check blocks dangerous dig parameters #' . ($index + 1),
-        ShellEscapeCheck($parameters) === false);
+        Validator::ShellEscapeCheck($parameters) === false);
 }
 
 $g_auto_split_long_txt = true;
@@ -111,23 +111,23 @@ $quoted_long_txt = '"' . $long_txt . '"';
 $split_long_txt = '"' . str_repeat('a', 255) . '" "a"';
 
 $ut->Evaluate('TXT auto-split helper splits unquoted 256-char TXT',
-    SplitLongTXTValue($long_txt) === $split_long_txt);
+    DNS::SplitLongTXTValue($long_txt) === $split_long_txt);
 $ut->Evaluate('TXT auto-split helper splits quoted 256-char TXT',
-    SplitLongTXTValue($quoted_long_txt) === $split_long_txt);
+    DNS::SplitLongTXTValue($quoted_long_txt) === $split_long_txt);
 $ut->Evaluate('TXT auto-split helper keeps pre-split TXT unchanged',
-    SplitLongTXTValue($split_long_txt) === $split_long_txt);
+    DNS::SplitLongTXTValue($split_long_txt) === $split_long_txt);
 $ut->Evaluate('TXT insert command auto-splits long TXT by default',
-    ProcessInsertFromPOST('example.com', 'mail', $long_txt, 'TXT', 3600) ===
+    DNS::ProcessInsertFromPOST('example.com', 'mail', $long_txt, 'TXT', 3600) ===
         'update add mail.example.com 3600 TXT ' . $split_long_txt . "\n");
 
 $g_auto_split_long_txt = false;
 $ut->Evaluate('TXT insert command keeps long TXT unchanged when auto-split is disabled',
-    ProcessInsertFromPOST('example.com', 'mail', $long_txt, 'TXT', 3600) ===
+    DNS::ProcessInsertFromPOST('example.com', 'mail', $long_txt, 'TXT', 3600) ===
         'update add mail.example.com 3600 TXT ' . $long_txt . "\n");
 
 $g_auto_split_long_txt = true;
 $ut->Evaluate('Non-TXT records are not modified by TXT auto-split feature',
-    ProcessInsertFromPOST('example.com', 'mail', $long_txt, 'SPF', 3600) ===
+    DNS::ProcessInsertFromPOST('example.com', 'mail', $long_txt, 'SPF', 3600) ===
         'update add mail.example.com 3600 SPF ' . $long_txt . "\n");
 
 // IDN Conversion Tests
@@ -271,13 +271,13 @@ if ($idn_available)
     
     // Test validator with IDN domains
     $ut->Evaluate("IDN validator test UTF-8 #1", 
-        IsValidHostName("bücher") === true);
+        Validator::IsValidHostName("bücher") === true);
     
     $ut->Evaluate("IDN validator test UTF-8 #2", 
-        IsValidHostName("café.fr") === true);
+        Validator::IsValidHostName("café.fr") === true);
     
     $ut->Evaluate("IDN validator test ASCII #1", 
-        IsValidHostName("xn--bcher-kva.de") === true);
+        Validator::IsValidHostName("xn--bcher-kva.de") === true);
 } else
 {
     echo "Skipping IDN tests as IDN support is not available in this PHP environment.\n";

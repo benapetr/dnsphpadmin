@@ -30,7 +30,7 @@ function Error($msg, $fatal = true)
     // Store last error message just in case we needed to work with it anywhere else and in case we needed to know whether there was some error during execution
     $g_error = true;
     $g_error_message = $msg;
-    WriteToErrorLog($msg);
+    Logging::WriteToErrorLog($msg);
     if ($fatal)
     {
         $web = new HtmlPage("Error");

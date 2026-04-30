@@ -14,7 +14,7 @@
 if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
-require_once("modify.php");
+require_once("dns.php");
 require_once("zones.php");
 
 class TabBatch
@@ -24,16 +24,16 @@ class TabBatch
         global $g_domains;
         if (!isset($_POST["submit"]))
             return;
-        CheckCSRFToken();
+        Auth::CheckCSRFToken();
         
         $zone = $_POST["zone"];
-        if (!CheckEmpty($parent, $zone, "Zone"))
+        if (!CommonUI::CheckEmpty($parent, $zone, "Zone"))
             return;
 
         if (!Zones::IsEditable($zone))
             Error("Domain $zone is not writeable");
 
-        if (!IsAuthorizedToWrite($zone))
+        if (!Auth::IsAuthorizedToWrite($zone))
             Error("You are not authorized to edit $zone");
 
         $record = $_POST["record"];
@@ -55,8 +55,8 @@ class TabBatch
         }
         $input .= $record . "\n";
         $input .= "send\nquit\n";
-        ProcessNSUpdateForDomain($input, $zone);
-        $batch_file = GenerateBatch($input);
+        DNS::ProcessNSUpdateForDomain($input, $zone);
+        $batch_file = Audit::LogBatch($input);
         $comment = NULL;
         if (isset($_POST["comment"]))
             $comment = $_POST["comment"];
@@ -64,12 +64,12 @@ class TabBatch
         {
             $log = str_replace("\n", "; ", $record);
             $log = str_replace("\r", "", $log);
-            WriteToAuditFile("batch", "zone: " . $zone . ": " . $log, $comment);
-            IncrementStat('batch');
+            Audit::Write("batch", "zone: " . $zone . ": " . $log, $comment);
+            Common::IncrementStat('batch');
         } else
         {
-            WriteToAuditFile("batch", "zone: " . $zone . ": " . $batch_file, $comment);
-            IncrementStat('batch');
+            Audit::Write("batch", "zone: " . $zone . ": " . $batch_file, $comment);
+            Common::IncrementStat('batch');
         }
         $parent->AppendObject(new BS_Alert("Successfully executed batch operation on zone " . $zone));
     }
@@ -79,13 +79,13 @@ class TabBatch
         global $g_audit, $g_selected_domain, $g_domains, $g_editable;
         $form = new Form("index.php?action=batch", $parent);
         $form->Method = FormMethod::Post;
-        $form->AppendObject(new Hidden("csrf_token", GetCSRFToken()));
+        $form->AppendObject(new Hidden("csrf_token", Auth::GetCSRFToken()));
         $layout = new HtmlTable($form);
         $layout->BorderSize = 0;
         $dl = new BS_ComboBox("zone", $layout);
         foreach ($g_domains as $key => $info)
         {
-            if (!IsAuthorizedToWrite($key))
+            if (!Auth::IsAuthorizedToWrite($key))
                 continue;
             if ($g_selected_domain == $key)
                 $dl->AddDefaultValue($key, $key);

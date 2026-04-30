@@ -27,7 +27,7 @@ function Debug($text)
     if ($g_syslog && $g_syslog_targets['debug'] === true)
     {
         foreach ($lines as $line)
-            WriteToSyslog('entry point: ' . G_DNSTOOL_ENTRY_POINT . ' eid: ' . $g_eid .  " ip: " . $_SERVER['REMOTE_ADDR'] . " DEBUG: " . $line, LOG_DEBUG);
+            Logging::WriteToSyslog('entry point: ' . G_DNSTOOL_ENTRY_POINT . ' eid: ' . $g_eid .  " ip: " . $_SERVER['REMOTE_ADDR'] . " DEBUG: " . $line, LOG_DEBUG);
     }
     if ($g_debug)
     {
