@@ -80,6 +80,8 @@ class Zones
         {
             if (psf_string_endsWith($key, ".in-addr.arpa"))
                 return true;
+            if (psf_string_endsWith($key, ".ip6.arpa"))
+                return true;
         }
         return false;
     }
