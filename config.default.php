@@ -126,6 +126,10 @@ $g_eid = bin2hex(openssl_random_pseudo_bytes(8));
 // How long do sessions last in seconds
 $g_session_timeout = 3600;
 
+// Whether to set the Secure flag on the session cookie, which prevents the browser from sending it over plain HTTP.
+// Set to false if your webserver doesn't support HTTPS.
+$g_secure_cookie = true;
+
 // Authentication setup - by default, don't provide any authentication mechanism, leave it up to sysadmin
 // Only supported authentication backend right now are
 // * LDAP ($g_auth = "ldap";)

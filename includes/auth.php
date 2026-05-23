@@ -103,7 +103,7 @@ class Auth
 
     public static function RefreshSession()
     {
-        global $g_session_timeout, $g_auth_session_name, $g_auth_roles_map;
+        global $g_session_timeout, $g_auth_session_name, $g_auth_roles_map, $g_secure_cookie;
 
         $headers = getallheaders();
         if (isset($headers['Authorization']) && preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches))
@@ -117,6 +117,7 @@ class Auth
                                       'lifetime' => 0,
                                       'path' => '/',
                                       'httponly' => true,
+                                      'secure' => $g_secure_cookie,
                                       'samesite' => 'Lax'
                                   ]);
         session_start();
@@ -391,7 +392,7 @@ class Auth
 
         if (!password_verify($password, $user['password_hash']))
         {
-            self::ProcessLoginError("Invalid password for user '$username'");
+            self::ProcessLoginError("Invalid username or password");
             return;
         }
 
