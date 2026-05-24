@@ -67,7 +67,8 @@ class TabOverview
         {
             if (!Auth::IsAuthorizedToRead($domain))
                 continue;
-            $table->AppendRow([ '<a href="?action=manage&domain=' . $domain . '">' . $domain . '</a>', self::getStatusOfZone($domain), $properties["update_server"], $properties["transfer_server"] ]);
+            $escaped_domain = htmlspecialchars($domain, ENT_QUOTES, 'UTF-8');
+            $table->AppendRow([ '<a href="?action=manage&domain=' . $escaped_domain . '">' . $escaped_domain . '</a>', self::getStatusOfZone($domain), $properties["update_server"], $properties["transfer_server"] ]);
         }
         return $table;
     }

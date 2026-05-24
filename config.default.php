@@ -126,6 +126,10 @@ $g_eid = bin2hex(openssl_random_pseudo_bytes(8));
 // How long do sessions last in seconds
 $g_session_timeout = 3600;
 
+// Artificial delay in seconds after a failed login attempt, to slow down brute-force attacks.
+// Set to 0 to disable. Default is 2 seconds.
+$g_login_fail_delay = 2;
+
 // Whether to set the Secure flag on the session cookie, which prevents the browser from sending it over plain HTTP.
 // Set to false if your webserver doesn't support HTTPS.
 $g_secure_cookie = true;

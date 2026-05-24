@@ -105,7 +105,7 @@ class TabManage
         }
         $fc->AppendObject(CommonUI::GetSwitcher($fc));
         $fc->AppendHeader($g_selected_domain . $record_count, 2);
-        $fc->AppendHtml('<div class="export_csv"><a href="?action=csv&domain=' . $g_selected_domain . '">Export as CSV</a></div>');
+        $fc->AppendHtml('<div class="export_csv"><a href="?action=csv&domain=' . $domain . '">Export as CSV</a></div>');
         $fc->AppendObject(Records::GetStatusOfZoneAsNote($g_selected_domain));
         $csrf_token = htmlspecialchars(Auth::GetCSRFToken(), ENT_QUOTES, 'UTF-8');
         $domain = htmlspecialchars($g_selected_domain, ENT_QUOTES, 'UTF-8');
@@ -117,9 +117,9 @@ class TabManage
         {
             // This zone contains some hidden record types, show toggle for user
             if (!$g_show_hidden_types)
-                $fc->AppendHtml('<div class="hidden_types">This zone contains record types that are hidden by default, click <a href="?action=manage&domain=' . $g_selected_domain . '&hidden_types=show">here</a> to show them</div>');
+                $fc->AppendHtml('<div class="hidden_types">This zone contains record types that are hidden by default, click <a href="?action=manage&domain=' . $domain . '&hidden_types=show">here</a> to show them</div>');
             else
-                $fc->AppendHtml('<div class="hidden_types">This zone contains record types that are hidden by default, click <a href="?action=manage&domain=' . $g_selected_domain . '&hidden_types=hide">here</a> to hide them</div>');
+                $fc->AppendHtml('<div class="hidden_types">This zone contains record types that are hidden by default, click <a href="?action=manage&domain=' . $domain . '&hidden_types=hide">here</a> to hide them</div>');
         }
         $fc->AppendObject($record_list);
         if (Zones::IsEditable($g_selected_domain) && Auth::IsAuthorizedToWrite($g_selected_domain))

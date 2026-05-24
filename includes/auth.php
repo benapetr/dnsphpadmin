@@ -109,7 +109,16 @@ class Auth
         if (isset($headers['Authorization']) && preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches))
         {
             $sessionId = $matches[1];
-            session_id($sessionId);
+            // Only restore a session that already exists on the server to prevent session fixation.
+            // Also validate the session ID format before using it in a filesystem path.
+            if (preg_match('/^[a-zA-Z0-9,\-]{1,128}$/', $sessionId))
+            {
+                $save_path = session_save_path();
+                if (empty($save_path))
+                    $save_path = sys_get_temp_dir();
+                if (file_exists($save_path . '/sess_' . $sessionId))
+                    session_id($sessionId);
+            }
         }
 
         session_name($g_auth_session_name);
@@ -167,7 +176,7 @@ class Auth
 
     private static function ProcessLoginError($reason)
     {
-        global $g_login_failure_reason, $g_login_failed;
+        global $g_login_failure_reason, $g_login_failed, $g_login_fail_delay;
         $extra = '';
         if (isset($_POST["loginUsername"]))
            $extra = 'username=' . $_POST["loginUsername"] . ' ';
@@ -176,6 +185,8 @@ class Auth
         $_SESSION['logged_in'] = false;
         Audit::Write('login_fail', $extra . 'reason=' . $reason);
         Common::IncrementStat('login_error');
+        if ($g_login_fail_delay > 0)
+            sleep($g_login_fail_delay);
     }
 
     public static function ProcessTokenLogin()
