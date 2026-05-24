@@ -103,12 +103,12 @@ class TabManage
             else
                 $record_count = " ($g_total_records_count records, $g_hidden_records_count hidden)";
         }
+        $domain = htmlspecialchars($g_selected_domain, ENT_QUOTES, 'UTF-8');
         $fc->AppendObject(CommonUI::GetSwitcher($fc));
         $fc->AppendHeader($g_selected_domain . $record_count, 2);
         $fc->AppendHtml('<div class="export_csv"><a href="?action=csv&domain=' . $domain . '">Export as CSV</a></div>');
         $fc->AppendObject(Records::GetStatusOfZoneAsNote($g_selected_domain));
         $csrf_token = htmlspecialchars(Auth::GetCSRFToken(), ENT_QUOTES, 'UTF-8');
-        $domain = htmlspecialchars($g_selected_domain, ENT_QUOTES, 'UTF-8');
         $fc->AppendHtmlLine('<form id="deleteRecordForm" method="post" action="index.php?action=manage&domain=' . $domain . '">' .
                             '<input type="hidden" name="csrf_token" value="' . $csrf_token . '">' .
                             '<input type="hidden" name="ptr" value="">' .
