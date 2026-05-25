@@ -186,10 +186,7 @@ class Auth
         Audit::Write('login_fail', $extra . 'reason=' . $reason);
         Common::IncrementStat('login_error');
         if ($g_login_fail_delay > 0)
-        {
-            session_write_close();
             sleep($g_login_fail_delay);
-        }
     }
 
     public static function ProcessTokenLogin()
