@@ -26,6 +26,7 @@ class PHPDNS_CachingEngine_Redis extends PHPDNS_CachingEngine
         $this->redis = new Redis();
         if (!$this->redis->connect($g_caching_redis_host, $g_caching_redis_port))
             die('Unable to connect to Redis at ' . $g_caching_redis_host . ':' . $g_caching_redis_port);
+        $this->redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
         if ($g_caching_redis_password !== NULL)
         {
             if (!$this->redis->auth($g_caching_redis_password))
