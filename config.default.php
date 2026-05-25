@@ -244,6 +244,7 @@ $g_api_token_mask = true;
 // NULL - no caching
 // 'memcache' - Memcache daemon (using memcache class, not memcached class - PHP has two classes for same purpose) https://www.php.net/manual/en/book.memcache.php
 // 'memcached' - Memcache daemon (using memcached class)
+// 'redis' - Redis (using phpredis extension) https://github.com/phpredis/phpredis
 $g_caching_engine = NULL;
 
 // In case you decide to use memcached as caching engine, you can adjust some parameters with these variables
@@ -251,6 +252,14 @@ $g_caching_engine = NULL;
 $g_caching_memcached_host = 'localhost';
 $g_caching_memcached_port = 11211;
 $g_caching_memcached_expiry = 0;
+
+// In case you decide to use redis as caching engine, you can adjust some parameters with these variables
+// NOTE: redis engine uses $g_auth_session_name as key prefixes
+$g_caching_redis_host = 'localhost';
+$g_caching_redis_port = 6379;
+$g_caching_redis_expiry = 0;     // seconds; 0 = no expiry
+$g_caching_redis_password = NULL; // set to a string to enable AUTH
+$g_caching_redis_database = 0;   // Redis DB index to select
 
 // You can optionally enable in-cache statistics that can be exported for use with monitoring, such as prometheus, to obtain usage metrics
 $g_caching_stats_enabled = false;

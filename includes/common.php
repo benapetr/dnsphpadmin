@@ -19,6 +19,7 @@ require_once("logging.php");
 require_once("notifications.php");
 require_once("caching_memcache.php");
 require_once("caching_memcached.php");
+require_once("caching_redis.php");
 require_once("auth.php");
 
 class Common
@@ -48,6 +49,9 @@ class Common
                 break;
             case 'memcached':
                 $g_caching_engine_instance = new PHPDNS_CachingEngine_Memcached();
+                break;
+            case 'redis':
+                $g_caching_engine_instance = new PHPDNS_CachingEngine_Redis();
                 break;
             default:
                 die('Invalid caching engine: ' . $g_caching_engine);
