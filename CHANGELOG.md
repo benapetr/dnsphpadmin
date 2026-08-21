@@ -2,7 +2,7 @@
 
 This changelog is based on the differences between git tags. Dates are tag creation dates.
 
-## Unreleased
+## 2.0.2
 
 - Added IDN support, including IDNA2008 handling and `dig +noidnout` default behavior.
 - Added automatic splitting for long TXT records.
