@@ -580,7 +580,7 @@ register_api("login_token", "Logins via token", "Login into API via application 
              [], '?action=login_token&token=123ngfshegkernker5', true);
 register_api("list_zones", "List all existing zones that you have access to", "List all existing zones that you have access to.",
              "api_call_list", true, [], [], '?action=list_zones');
-register_api('list_records', "List all existing records for a specified zone", "List all existing records for a specified zone", "api_call_list_records", true,
+register_api('list_records', "List all existing records for a specified zone", "List all existing records for a specified zone. Returns a JSON array of records, where each record is itself a positional array (not an object) in the form [name, ttl, class, type, value], for example [\"test.domain.org.\", \"3600\", \"IN\", \"A\", \"0.0.0.0\"].", "api_call_list_records", true,
              [ new PsfApiParameter("zone", PsfApiParameterType::String, "Zone to list records for") ],
              [], '?action=list_records&zone=domain.org');
 register_api('create_record', 'Creates a new DNS record in specified zone', 'Creates a new DNS record in specific zone. Please mind that domain name / zone is appended to record name automatically, ' .
