@@ -17,6 +17,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
 require_once("nsupdate.php");
 require_once("audit.php");
 require_once("common.php");
+require_once("notifications.php");
 require_once("zones.php");
 require_once("idn.php");
 
@@ -139,7 +140,7 @@ class Records
                         $current_soa = self::GetSOAFromData(get_zone_soa($zone));
                         if ($current_soa !== NULL)
                         {
-                            CommonUI::DisplayWarning("Transfer NS for " . $zone . " had troubles returning SOA record, had to retry $current_retry times, check your network");
+                            Notifications::DisplayWarning("Transfer NS for " . $zone . " had troubles returning SOA record, had to retry $current_retry times, check your network");
                             break;
                         }
                     }
@@ -191,7 +192,7 @@ class Records
                     $soa = self::GetSOAFromData($data);
                     if ($soa !== NULL)
                     {
-                        CommonUI::DisplayWarning("Transfer NS for " . $zone . " had troubles returning SOA record during AXFR, had to retry $current_retry times, check your network");
+                        Notifications::DisplayWarning("Transfer NS for " . $zone . " had troubles returning SOA record during AXFR, had to retry $current_retry times, check your network");
                         break;
                     }
                 }
@@ -206,7 +207,7 @@ class Records
         }
 
         if (count($data) > 0 && !self::CheckIfZoneIsComplete($data))
-            CommonUI::DisplayWarning("Transfer NS for " . $zone . " didn't return full zone, last SOA record is missing, zone data are incomplete");
+            Notifications::DisplayWarning("Transfer NS for " . $zone . " didn't return full zone, last SOA record is missing, zone data are incomplete");
 
         return $data;
     }

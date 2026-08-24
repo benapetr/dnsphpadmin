@@ -18,6 +18,7 @@ require_once("psf/psf.php");
 require_once("audit.php");
 require_once("common.php");
 require_once("debug.php");
+require_once("notifications.php");
 require_once("nsupdate.php");
 require_once("validator.php");
 require_once("zones.php");
@@ -197,24 +198,24 @@ class DNS
         $ip_parts = explode('.', $ip);
         if (count($ip_parts) != 4)
         {
-            CommonUI::DisplayWarning('PTR record was not created: record '. $ip .' is not a valid IPv4 quad');
+            Notifications::DisplayWarning('PTR record was not created: record '. $ip .' is not a valid IPv4 quad');
             return false;
         }
         $arpa = $ip_parts[3] . '.' . $ip_parts[2] . '.' . $ip_parts[1] . '.' . $ip_parts[0] . '.in-addr.arpa';
         $arpa_zone = Zones::GetZoneForFQDN($arpa);
         if ($arpa_zone === NULL)
         {
-            CommonUI::DisplayWarning('PTR record was not created: there is no PTR zone for record '. $ip);
+            Notifications::DisplayWarning('PTR record was not created: there is no PTR zone for record '. $ip);
             return false;
         }
         if (!Zones::IsEditable($arpa_zone))
         {
-            CommonUI::DisplayWarning("PTR record was not created for $ip: zone " . $arpa_zone . ' is read only');
+            Notifications::DisplayWarning("PTR record was not created for $ip: zone " . $arpa_zone . ' is read only');
             return false;
         }
         if (!Auth::IsAuthorizedToWrite($arpa_zone))
         {
-            CommonUI::DisplayWarning("PTR record was not created: you don't have write access to zone " . $arpa_zone);
+            Notifications::DisplayWarning("PTR record was not created: you don't have write access to zone " . $arpa_zone);
             return false;
         }
 
@@ -244,24 +245,24 @@ class DNS
         $ip_parts = explode('.', $ip);
         if (count($ip_parts) != 4)
         {
-            CommonUI::DisplayWarning('PTR record was not deleted: record '. $ip .' is not a valid IPv4 quad');
+            Notifications::DisplayWarning('PTR record was not deleted: record '. $ip .' is not a valid IPv4 quad');
             return false;
         }
         $arpa = $ip_parts[3] . '.' . $ip_parts[2] . '.' . $ip_parts[1] . '.' . $ip_parts[0] . '.in-addr.arpa';
         $arpa_zone = Zones::GetZoneForFQDN($arpa);
         if ($arpa_zone === NULL)
         {
-            CommonUI::DisplayWarning('PTR record was not deleted: there is no PTR zone for record '. $ip);
+            Notifications::DisplayWarning('PTR record was not deleted: there is no PTR zone for record '. $ip);
             return false;
         }
         if (!Zones::IsEditable($arpa_zone))
         {
-            CommonUI::DisplayWarning("PTR record was not deleted for $ip: zone " . $arpa_zone . ' is read only');
+            Notifications::DisplayWarning("PTR record was not deleted for $ip: zone " . $arpa_zone . ' is read only');
             return false;
         }
         if (!Auth::IsAuthorizedToWrite($arpa_zone))
         {
-            CommonUI::DisplayWarning("PTR record was not deleted: you don't have write access to zone " . $arpa_zone);
+            Notifications::DisplayWarning("PTR record was not deleted: you don't have write access to zone " . $arpa_zone);
             return false;
         }
 

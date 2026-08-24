@@ -15,6 +15,7 @@ if (!defined('G_DNSTOOL_ENTRY_POINT'))
     die("Not a valid entry point");
 
 require_once("passwd_file.php");
+require_once("notifications.php");
 
 $g_login_failed = false;
 $g_logged_in = false;
@@ -252,19 +253,19 @@ class Auth
         $ldap_groups = ldap_search($ldap, $g_auth_ldap_dn, "(samaccountname=$ldap_user_search_string)", array("memberof", "primarygroupid"));
         if ($ldap_groups === false)
         {
-            CommonUI::DisplayWarning("Unable to retrieve list of groups for this user from LDAP (ldap_search() returned false) - is your ldap_dn correct?");
+            Notifications::DisplayWarning("Unable to retrieve list of groups for this user from LDAP (ldap_search() returned false) - is your ldap_dn correct?");
             return;
         } else
         {
             $entries = ldap_get_entries($ldap, $ldap_groups);
             if ($entries === false)
             {
-                CommonUI::DisplayWarning("Unable to retrieve list of groups for this user from LDAP (ldap_get_entries() returned false) - is your ldap_dn correct?");
+                Notifications::DisplayWarning("Unable to retrieve list of groups for this user from LDAP (ldap_get_entries() returned false) - is your ldap_dn correct?");
                 return;
             }
             if ($entries['count'] == 0)
             {
-                CommonUI::DisplayWarning('Unable to retrieve list of groups for this user from LDAP ($entries[\'count\'] == 0) - is your ldap_dn correct?');
+                Notifications::DisplayWarning('Unable to retrieve list of groups for this user from LDAP ($entries[\'count\'] == 0) - is your ldap_dn correct?');
                 return;
             }
             if (!array_key_exists($login_name, $g_auth_roles_map))
@@ -429,7 +430,7 @@ class Auth
         // If user is already logged in, do nothing (probably just hit refresh in browser and re-sent POST data)
         if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true)
         {
-            CommonUI::DisplayWarning('You are already logged in, if you want to login again as someone else, logout first');
+            Notifications::DisplayWarning('You are already logged in, if you want to login again as someone else, logout first');
             return;
         }
 

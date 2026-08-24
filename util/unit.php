@@ -50,6 +50,10 @@ $ut->Evaluate('Check for non-existence of PTR zones (none) in empty list', Zones
 $ut->Evaluate('Get zone for FQDN', Zones::GetZoneForFQDN('0.0.168.192.in-addr.arpa') == '168.192.in-addr.arpa');
 $ut->Evaluate('Test GetDefaultTTL()', Zones::GetDefaultTTL('168.192.in-addr.arpa') == 3600);
 $ut->Evaluate('Test GetDefaultTTL()', Zones::GetDefaultTTL('192.in-addr.arpa') == 200);
+$g_domains['168.192.in-addr.arpa']['read_only'] = true;
+$ut->Evaluate('PTR helper handles read-only reverse zone without CommonUI dependency',
+    DNS::InsertPTRForARecord('192.168.0.1', 'test.example.com', 3600, '') === false);
+unset($g_domains['168.192.in-addr.arpa']['read_only']);
 
 $dz1 = raw_zone_to_array(file_get_contents(dirname(__FILE__) . '/testdata/valid.zone1'));
 $dz2 = raw_zone_to_array(file_get_contents(dirname(__FILE__) . '/testdata/invalid.zone'));
