@@ -2,6 +2,9 @@
 
 This changelog is based on the differences between git tags. Dates are tag creation dates.
 
+## 2.0.3
+- Fixed crash in api.php endpoint caused by earlier refactor
+
 ## 2.0.2
 
 - Added IDN support, including IDNA2008 handling and `dig +noidnout` default behavior.
