@@ -478,7 +478,7 @@ function api_call_get_zone_for_fqdn($source)
 
 function api_call_get_record($source)
 {
-    global $api;
+    global $api, $g_domains;
     $record = get_required_post_get_parameter('record');
     $record = Validator::SanitizeHostname($record);
     if (!Validator::IsValidHostName($record))
