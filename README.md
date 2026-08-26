@@ -24,7 +24,7 @@ Then, download release tarball into any folder which is configured a http root o
 
 ```
 cd /tmp
-version=2.0.2
+version=2.0.4
 wget https://github.com/benapetr/dnsphpadmin/releases/download/${version}/dnsphpadmin_${version}.tar.gz
 cd /var/www/html
 tar -xf /tmp/dnsphpadmin_${version}.tar.gz

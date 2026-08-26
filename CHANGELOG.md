@@ -2,6 +2,9 @@
 
 This changelog is based on the differences between git tags. Dates are tag creation dates.
 
+## 2.0.4
+- Fixed another crash in api.php endpoint caused by earlier refactor
+
 ## 2.0.3
 - Fixed crash in api.php endpoint caused by earlier refactor
 
