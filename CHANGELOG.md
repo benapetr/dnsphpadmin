@@ -10,6 +10,7 @@ This changelog is based on the differences between git tags. Dates are tag creat
 - Updated cURL cleanup, reflection access, and role checks for PHP 8.5 compatibility.
 - Added compatibility regression checks and made unit tests fail on warnings and deprecations.
 - Extended CI coverage through PHP 8.5 and documented the PHP 7.3–8.5 compatibility target.
+- Removed the legacy PHP 5.6 CI job to match the PHP 7.3 minimum compatibility target.
 
 ## 2.0.4
 - Fixed another crash in api.php endpoint caused by earlier refactor
