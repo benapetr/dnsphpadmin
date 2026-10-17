@@ -25,6 +25,23 @@ function check_compat($condition, $message)
         throw new Exception($message);
 }
 
+check_compat(psf_string_endsWith(NULL, '.in-addr.arpa') === false, 'Missing zone must not match reverse-zone suffix');
+foreach (array('psf_string_startsWith', 'psf_string_endsWith', 'psf_string_contains') as $helper)
+{
+    check_compat($helper(NULL, 'example') === false, 'Null input must not match nonempty text');
+    check_compat($helper(NULL, '') === true, 'Null input must behave like an empty string');
+    check_compat($helper('example', NULL) === true, 'Null search text must behave like an empty string');
+    check_compat($helper(NULL, NULL) === true, 'Two null inputs must behave like empty strings');
+    check_compat($helper('example.com', 'example.net') === false, 'Unrelated strings must not match');
+}
+check_compat(psf_string_auto_trim(NULL, 10) === NULL, 'Trimming null must preserve its value');
+check_compat(psf_string2bool(NULL) === false, 'Null must not be interpreted as true');
+check_compat(psf_string_startsWith('www.example.com', 'www.') === true, 'Hostname prefixes must still match');
+check_compat(psf_string_endsWith('example.com', '.com') === true, 'Hostname suffixes must still match');
+check_compat(psf_string_contains('www.example.com', 'example') === true, 'Hostname substrings must still match');
+check_compat(psf_string_auto_trim('example.com', 7, '...') === 'example...', 'Long strings must still be trimmed');
+check_compat(psf_string2bool('TRUE') === true, 'Boolean string parsing must remain case insensitive');
+
 $psf_containers_auto_insert_child = true;
 $g_selected_domain = 'example.com';
 $g_action = 'manage';
@@ -45,6 +62,9 @@ check_compat(strpos($html, 'table-sm') !== false, 'Record table must retain comp
 
 TabOverview::GetSelectForm($page);
 TabEdit::GetInsertForm($page);
+$g_selected_domain = NULL;
+TabEdit::GetInsertForm($page);
+$g_selected_domain = 'example.com';
 TabEdit::GetHelp();
 TabBatch::GetForm($page);
 $login = new LoginForm();
