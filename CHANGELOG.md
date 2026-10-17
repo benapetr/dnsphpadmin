@@ -2,6 +2,15 @@
 
 This changelog is based on the differences between git tags. Dates are tag creation dates.
 
+## 2.0.5
+
+- Fixed PHP 8.2+ dynamic-property and string-interpolation deprecation warnings in the application and PSF.
+- Fixed null-input deprecation warnings in PSF string helpers, including the new-record form when no zone is selected.
+- Fixed undefined-key warnings when rendering table rows with classes but no IDs.
+- Updated cURL cleanup, reflection access, and role checks for PHP 8.5 compatibility.
+- Added compatibility regression checks and made unit tests fail on warnings and deprecations.
+- Extended CI coverage through PHP 8.5 and documented the PHP 7.3–8.5 compatibility target.
+
 ## 2.0.4
 - Fixed another crash in api.php endpoint caused by earlier refactor
 
