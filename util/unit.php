@@ -1,5 +1,13 @@
 <?php
 
+error_reporting(E_ALL);
+set_error_handler(function ($level, $message, $file, $line)
+{
+    if (error_reporting() & $level)
+        throw new ErrorException($message, 0, $level, $file, $line);
+    return false;
+});
+
 require (dirname(__FILE__) . "/../psf/psf.php");
 require (dirname(__FILE__) . "/../psf/includes/unit_test/ut.php");
 
@@ -142,7 +150,8 @@ $g_enable_idn = true;
 // Reset the static variable to force re-evaluation
 $reflection = new ReflectionClass('IDNConverter');
 $property = $reflection->getProperty('has_intl');
-$property->setAccessible(true);
+if (PHP_VERSION_ID < 80100)
+    $property->setAccessible(true);
 $property->setValue(null, null);
 
 // Check if IDN support is available (this is environment-dependent)

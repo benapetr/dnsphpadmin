@@ -17,6 +17,11 @@ It also makes it possible to centralize management of multiple separate DNS serv
 
 This tool is only a wrapper for Linux commands `dig` and `nsupdate`, it will download all records in a zone via AXFR (zone transfer) and it will change the records via nsupdate commands.
 
+# PHP compatibility
+The PHP compatibility target is **PHP 7.3–8.5**
+
+It may work on other versions too, but it's untested
+
 # How to install
 First of all make sure that dig and nsupdate are available on system. They should be in /usr/bin, if they are somewhere else, change the paths in config.php later
 

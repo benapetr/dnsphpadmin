@@ -170,7 +170,7 @@ switch ($command)
             $roles = "No roles";
             if (!empty($user['roles']))
                 $roles = implode(',', $user['roles']);
-            print("User: " . $user['username'] . " (Enabled: " . ($user['enabled'] ? 'Yes' : 'No') . ", Roles: ${roles})\n");
+            print("User: " . $user['username'] . " (Enabled: " . ($user['enabled'] ? 'Yes' : 'No') . ", Roles: {$roles})\n");
         }
         break;
 

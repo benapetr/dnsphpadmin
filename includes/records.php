@@ -216,7 +216,6 @@ class Records
     {
         global $g_editable, $g_show_hidden_types, $g_hidden_record_types, $g_hidden_types_present, $g_total_records_count, $g_hidden_records_count, $g_enable_idn;
         $table = new HtmlTable($parent);
-        $table->Condensed = true;
         $table->Headers = [ "", "Record", "TTL", "Scope", "Type", "Value", "Options" ];
         $table->ClassName = 'table table-bordered table-hover table-sm';
         $table->SetColumnWidth(0, '28px'); // Select

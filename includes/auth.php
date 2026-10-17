@@ -60,6 +60,8 @@ class Auth
 
         foreach ($roles as $role)
         {
+            if ($role === NULL)
+                continue;
             if (!array_key_exists($role, $g_auth_roles))
                 continue;
             $role_info = $g_auth_roles[$role];
